@@ -1,0 +1,8 @@
+# Finales de línea normalizados a LF en el repositorio, para que trabajar desde
+# Windows no meta ruido en los diffs.
+* text=auto eol=lf
+
+# Binarios: que git no los toque.
+*.pdf binary
+*.png binary
+*.jpg binary

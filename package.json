@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
+    "verify": "npm run lint && npm test && tsc --noEmit && vite build",
     "e2e": "node e2e/verify.cjs"
   },
   "dependencies": {

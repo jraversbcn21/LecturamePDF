@@ -10,6 +10,7 @@
  * avisa del fin de cada frase. Eso permite comprobar la sincronización, los
  * atajos y la persistencia; la calidad del audio solo se puede juzgar de oído.
  */
+const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 
@@ -135,7 +136,14 @@ const storedPosition = () =>
       return [...document.querySelectorAll('.reader > *')].findIndex((block) => block.contains(active));
     });
 
-  await page.goto(URL);
+  fs.mkdirSync(SHOTS, { recursive: true });
+
+  const reachable = await page.goto(URL).then(() => true, () => false);
+  if (!reachable) {
+    console.error(`\nNo responde nada en ${URL}.\nLevanta el servidor con "npm run dev" y vuelve a lanzar esto.`);
+    await browser.close();
+    process.exit(2);
+  }
 
   // --- Carga y extracción --------------------------------------------------
   await page.setInputFiles('input[type=file]', PDF);

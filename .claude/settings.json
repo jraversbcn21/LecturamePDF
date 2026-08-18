@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(npm test)",
+      "PowerShell(npm run lint)",
+      "PowerShell(npm run verify)",
+      "PowerShell(npm run build)",
+      "PowerShell(npm run e2e)",
+      "PowerShell(npx tsc --noEmit)",
+      "PowerShell(npx vitest run *)",
+      "PowerShell(npx eslint *)",
+      "PowerShell(npx vite build)",
+      "PowerShell(git status *)",
+      "PowerShell(git log *)",
+      "PowerShell(git diff *)",
+      "Bash(npm test)",
+      "Bash(npm run lint)",
+      "Bash(npm run verify)",
+      "Bash(npm run build)",
+      "Bash(npm run e2e)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx vitest run *)",
+      "Bash(npx eslint *)",
+      "Bash(npx vite build)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)"
+    ]
+  }
+}
