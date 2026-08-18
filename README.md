@@ -8,15 +8,17 @@ navegador: no hay servidor, ni cuentas, ni claves de API.
 ```bash
 npm install
 npm run dev     # http://localhost:5173
-npm test        # tests de extracción, idioma, frases y reproductor
+npm test        # tests unitarios de la lógica pura
+npm run lint    # ESLint
+npm run verify  # lint + tests + typecheck + build, de una vez
 npm run build   # bundle estático en dist/
 npm run e2e     # verificación en navegador (ver e2e/verify.cjs)
 ```
 
-`npm run e2e` necesita el servidor de desarrollo en marcha y Playwright global
-(`npm i -g playwright && playwright install chromium`). Como Chromium headless no trae
-voces, el script sustituye el motor de síntesis por uno falso: comprueba la sincronización,
-los atajos y la persistencia, pero la calidad del audio solo se juzga de oído.
+`npm run e2e` necesita el servidor de desarrollo en marcha —si no lo está, el script lo dice y
+para— y Playwright global (`npm i -g playwright && playwright install chromium`). Como Chromium
+headless no trae voces, el script sustituye el motor de síntesis por uno falso: comprueba la
+sincronización, los atajos y la persistencia, pero la calidad del audio solo se juzga de oído.
 
 **Ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de Microsoft
 (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En Chrome
@@ -85,3 +87,5 @@ al texto, y se navega con el teclado.
 - Si una lista **no está sangrada** respecto al cuerpo, el párrafo que va detrás del último
   punto se queda pegado a él.
 - No se muestra el PDF original: se lee una vista de texto limpia.
+
+El trabajo pendiente, y por qué se dejó fuera cada cosa, está en [PENDIENTE.md](PENDIENTE.md).
