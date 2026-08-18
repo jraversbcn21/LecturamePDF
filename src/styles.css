@@ -1,0 +1,565 @@
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --text: #1e1c1a;
+  --muted: #6b6560;
+  --border: #e2ddd5;
+  --accent: #1f6feb;
+  --highlight: #ffe9a8;
+  --highlight-word: #ffc94d;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181d;
+    --surface: #1d2027;
+    --text: #e9e6e1;
+    --muted: #9aa0a8;
+    --border: #2c313a;
+    --accent: #6aa4ff;
+    --highlight: #3d3a1f;
+    --highlight-word: #6b6018;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.bar h1 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* Biblioteca */
+
+.library {
+  width: min(46rem, 100%);
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+}
+
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2.5rem;
+  border: 2px dashed var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.dropzone p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.error {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background: #fdecec;
+  color: #8a1f1f;
+}
+
+@media (prefers-color-scheme: dark) {
+  .error {
+    background: #3a1d1d;
+    color: #ffb4b4;
+  }
+}
+
+.docs {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.docs li {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.doc {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  text-align: left;
+  padding: 0.8rem 1rem;
+}
+
+.doc-name {
+  font-weight: 600;
+}
+
+.doc-meta {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.ghost {
+  background: none;
+  border-color: transparent;
+  color: var(--muted);
+}
+
+/* Lector */
+
+/* En el lector, la página no scrollea: lo hacen el índice y el texto por separado. */
+.screen.reading {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.reader {
+  /* Columna de lectura de ancho fijo, centrada en el espacio libre por los márgenes automáticos. */
+  flex: 1;
+  max-width: 45rem;
+  margin: 0 auto;
+  overflow-y: auto;
+  padding: 2rem 1.5rem 4rem;
+  font-size: 1.2rem;
+  line-height: 1.85;
+  font-family: Georgia, 'Iowan Old Style', serif;
+}
+
+.reader .heading {
+  font-family: system-ui, sans-serif;
+  font-size: 1.35rem;
+  margin: 2.2rem 0 0.6rem;
+}
+
+.reader .paragraph {
+  margin: 0 0 1.15rem;
+}
+
+/* Sangría francesa: el marcador queda en su columna y las líneas que siguen
+   se alinean con el texto, igual que en el PDF original. */
+.reader .list-item {
+  margin: 0 0 0.55rem 1.6rem;
+  padding-left: 1.7em;
+  text-indent: -1.7em;
+}
+
+.reader .list-item + .paragraph,
+.reader .paragraph + .list-item {
+  margin-top: 0.9rem;
+}
+
+.sentence {
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.sentence:hover {
+  background: color-mix(in srgb, var(--highlight) 40%, transparent);
+}
+
+.sentence.active {
+  background: var(--highlight);
+  box-shadow: 0 0 0 3px var(--highlight);
+}
+
+.word {
+  background: var(--highlight-word);
+  color: inherit;
+  border-radius: 3px;
+}
+
+/* Barra lateral: buscador, resultados e índice de secciones */
+
+.sidebar {
+  display: none;
+}
+
+/* Solo cabe con holgura en pantallas anchas; el teclado navega igual sin ella. */
+@media (min-width: 1100px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: 18rem;
+    min-height: 0;
+    border-right: 1px solid var(--border);
+  }
+}
+
+.search {
+  flex: none;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.search-input {
+  width: 100%;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 0.4rem 0.6rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.search-count {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.search-results {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.result:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.result mark {
+  background: var(--highlight);
+  color: inherit;
+  border-radius: 3px;
+}
+
+.result-meta {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.sidebar-scroll {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.outline {
+  padding: 0.6rem 0.5rem 2rem;
+}
+
+/* Marcadores */
+
+.sidebar-title {
+  margin: 0;
+  padding: 0.7rem 0.75rem 0.4rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bookmarks {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+}
+
+.bookmarks ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.4rem;
+}
+
+.bookmark-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.15rem;
+}
+
+.bookmark {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.4rem 0.5rem;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.bookmark:hover:not(:disabled) {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.bookmark-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.bookmark-meta {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
+.bookmark-action {
+  flex: none;
+  padding: 0.35rem 0.35rem;
+  font-size: 0.8rem;
+}
+
+/* Notas */
+
+.bookmark-note,
+.bookmark-note-edit {
+  display: block;
+  margin: 0 0.5rem 0.4rem 1.4rem;
+  padding: 0.3rem 0.5rem;
+  border-left: 2px solid var(--accent);
+  background: var(--surface);
+  font-size: 0.79rem;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.bookmark-note {
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+.bookmark-note-edit {
+  width: calc(100% - 1.9rem);
+  font-family: inherit;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  resize: vertical;
+}
+
+.bookmark-toggle {
+  font-size: 1.05rem;
+  line-height: 1;
+  padding: 0.45rem 0.6rem;
+  color: var(--muted);
+}
+
+.bookmark-toggle.marked {
+  color: #d99000;
+  border-color: #d99000;
+}
+
+/* Frase marcada dentro del texto */
+.sentence.bookmarked {
+  border-bottom: 2px dotted #d99000;
+}
+
+.outline ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.outline-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.87rem;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+.outline-item:hover:not(:disabled) {
+  border-color: transparent;
+  border-left-color: var(--border);
+  color: var(--text);
+}
+
+.outline-item.current {
+  border-left-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.outline-check {
+  flex: none;
+  width: 0.9rem;
+  font-size: 0.8rem;
+  color: var(--accent);
+}
+
+.outline-item.heard .outline-text {
+  opacity: 0.62;
+}
+
+.outline-item.level-2 {
+  padding-left: 1.4rem;
+}
+
+.outline-item.level-3 {
+  padding-left: 2.3rem;
+}
+
+.outline-text {
+  flex: 1;
+}
+
+.outline-page {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+/* Controles */
+
+.controls {
+  flex: none;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.controls progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  border: none;
+  background: var(--border);
+}
+
+.controls progress::-webkit-progress-bar {
+  background: var(--border);
+}
+
+.controls progress::-webkit-progress-value {
+  background: var(--accent);
+}
+
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.group select {
+  font: inherit;
+  padding: 0.3rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.primary {
+  font-size: 1.1rem;
+  padding: 0.45rem 1.1rem;
+  border-color: var(--accent);
+}
+
+.status {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
