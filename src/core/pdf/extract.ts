@@ -1,9 +1,18 @@
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-import type { Block, Doc } from '../types';
+import type { Block, Doc, Language } from '../types';
 import { detectLanguage } from '../language';
 import { splitSentences } from '../sentences';
-import { bodyHeightOf, dropRunningHeads, itemsToLines, linesToBlocks, toRawItems, type Line } from './layout';
+import {
+  bodyHeightOf,
+  dropFootnotes,
+  dropRunningHeads,
+  itemsToLines,
+  linesToBlocks,
+  toRawItems,
+  type BlockText,
+  type Line,
+} from './layout';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -38,19 +47,33 @@ async function linesPerPage(bytes: ArrayBuffer): Promise<Line[][]> {
   }
 }
 
+/**
+ * Lo que se dice de una tabla: recitarla celda a celda no se entiende, y el original está a un
+ * clic. El número de página es la referencia para buscarla allí.
+ */
+function tableSummary(block: BlockText, language: Language): string {
+  const rows = block.text.split('\n').length;
+  return language === 'es'
+    ? `Tabla de ${rows} ${rows === 1 ? 'fila' : 'filas'}, en la página ${block.page} del original.`
+    : `Table of ${rows} ${rows === 1 ? 'row' : 'rows'}, on page ${block.page} of the original.`;
+}
+
 /** PDF -> documento listo para escuchar: bloques ordenados, idioma e id estable. */
 export async function extractDoc(file: File): Promise<Doc> {
   const bytes = await file.arrayBuffer();
   const pages = dropRunningHeads(await linesPerPage(bytes));
   const bodyHeight = bodyHeightOf(pages);
-  const blockTexts = pages.flatMap((lines) => linesToBlocks(lines, bodyHeight));
+  const blockTexts = dropFootnotes(pages, bodyHeight).flatMap((lines) => linesToBlocks(lines, bodyHeight));
 
   const fullText = blockTexts.map((b) => b.text).join('\n');
   if (fullText.length < MIN_CHARS_PER_PAGE * Math.max(pages.length, 1)) throw new ScannedPdfError();
 
   const language = detectLanguage(fullText);
   const blocks: Block[] = blockTexts
-    .map((block) => ({ ...block, sentences: splitSentences(block.text, language) }))
+    .map((block) => ({
+      ...block,
+      sentences: block.type === 'table' ? [tableSummary(block, language)] : splitSentences(block.text, language),
+    }))
     .filter((block) => block.sentences.length > 0);
 
   return { id: await sha256(bytes), name: file.name, language, blocks, addedAt: Date.now() };

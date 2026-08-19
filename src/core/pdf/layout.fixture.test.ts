@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 // El build "legacy" es el que funciona fuera del navegador (aquí, en Node).
 import { getDocument } from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { detectLanguage } from '../language';
-import { bodyHeightOf, dropRunningHeads, itemsToLines, linesToBlocks, toRawItems, type Line } from './layout';
+import { bodyHeightOf, dropFootnotes, dropRunningHeads, itemsToLines, linesToBlocks, toRawItems, type Line } from './layout';
 import type { BlockText } from './layout';
 
 /** Mismo recorrido que `extractDoc`, pero sobre un PDF real generado con un navegador. */
@@ -18,7 +18,7 @@ async function blocksOf(path: string): Promise<BlockText[]> {
   }
   const clean = dropRunningHeads(pages);
   const bodyHeight = bodyHeightOf(clean);
-  return clean.flatMap((lines) => linesToBlocks(lines, bodyHeight));
+  return dropFootnotes(clean, bodyHeight).flatMap((lines) => linesToBlocks(lines, bodyHeight));
 }
 
 describe('extracción sobre un PDF real', () => {
@@ -49,6 +49,55 @@ describe('extracción sobre un PDF real', () => {
   it('detecta el idioma del documento', async () => {
     const blocks = await blocksOf('./__fixtures__/sample.pdf');
     expect(detectLanguage(blocks.map((block) => block.text).join('\n'))).toBe('es');
+  });
+});
+
+describe('tablas, llamadas de nota y fórmulas en un PDF real', () => {
+  it('un superíndice no parte el párrafo, y su número no se lee', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    const paragraph = blocks.find((block) => block.text.startsWith('El programa se organiza'));
+
+    // Antes salían tres bloques: «…cuántas horas lectivas», «1» y «exige.».
+    expect(paragraph?.text).toMatch(/cuántas horas lectivas exige\.$/);
+    expect(blocks.map((block) => block.text)).not.toContain('1');
+  });
+
+  it('la tabla es un bloque aparte, con sus renglones enteros', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    const tables = blocks.filter((block) => block.type === 'table');
+
+    expect(tables).toHaveLength(1);
+    expect(tables[0]?.text.split('\n')).toEqual([
+      'Nivel Duración Horas Coste',
+      'Fundamentos 3 meses 40 250 €',
+      'Avanzado 6 meses 90 480 €',
+      'Experto 12 meses 160 900 €',
+    ]);
+    // Y no se lleva por delante los párrafos que la rodean.
+    expect(blocks.some((block) => block.text.startsWith('La retención esperada'))).toBe(true);
+  });
+
+  it('las notas al pie no entran en el hilo de lectura', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    expect(blocks.map((block) => block.text).join(' ')).not.toContain('Ebbinghaus');
+  });
+
+  // pdf.js entrega el espacio como un fragmento suelto y se descarta por vacío; lo que queda es
+  // el hueco, que en una letra en cursiva se parece demasiado al de una palabra partida.
+  it('no pega las palabras alrededor de una letra en cursiva', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    const paragraph = blocks.find((block) => block.text.startsWith('La retención esperada'));
+
+    expect(paragraph?.text).toContain('donde t es el tiempo');
+    expect(paragraph?.text).toContain('y S la fuerza');
+  });
+
+  it('el exponente de una fórmula ya no se lee antes que la fórmula', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    const texts = blocks.map((block) => block.text);
+
+    expect(texts).not.toContain('−t / S');
+    expect(texts.find((text) => text.startsWith('R = e'))).toContain('−t / S,');
   });
 });
 

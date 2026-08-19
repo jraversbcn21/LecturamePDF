@@ -86,6 +86,8 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, f
                 </span>
               );
             })}
+            {/* La voz solo anuncia la tabla; los renglones siguen a la vista para poder leerlos. */}
+            {block.type === 'table' && <span className="table-rows">{block.text}</span>}
           </Tag>
         );
       })}

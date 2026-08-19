@@ -223,6 +223,19 @@ button:disabled {
   margin-top: 0.9rem;
 }
 
+/* Tabla: la voz solo la anuncia, así que los renglones se enseñan aparte y en cuerpo menor. */
+.reader .table .table-rows {
+  display: block;
+  margin-top: 0.4rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--border);
+  white-space: pre-line;
+  font-family: system-ui, sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 .sentence {
   cursor: pointer;
   border-radius: 4px;

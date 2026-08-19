@@ -16,6 +16,7 @@ const { chromium } = require('playwright');
 
 const URL = process.env.LECTURAME_URL || 'http://localhost:5173/';
 const PDF = path.join(__dirname, '..', 'src', 'core', 'pdf', '__fixtures__', 'sample.pdf');
+const TABLES_PDF = path.join(__dirname, '..', 'src', 'core', 'pdf', '__fixtures__', 'tables.pdf');
 const SHOTS = path.join(__dirname, 'screenshots');
 
 const results = [];
@@ -547,6 +548,43 @@ const storedPosition = () =>
   await page.locator('.outline-item').first().click();
   await page.waitForTimeout(200);
   check('saltar a una sección la recoge para dejar ver el texto', !(await page.locator('.sidebar').isVisible()));
+
+  // --- Tablas: se ven, pero no se recitan ----------------------------------
+  const tablesContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await tablesContext.addInitScript(fakeSpeech);
+  const tablesPage = await tablesContext.newPage();
+  tablesPage.on('pageerror', (error) => problems.push(`pageerror (tablas): ${error.message}`));
+  await tablesPage.goto(URL);
+  await tablesPage.setInputFiles('input[type=file]', TABLES_PDF);
+  await tablesPage.waitForSelector('article.reader', { timeout: 30000 });
+
+  const tableBlock = tablesPage.locator('.reader .table');
+  check('la tabla se reconoce como tal', (await tableBlock.count()) === 1);
+  check(
+    'y sus renglones siguen a la vista, para poder leerlos',
+    (await tableBlock.locator('.table-rows').innerText()).split('\n').length === 4,
+    (await tableBlock.locator('.table-rows').innerText()).replace(/\n/g, ' | '),
+  );
+
+  // Lo que suena al llegar a la tabla: el anuncio, no las celdas.
+  await tablesPage.locator('.reader .table .sentence').first().click();
+  await tablesPage.waitForTimeout(250);
+  const spokenTable = await tablesPage.evaluate(() => window.__spoken.map((utterance) => utterance.text));
+  check(
+    'la voz la anuncia en vez de recitar las celdas',
+    /^Tabla de 4 filas, en la página \d+ del original\.$/.test(spokenTable[0] ?? ''),
+    spokenTable[0] ?? 'no leyó nada',
+  );
+  check(
+    'y no pronuncia ninguna celda',
+    !spokenTable.some((text) => text.includes('Fundamentos') || text.includes('250')),
+    spokenTable.join(' | ').slice(0, 80),
+  );
+  check(
+    'la llamada de nota al pie no se lee como un número suelto',
+    !(await tablesPage.locator('.reader').innerText()).includes('lectivas exige. 1'),
+  );
+  await tablesContext.close();
 
   // --- Subida de la base de datos ------------------------------------------
   // Una biblioteca guardada por la versión anterior (sin el almacén de originales) no puede

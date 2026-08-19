@@ -87,6 +87,11 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
   números de página repetidos. Las listas (`1.` `2.`, `A.` `B.`, viñetas) se cortan en cada
   marcador y se muestran con sangría francesa, así que la numeración queda en columna como en
   el PDF; el marcador forma parte del texto, de modo que también se lee en voz alta.
+- **Tablas, llamadas y notas al pie** (`src/core/pdf/layout.ts`): una tabla se reconoce porque sus
+  renglones comparten columnas, y se anuncia («Tabla de 4 filas, en la página 2 del original»)
+  en vez de recitarse celda a celda; los renglones siguen a la vista para leerlos con los ojos.
+  El número en volado de una llamada de nota se une a su línea —antes partía el párrafo en tres— y
+  no se pronuncia. Las notas al pie, en cuerpo menor al final de la página, se dejan fuera del hilo.
 - **Idioma** (`src/core/language.ts`): recuento de palabras vacías en español e inglés.
 - **Voz** (`src/core/tts.ts`): **una frase = una utterance**. El fin de frase es un evento real
   del navegador, así que el resaltado nunca se desincroniza aunque cambies de velocidad o
@@ -99,6 +104,9 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 
 - **PDFs escaneados**: se detectan y se avisa, pero no se leen. Falta OCR.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
+- **Las fórmulas se leen tal cual**: los símbolos se pronuncian como lo que son, no como lo que
+  significan. Al menos ya no se leen al revés, que era lo que hacía el exponente.
+- Las notas al pie **sin número** no se distinguen de un pie de figura, así que se leen.
 - Si una lista **no está sangrada** y además sus puntos son **de una sola línea**, el párrafo
   que va detrás del último puede quedarse pegado a él.
 - El panel del PDF **no resalta la frase que suena**: dentro del visor del navegador no se puede.

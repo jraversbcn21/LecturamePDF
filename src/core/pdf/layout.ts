@@ -10,7 +10,15 @@ export type RawItem = {
   height: number;
 };
 
-export type Line = { text: string; x: number; y: number; height: number; page: number };
+export type Line = {
+  text: string;
+  x: number;
+  y: number;
+  height: number;
+  page: number;
+  /** Dónde empieza cada fragmento de la línea: es lo que delata las columnas de una tabla. */
+  columns?: number[];
+};
 
 /**
  * Convierte los items de `getTextContent()` en cajas. Los items sin `str` son
@@ -52,26 +60,42 @@ export function itemsToLines(items: RawItem[], page: number): Line[] {
   for (const item of [...visible].sort((a, b) => b.y - a.y || a.x - b.x)) {
     const last = groups[groups.length - 1];
     const ref = last?.[0];
-    if (ref && Math.abs(ref.y - item.y) <= Math.max(1, ref.height * 0.5)) last.push(item);
+    // La tolerancia sale del mayor de los dos: un superíndice es pequeño y va en volado, así que
+    // medida contra su propia altura nunca alcanzaría a la línea a la que pertenece, y el párrafo
+    // se partiría en tres a su alrededor.
+    if (ref && Math.abs(ref.y - item.y) <= Math.max(1, Math.max(ref.height, item.height) * 0.5)) last.push(item);
     else groups.push([item]);
   }
 
   return groups.map((group) => {
     const ordered = [...group].sort((a, b) => a.x - b.x);
+    const lineHeight = Math.max(...ordered.map((i) => i.height));
+    // Llamada a nota al pie: un número en volado, más pequeño que la línea. Leerlo
+    // («…lectivas exige. Uno.») estorba más de lo que aporta.
+    const kept = ordered.filter((i) => !(i.height < lineHeight * 0.8 && /^\d{1,3}$/.test(i.text.trim())));
+    const parts = kept.length > 0 ? kept : ordered;
+
     let text = '';
     let cursor = -Infinity;
-    for (const item of ordered) {
-      const needsSpace = text !== '' && !/\s$/.test(text) && !/^\s/.test(item.text) && item.x - cursor > item.height * 0.25;
+    // Solo cuentan como columna los fragmentos tras un hueco de celda. Un hueco de palabra, aunque
+    // el texto vaya justificado, se queda muy por debajo: si no, la prosa parecería una tabla.
+    const columns: number[] = [];
+    for (const item of parts) {
+      const distance = item.x - cursor;
+      // El umbral va por debajo del ancho de un espacio: pdf.js lo entrega como fragmento vacío,
+      // que se descarta, y entonces el único rastro que queda de él es este hueco.
+      const needsSpace = text !== '' && !/\s$/.test(text) && !/^\s/.test(item.text) && distance > item.height * 0.15;
+      if (text === '' || distance > lineHeight * 0.8) columns.push(item.x);
       text += (needsSpace ? ' ' : '') + item.text;
       cursor = item.x + item.width;
     }
-    const heights = ordered.map((i) => i.height);
     return {
       text: text.replace(/\s+/g, ' ').trim(),
-      x: ordered[0]?.x ?? 0,
-      y: ordered[0]?.y ?? 0,
-      height: median(heights),
+      x: parts[0]?.x ?? 0,
+      y: parts[0]?.y ?? 0,
+      height: median(parts.map((i) => i.height)),
       page,
+      columns,
     };
   });
 }
@@ -102,6 +126,24 @@ export function dropRunningHeads(pages: Line[][]): Line[][] {
   });
 }
 
+/** Llamada de nota: «1.» «2)» «(3)». Sin número no hay forma de distinguirla de un pie de figura. */
+const FOOTNOTE_MARKER = /^\(?\d{1,3}[.)]?\s+\S/;
+
+/**
+ * Quita las notas al pie: el bloque de cuerpo menor con el que termina la página, abierto por su
+ * llamada numerada. Se leían enteras al acabar cada página, con sus citas y sus referencias, en
+ * mitad del hilo. Siguen estando en el PDF original, a un clic.
+ */
+export function dropFootnotes(pages: Line[][], bodyHeight: number): Line[][] {
+  return pages.map((lines) => {
+    let start = lines.length;
+    while (start > 0 && (lines[start - 1]?.height ?? 0) < bodyHeight * 0.85) start--;
+    // Ni una página entera en cuerpo menor, ni un cierre que no empiece por una llamada.
+    if (start === lines.length || start === 0 || !FOOTNOTE_MARKER.test(lines[start]?.text ?? '')) return lines;
+    return lines.slice(0, start);
+  });
+}
+
 const MAX_HEADING_WORDS = 15;
 
 /** Marcadores de lista: «1.» «2)» «(3)» «A.» «iv)» «•» «-». */
@@ -109,6 +151,26 @@ const LIST_MARKER =
   /^(?:[•·▪◦‣∙*]|[-–—]|\(?(?:\d{1,3}|[A-Za-z]|[ivxlcdm]{2,6}|[IVXLCDM]{2,6})[.)])\s+\S/;
 
 export const startsList = (text: string): boolean => LIST_MARKER.test(text);
+
+/** Menos de tres columnas no distingue una tabla de un texto con sangrías o de un pie de figura. */
+const MIN_COLUMNS = 3;
+
+const sharedColumns = (a: Line, b: Line, tolerance: number): number =>
+  (a.columns ?? []).filter((x) => (b.columns ?? []).some((other) => Math.abs(other - x) <= tolerance)).length;
+
+/**
+ * Marca las líneas que son renglones de una tabla: las que comparten columnas con la de al lado.
+ * La alineación es la señal, no el tamaño del hueco, que también lo produce una sangría.
+ */
+function tableRows(lines: Line[], tolerance: number): boolean[] {
+  const rows = lines.map(() => false);
+  for (let i = 1; i < lines.length; i++) {
+    const a = lines[i - 1];
+    const b = lines[i];
+    if (a && b && sharedColumns(a, b, tolerance) >= MIN_COLUMNS) rows[i - 1] = rows[i] = true;
+  }
+  return rows;
+}
 
 /** Une líneas en párrafos y marca los títulos. */
 export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
@@ -121,7 +183,10 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
   const leading = Math.max(percentile(gaps.filter((gap) => gap > 0), 0.25), bodyHeight);
 
   const groups: Line[][] = [];
+  /** Paralelo a `groups`: si el bloque es una tabla. */
+  const isTable: boolean[] = [];
   const indentTolerance = bodyHeight * 0.5;
+  const rows = tableRows(lines, indentTolerance);
   let anchor: Line | undefined;
   let anchorIsListItem = false;
   /** Hueco con el que se pegó la última línea al grupo en curso; 0 si el grupo es de una sola. */
@@ -141,16 +206,21 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
     // ponytail: no ayuda si el bloque en curso es de una sola línea (no hay hueco con el que
     // comparar); ahí sigue mandando `leading`. Haría falta el hueco típico entre puntos.
     const opensGap = groupGap > 0 && gap > groupGap * 1.15;
+    // La tabla es un bloque aparte, entero: ni se parte por dentro ni se pega a lo que la rodea.
+    const inTable = rows[index] ?? false;
     const startsBlock =
       !previous ||
-      gap > leading * 1.5 ||
-      Math.abs(line.height - previous.height) > Math.max(previous.height, 1) * 0.15 ||
-      isListItem ||
-      returnsToMargin ||
-      opensGap;
+      inTable !== (rows[index - 1] ?? false) ||
+      (!inTable &&
+        (gap > leading * 1.5 ||
+          Math.abs(line.height - previous.height) > Math.max(previous.height, 1) * 0.15 ||
+          isListItem ||
+          returnsToMargin ||
+          opensGap));
 
     if (startsBlock) {
       groups.push([line]);
+      isTable.push(inTable);
       anchor = line;
       anchorIsListItem = isListItem;
       groupGap = 0;
@@ -160,7 +230,12 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
     }
   }
 
-  return groups.map((group) => {
+  return groups.map((group, index) => {
+    // Una tabla conserva sus renglones: pegarlos en un párrafo es justo lo que suena a sopa.
+    if (isTable[index]) {
+      return { type: 'table' as const, text: group.map((line) => line.text).join('\n'), page: group[0]?.page ?? 1 };
+    }
+
     const text = group
       .reduce((acc, line) => {
         if (acc === '') return line.text;
