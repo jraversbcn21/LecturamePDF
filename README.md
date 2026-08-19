@@ -3,6 +3,15 @@
 Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Todo ocurre en el
 navegador: no hay servidor, ni cuentas, ni claves de API.
 
+- Reconstruye párrafos, títulos y listas a partir de las coordenadas del PDF, y **anuncia** las
+  tablas y las fórmulas en vez de recitarlas símbolo a símbolo.
+- Recuerda dónde ibas, a qué velocidad y con qué voz, documento a documento.
+- Índice de secciones, buscador que ignora tildes, y marcadores con notas.
+- El PDF original a un clic, abierto por la página que estás escuchando.
+
+Hecho con React y pdf.js sobre la síntesis de voz del navegador. Los documentos se guardan en
+IndexedDB, en tu propio equipo, y no salen de él.
+
 ## Uso
 
 ```bash
@@ -17,8 +26,10 @@ npm run e2e     # verificación en navegador (ver e2e/verify.cjs)
 
 `npm run e2e` necesita el servidor de desarrollo en marcha —si no lo está, el script lo dice y
 para— y Playwright global (`npm i -g playwright && playwright install chromium`). Como Chromium
-headless no trae voces, el script sustituye el motor de síntesis por uno falso: comprueba la
-sincronización, los atajos y la persistencia, pero la calidad del audio solo se juzga de oído.
+headless no trae voces, el script sustituye el motor de síntesis por uno falso: comprueba qué se
+pronuncia en cada momento, los atajos, la persistencia, la extracción de tablas y fórmulas, y que
+una biblioteca guardada por una versión anterior sobreviva a la subida de esquema. La calidad del
+audio, en cambio, solo se juzga de oído.
 
 **Ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de Microsoft
 (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En Chrome
@@ -37,24 +48,16 @@ funciona igual pero con voces de menor calidad.
 | `/` | Buscar en el documento |
 | `Esc` | Volver a la biblioteca (o limpiar la búsqueda, si estás escribiendo en ella) |
 
-También puedes hacer clic en cualquier frase para empezar a leer desde ahí, o en cualquier
-título del índice lateral para saltar a esa sección. El índice se construye con los títulos
-detectados, se sangra según la numeración (`2.` → `2.1.` → `2.1.3`) y marca la sección que
-estás escuchando.
+También puedes hacer clic en cualquier frase para empezar a leer desde ahí. Mientras escribes una
+nota, los atajos quedan desactivados para no colarse en el texto.
 
-El buscador de la barra lateral ignora tildes y mayúsculas (`analisis` encuentra `análisis`),
-muestra cada resultado con su sección y su página, y al pulsarlo empieza a leer desde esa
-frase. Mientras buscas, los resultados ocupan el sitio del índice y las coincidencias quedan
-resaltadas en azul dentro del texto, para localizarlas sin recorrer la lista.
+## Mientras escuchas
 
 La voz se elige sola por idioma, prefiriendo las neurales, pero puedes cambiarla en el selector
 de los controles: la lista pone delante las del idioma del documento y detrás el resto, por si
 quieres leer con otra. La elegida a mano se recuerda con el documento; si algún día no está en
-el navegador, se vuelve a elegir automáticamente.
-
-Cada documento recuerda su velocidad, así que no hay que volver a ajustarla en cada sesión.
-En el índice, las secciones que ya has escuchado enteras aparecen con un `✓`; solo se marcan
-cuando la voz llega hasta el final de la sección, de modo que saltártela no la da por oída.
+el navegador, se vuelve a elegir automáticamente. Cada documento recuerda también su velocidad,
+así que no hay que volver a ajustarla en cada sesión.
 
 Con la estrella de los controles (o la tecla `M`) marcas la frase que estás escuchando para
 repasarla después. Los marcadores se listan en la barra lateral en orden de lectura, con su
@@ -63,37 +66,56 @@ que siguen ahí la próxima vez que lo abras.
 
 Cada marcador admite una **nota**: pulsa `✎` (o la propia nota, para reescribirla), escribe y
 confirma con `Enter`; `Mayús+Enter` hace un salto de línea y `Esc` cancela sin guardar. Dejarla
-vacía la borra. Mientras escribes, los atajos de teclado del reproductor quedan desactivados.
+vacía la borra.
 
-El botón `📄` abre el **PDF original** en un panel, por la página que se está escuchando, para
-consultar las figuras y las tablas que la vista de texto pierde. Es el visor del propio navegador,
-así que trae zoom, búsqueda y miniaturas. No persigue la lectura: cuando la voz cambia de página
-aparece un `ir a la pág. N` y decides tú, porque mover la página recarga el visor y perderías el
-zoom. Solo está disponible en los documentos añadidos desde que se guarda el original; para uno
-anterior, vuelve a subir el PDF —se reconoce por su contenido y conserva progreso y marcadores—.
+## Barra lateral: índice, buscador y marcadores
 
-La barra lateral —índice, buscador y marcadores— se muestra y se recoge con el botón `☰` de la
-cabecera. Arranca abierta si la ventana mide 1100 px o más, y recogida si no. Cuando no cabe al
-lado del texto se superpone a él, así que saltar a una sección o a un resultado la recoge sola
-para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
+Se muestra y se recoge con el botón `☰` de la cabecera. Arranca abierta si la ventana mide
+1100 px o más, y recogida si no. Cuando no cabe al lado del texto se superpone a él, así que
+saltar a una sección o a un resultado la recoge sola para dejar ver lo que vas a escuchar.
+
+El **índice** se construye con los títulos detectados, se sangra según la numeración
+(`2.` → `2.1.` → `2.1.3`) y marca la sección que estás escuchando. Las que ya has oído enteras
+aparecen con un `✓`, y solo se marcan cuando la voz llega hasta el final, de modo que saltártela
+no la da por oída. Pulsa cualquier título para ir allí.
+
+El **buscador** (tecla `/`, que abre la barra si estaba recogida) ignora tildes y mayúsculas
+—`analisis` encuentra `análisis`—, muestra cada resultado con su sección y su página, y al
+pulsarlo empieza a leer desde esa frase. Mientras buscas, los resultados ocupan el sitio del
+índice y las coincidencias quedan resaltadas en azul dentro del texto, para localizarlas sin
+recorrer la lista.
+
+## El PDF original
+
+El botón `📄` lo abre en un panel, por la página que se está escuchando, para consultar las
+figuras, las tablas y las fórmulas que la vista de texto no puede dar bien compuestas. Es el
+visor del propio navegador, así que trae zoom, búsqueda y miniaturas.
+
+No persigue la lectura: cuando la voz cambia de página aparece un `ir a la pág. N` y decides tú,
+porque mover la página recarga el visor y perderías el zoom. Solo está disponible en los
+documentos añadidos desde que se guarda el original; para uno anterior, vuelve a subir el PDF
+—se reconoce por su contenido y conserva progreso, marcadores y notas—.
 
 ## Cómo funciona
 
 `PDF → bloques → frases → voz → resaltado`
 
 - **Extracción** (`src/core/pdf/layout.ts`): pdf.js devuelve fragmentos sueltos con coordenadas,
-  no párrafos. Se agrupan en líneas por posición vertical, las líneas en párrafos por
-  interlineado, se detectan los títulos por tamaño de fuente y se descartan cabeceras, pies y
-  números de página repetidos. Las listas (`1.` `2.`, `A.` `B.`, viñetas) se cortan en cada
-  marcador y se muestran con sangría francesa, así que la numeración queda en columna como en
-  el PDF; el marcador forma parte del texto, de modo que también se lee en voz alta.
-- **Tablas, fórmulas, llamadas y notas al pie** (`src/core/pdf/layout.ts`): una tabla se reconoce
-  porque sus renglones comparten columnas, y una fórmula porque casi ningún token suyo es una
-  palabra. Las dos se anuncian —«Tabla de 4 filas, en la página 2 del original», «Fórmula, en la
-  página 3 del original»— en vez de recitarse, y su contenido sigue a la vista para leerlo con los
-  ojos, además de bien compuesto en el PDF original, a un clic.
-  El número en volado de una llamada de nota se une a su línea —antes partía el párrafo en tres— y
-  no se pronuncia. Las notas al pie, en cuerpo menor al final de la página, se dejan fuera del hilo.
+  no párrafos. Se agrupan en líneas por posición vertical, y las líneas en bloques cuando el hueco
+  crece respecto al de sus propias líneas —cada maqueta separa distinto, así que el umbral se
+  calibra con el documento y no con una constante—. Los títulos salen del tamaño de fuente, y las
+  cabeceras, los pies y los números de página repetidos se descartan. Las listas (`1.` `2.`,
+  `A.` `B.`, viñetas) se cortan en cada marcador y se muestran con sangría francesa, así que la
+  numeración queda en columna como en el PDF; el marcador forma parte del texto y también se lee.
+- **Tablas y fórmulas** (`src/core/pdf/layout.ts`): una tabla se reconoce porque sus renglones
+  comparten columnas, y una fórmula porque casi ningún token suyo es una palabra. Las dos se
+  anuncian —«Tabla de 4 filas, en la página 2 del original»— en vez de recitarse, y su contenido
+  sigue a la vista para leerlo con los ojos, o bien compuesto en el original a un clic. El listón
+  para darlas por tales es alto: confundirse dejaría mudo un párrafo, que es peor que leer una
+  fórmula mal.
+- **Llamadas y notas al pie** (`src/core/pdf/layout.ts`): el número en volado de una llamada se
+  une a su línea —antes partía el párrafo en tres— y no se pronuncia. Las notas al pie, el cierre
+  en cuerpo menor de la página, se dejan fuera del hilo de lectura.
 - **Idioma** (`src/core/language.ts`): recuento de palabras vacías en español e inglés.
 - **Voz** (`src/core/tts.ts`): **una frase = una utterance**. El fin de frase es un evento real
   del navegador, así que el resaltado nunca se desincroniza aunque cambies de velocidad o

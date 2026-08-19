@@ -33,17 +33,39 @@ comprobar antes la versión de Node: dejan de arrancar.
   zoom y la posición, de ahí que la página solo se mueva cuando se pulsa «ir a la pág. N».
 - **Los campos nuevos de `LibraryEntry` se normalizan al leer** (`complete()` en
   `src/core/storage.ts`). Hay documentos guardados de versiones anteriores; añadir un campo sin
-  darle valor por defecto ahí rompe los datos que el usuario ya tiene.
+  darle valor por defecto ahí rompe los datos que el usuario ya tiene. Lo mismo con los almacenes:
+  uno nuevo obliga a subir la versión de la base, y `onupgradeneeded` **crea solo lo que falte**,
+  para que sirva igual a una base recién hecha que a una vieja. Hay una comprobación de navegador
+  que siembra una base de la versión anterior y confirma que la biblioteca sobrevive.
+- **De una tabla o una fórmula se da un aviso; no se recitan** (`layout.ts` y `extract.ts`). Al
+  ajustar esas heurísticas, ten presente que **el riesgo no es simétrico**: dar por tabla o por
+  fórmula algo que era prosa deja un párrafo mudo, y quien escucha no se entera de que ha perdido
+  contenido; leer mal una fórmula solo suena raro un momento. Por eso `looksLikeFormula` exige tres
+  señales a la vez y la tabla se reconoce por columnas alineadas y no por el tamaño del hueco, que
+  también lo produce una sangría. Ante la duda, prosa.
 
 ## Extracción de PDF
 
-`src/core/pdf/layout.ts` es lógica pura, sin pdf.js: agrupa items en líneas, líneas en párrafos,
-y detecta títulos y listas por posición y tamaño de fuente. Es la parte con más heurísticas y la
-que más fácil se rompe.
+`src/core/pdf/layout.ts` es lógica pura, sin pdf.js: agrupa items en líneas, líneas en bloques, y
+distingue títulos, listas, tablas y fórmulas por posición, tamaño de fuente y alineación. Es la
+parte con más heurísticas y la que más fácil se rompe.
+
+Dos reglas de esas heurísticas que no se ven leyendo el código:
+
+- **Los umbrales verticales se calibran con el propio documento, no con una constante.** Un bloque
+  se cierra cuando el hueco crece respecto al de sus propias líneas, porque la separación entre
+  bloques cambia con cada maqueta: con un umbral global fijo, una maqueta apretada no lo alcanza
+  nunca y el texto se pega. Bajar la constante en vez de comparar contra el grupo separa mal en
+  otras maquetas.
+- **Un fragmento se compara con el mayor de los dos, no con el suyo.** Un número en volado es
+  pequeño y va alto; medido contra su propio cuerpo nunca alcanza la línea a la que pertenece, y
+  partía el párrafo en tres a su alrededor.
 
 Al tocarla, comprueba contra los PDFs reales de `src/core/pdf/__fixtures__/`
-(`layout.fixture.test.ts`), no solo contra fixtures sintéticos. Para añadir o regenerar uno, se
-imprime un HTML con Edge (usa siempre una carpeta de perfil nueva, si no falla en silencio):
+(`layout.fixture.test.ts`), no solo contra fixtures sintéticos. Cada uno guarda un caso: `sample`
+títulos y párrafos, `lists` listas sangradas, `lists-flush` listas al margen del cuerpo, y `tables`
+tablas, fórmulas, llamadas y notas al pie. Para añadir o regenerar uno, se imprime un HTML con
+Edge (usa siempre una carpeta de perfil nueva, si no falla en silencio):
 
 ```powershell
 & "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" --headless=new --disable-gpu `
@@ -53,17 +75,22 @@ imprime un HTML con Edge (usa siempre una carpeta de perfil nueva, si no falla e
 
 ## Comprobaciones en navegador
 
-`npm run e2e` necesita el servidor de desarrollo levantado y Playwright **global**, no como
-dependencia del proyecto. Si falta el `NODE_PATH`, no encuentra el módulo:
+Playwright es **global**, no dependencia del proyecto (el resto de requisitos, en @README.md). Sin
+el `NODE_PATH` no encuentra el módulo:
 
 ```powershell
 $env:NODE_PATH = (npm root -g); npm run e2e
 ```
 
 Al escribir comprobaciones, **no midas el estado tras una espera fija**: la voz avanza sola y la
-frase resaltada cambia bajo los pies. Comprueba qué se pronuncia después de cada acción
-(`window.__spoken`), que no depende de los tiempos, o pausa la reproducción antes de medir. Casi
-todos los rojos de esta suite han salido de la comprobación, no del código.
+frase resaltada cambia bajo los pies. Mira qué se pronuncia justo después de cada acción —el
+primero **nuevo** de `window.__spoken`, no el último, que ya puede ser el siguiente— o pausa antes
+de medir. Casi todos los rojos de esta suite han salido de la comprobación, no del código, y este
+es el motivo en la mayoría.
+
+Si una comprobación abre IndexedDB, **no le fijes el número de versión**: `indexedDB.open('lecturame')`
+abre la que haya. Fijarla caduca en cuanto sube el esquema, y además cuelga la comprobación en vez
+de fallar.
 
 ## Convenciones del repositorio
 

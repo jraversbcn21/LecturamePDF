@@ -1,10 +1,13 @@
 # Trabajo pendiente
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
-mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 69 tests unitarios y 74 comprobaciones de navegador en verde.
+mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas, consultar
+el original y retomar donde ibas—, con `npm run verify` y `npm run e2e` en verde.
 
-Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
+Nada de lo de abajo bloquea el uso normal: son casos concretos en documentos que ya funcionan.
+Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir si merece la pena
+retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
+recogidos aquí.
 
 ## Descartado
 
@@ -37,9 +40,9 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 - **`pause`/`resume` nativos**: si alguna voz local los ignora, habría que relanzar la frase.
   Anotado en `src/core/tts.ts`; no se ha visto ocurrir con las voces de Edge.
 
-## Infraestructura
+## Interfaz del PDF original
 
-- **Plugins recomendados**, que instala el usuario, no Claude:
-  `/plugin install playwright@claude-plugins-official` (encaja especialmente: ya se verifica en
-  navegador a mano), `/plugin install frontend-design@claude-plugins-official` y
-  `/plugin install skill-creator@claude-plugins-official`.
+- **No se resalta en el PDF la frase que suena**, ni se le pueden cerrar las miniaturas al visor:
+  Chromium ignora todo parámetro de apertura que no sea la página. Salir de ahí obligaría a dibujar
+  las páginas nosotros con pdf.js, y con ello a escribir zoom, desplazamiento y paginación a mano.
+  El detalle de lo comprobado, en `CLAUDE.md`.
