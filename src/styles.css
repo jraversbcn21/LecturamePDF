@@ -182,6 +182,7 @@ button:disabled {
 }
 
 .body {
+  position: relative; /* Referencia de la barra lateral cuando se superpone. */
   flex: 1;
   display: flex;
   min-height: 0;
@@ -251,19 +252,29 @@ button:disabled {
 
 /* Barra lateral: buscador, resultados e índice de secciones */
 
+/* Se muestra u oculta con el botón de la cabecera; arranca abierta solo si hay sitio de sobra. */
 .sidebar {
   display: none;
+  flex-direction: column;
+  flex: none;
+  width: 18rem;
+  min-height: 0;
+  border-right: 1px solid var(--border);
 }
 
-/* Solo cabe con holgura en pantallas anchas; el teclado navega igual sin ella. */
-@media (min-width: 1100px) {
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    flex: none;
-    width: 18rem;
-    min-height: 0;
-    border-right: 1px solid var(--border);
+.sidebar.open {
+  display: flex;
+}
+
+/* Estrecho: al lado del texto no cabe, así que se superpone. El ancho va con el de Reader.tsx. */
+@media (max-width: 1099px) {
+  .sidebar.open {
+    position: absolute;
+    z-index: 2;
+    inset: 0 auto 0 0;
+    width: min(20rem, 85vw);
+    background: var(--bg);
+    box-shadow: 0 0 2rem rgb(0 0 0 / 25%);
   }
 }
 

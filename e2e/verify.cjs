@@ -443,6 +443,39 @@ const storedPosition = () =>
     );
   }
 
+  // --- Barra lateral en pantalla estrecha ----------------------------------
+  // Con el lector ya montado a 900 px: es al abrirlo cuando se decide si cabe.
+  await page.setViewportSize({ width: 900, height: 900 });
+  await page.reload();
+  await page.waitForSelector('.doc');
+  await page.locator('.doc').first().click();
+  await page.waitForSelector('article.reader');
+  await page.waitForTimeout(200);
+  check('en pantalla estrecha la barra lateral empieza recogida', !(await page.locator('.sidebar').isVisible()));
+
+  const readerWidth = () => page.locator('article.reader').evaluate((el) => el.getBoundingClientRect().width);
+  const widthAlone = await readerWidth();
+  await page.click('button[aria-label*="marcadores"]');
+  await page.waitForTimeout(200);
+  check('el botón la trae de vuelta', await page.locator('.sidebar').isVisible());
+  check('y se superpone en vez de estrujar el texto', (await readerWidth()) === widthAlone, `${widthAlone} → ${await readerWidth()}`);
+
+  await page.click('button[aria-label*="marcadores"]');
+  await page.waitForTimeout(150);
+  check('el mismo botón la recoge', !(await page.locator('.sidebar').isVisible()));
+
+  await page.keyboard.press('/');
+  await page.waitForTimeout(200);
+  check(
+    'la tecla / la abre y enfoca el buscador aunque estuviera recogida',
+    await page.evaluate(() => document.activeElement?.className.includes('search-input')),
+  );
+
+  await page.locator('.search-input').blur();
+  await page.locator('.outline-item').first().click();
+  await page.waitForTimeout(200);
+  check('saltar a una sección la recoge para dejar ver el texto', !(await page.locator('.sidebar').isVisible()));
+
   check('sin errores de consola ni excepciones', problems.length === 0, problems.slice(0, 5).join(' || '));
 
   await browser.close();

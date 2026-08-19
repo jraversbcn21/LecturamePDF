@@ -23,6 +23,9 @@ type Props = {
 
 const IGNORED_TAGS = /^(INPUT|SELECT|TEXTAREA|BUTTON|A)$/;
 
+/** Ancho a partir del cual la barra lateral cabe al lado del texto. Va con el media query de styles.css. */
+const WIDE = '(min-width: 1100px)';
+
 function useKeyboard(
   dispatch: Dispatch<PlayerAction>,
   rate: number,
@@ -100,6 +103,7 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
   const { state, dispatch, voice, voices, setVoiceName, word } = usePlayer(doc, start, onBlockFinished);
   const { bookmarks, toggle, remove, annotate } = useBookmarks(doc.id, doc.blocks, initialBookmarks);
   const [query, setQuery] = useState('');
+  const [sidebar, setSidebar] = useState(() => window.matchMedia(WIDE).matches);
   const searchRef = useRef<HTMLInputElement>(null);
 
   const spot = { blockIndex: state.blockIndex, sentenceIndex: state.sentenceIndex };
@@ -115,7 +119,22 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
     [results],
   );
 
-  const focusSearch = useCallback(() => searchRef.current?.focus(), []);
+  const focusSearch = useCallback(() => {
+    if (sidebar) {
+      searchRef.current?.focus();
+      return;
+    }
+    // Recogida, el buscador está oculto y no admite el foco hasta que React vuelve a pintarlo.
+    setSidebar(true);
+    requestAnimationFrame(() => searchRef.current?.focus());
+  }, [sidebar]);
+
+  // Cuando se superpone al texto, saltar desde ella y dejarla abierta tapa lo que vas a leer.
+  const jump = useCallback((blockIndex: number, sentenceIndex?: number) => {
+    dispatch({ type: 'JUMP', blockIndex, sentenceIndex });
+    if (!window.matchMedia(WIDE).matches) setSidebar(false);
+  }, [dispatch]);
+
   const toggleCurrent = useCallback(
     () => toggle({ blockIndex: state.blockIndex, sentenceIndex: state.sentenceIndex }),
     [toggle, state.blockIndex, state.sentenceIndex],
@@ -126,33 +145,37 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
     <div className="screen reading">
       <header className="bar">
         <button onClick={onClose}>← Biblioteca</button>
+        <button
+          className="ghost"
+          aria-expanded={sidebar}
+          aria-controls="sidebar"
+          aria-label={sidebar ? 'Ocultar el índice, la búsqueda y los marcadores' : 'Mostrar el índice, la búsqueda y los marcadores'}
+          title={sidebar ? 'Ocultar la barra lateral' : 'Mostrar la barra lateral'}
+          // Sin soltar el foco, la barra espaciadora volvería a pulsar este botón en vez de reproducir.
+          onClick={(event) => {
+            event.currentTarget.blur();
+            setSidebar((open) => !open);
+          }}
+        >
+          ☰
+        </button>
         <h1>{doc.name}</h1>
         <span className="tag">{doc.language === 'es' ? 'Español' : 'Inglés'}</span>
       </header>
 
       <div className="body">
-        <aside className="sidebar">
+        <aside id="sidebar" className={sidebar ? 'sidebar open' : 'sidebar'}>
           <Search
             results={results}
             query={query}
             onQueryChange={setQuery}
-            onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
+            onJump={jump}
             inputRef={searchRef}
           />
           {query.trim() === '' && (
             <div className="sidebar-scroll">
-              <Bookmarks
-                bookmarks={bookmarks}
-                onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
-                onRemove={remove}
-                onAnnotate={annotate}
-              />
-              <Outline
-                blocks={doc.blocks}
-                blockIndex={state.blockIndex}
-                heard={heard}
-                onJump={(blockIndex) => dispatch({ type: 'JUMP', blockIndex })}
-              />
+              <Bookmarks bookmarks={bookmarks} onJump={jump} onRemove={remove} onAnnotate={annotate} />
+              <Outline blocks={doc.blocks} blockIndex={state.blockIndex} heard={heard} onJump={jump} />
             </div>
           )}
         </aside>

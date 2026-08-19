@@ -65,8 +65,10 @@ Cada marcador admite una **nota**: pulsa `✎` (o la propia nota, para reescribi
 confirma con `Enter`; `Mayús+Enter` hace un salto de línea y `Esc` cancela sin guardar. Dejarla
 vacía la borra. Mientras escribes, los atajos de teclado del reproductor quedan desactivados.
 
-La barra lateral aparece a partir de 1100 px de ancho; por debajo se retira para dejar sitio
-al texto, y se navega con el teclado.
+La barra lateral —índice, buscador y marcadores— se muestra y se recoge con el botón `☰` de la
+cabecera. Arranca abierta si la ventana mide 1100 px o más, y recogida si no. Cuando no cabe al
+lado del texto se superpone a él, así que saltar a una sección o a un resultado la recoge sola
+para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 
 ## Cómo funciona
 

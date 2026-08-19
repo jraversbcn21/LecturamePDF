@@ -2,7 +2,7 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
 mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 59 tests unitarios y 54 comprobaciones de navegador en verde.
+donde ibas—. 59 tests unitarios y 60 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -26,10 +26,6 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
 ## Interfaz
 
-- **La barra lateral desaparece por debajo de 1100 px** y con ella el índice, la búsqueda y los
-  marcadores, sin ninguna alternativa. No hay botón para ocultarla o mostrarla a voluntad. Es una
-  simplificación deliberada, no un olvido, pero deja la navegación inaccesible en pantallas
-  estrechas.
 - **`pause`/`resume` nativos**: si alguna voz local los ignora, habría que relanzar la frase.
   Anotado en `src/core/tts.ts`; no se ha visto ocurrir con las voces de Edge.
 
