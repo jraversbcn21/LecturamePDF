@@ -33,8 +33,6 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
 ## Infraestructura
 
-- **Publicar el repositorio.** Hay git en local, pero todo vive solo en esta máquina. Con `gh` ya instalado, un `gh repo create` daría copia de seguridad. Es una decisión
-  del usuario: publicar código es un paso hacia fuera.
 - **Plugins recomendados**, que instala el usuario, no Claude:
   `/plugin install playwright@claude-plugins-official` (encaja especialmente: ya se verifica en
   navegador a mano), `/plugin install frontend-design@claude-plugins-official` y
