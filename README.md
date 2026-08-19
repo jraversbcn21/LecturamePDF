@@ -1,4 +1,4 @@
-# Lecturame
+# LecturamePDF
 
 Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Todo ocurre en el
 navegador: no hay servidor, ni cuentas, ni claves de API.
