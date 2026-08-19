@@ -39,9 +39,6 @@ recogidos aquí.
 
 - **`pause`/`resume` nativos**: si alguna voz local los ignora, habría que relanzar la frase.
   Anotado en `src/core/tts.ts`; no se ha visto ocurrir con las voces de Edge.
-
-## Interfaz del PDF original
-
 - **No se resalta en el PDF la frase que suena**, ni se le pueden cerrar las miniaturas al visor:
   Chromium ignora todo parámetro de apertura que no sea la página. Salir de ahí obligaría a dibujar
   las páginas nosotros con pdf.js, y con ello a escribir zoom, desplazamiento y paginación a mano.
