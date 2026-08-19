@@ -278,6 +278,59 @@ button:disabled {
   }
 }
 
+/* Panel del PDF original, al otro lado del texto. Se reparte el hueco con la barra lateral,
+   por eso no se abren los dos a la vez. */
+
+.pdf-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 28rem;
+  min-width: 0;
+  border-left: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.pdf-bar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.pdf-title {
+  margin-right: auto;
+}
+
+/* El visor del navegador: trae zoom, desplazamiento y búsqueda sin que los escribamos. */
+.pdf-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+}
+
+.pdf-note {
+  margin: 0;
+  padding: 1.2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 1099px) {
+  .pdf-pane {
+    position: absolute;
+    z-index: 2;
+    inset: 0 0 0 auto;
+    /* Ancho de sobra a propósito: el visor abre sus miniaturas y sin sitio la página no se lee. */
+    width: min(40rem, 96vw);
+    box-shadow: 0 0 2rem rgb(0 0 0 / 25%);
+  }
+}
+
 .search {
   flex: none;
   padding: 0.75rem;

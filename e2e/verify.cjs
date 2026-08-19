@@ -107,12 +107,45 @@ const fakeSpeech = () => {
   };
 };
 
-const storedPosition = () =>
-  new Promise((resolve) => {
+/** Base tal y como la dejaba la versión anterior: sin almacén de originales y con fichas incompletas. */
+const seedVersion1 = () =>
+  new Promise((resolve, reject) => {
     const open = indexedDB.open('lecturame', 1);
+    open.onupgradeneeded = () => {
+      open.result.createObjectStore('docs');
+      open.result.createObjectStore('library');
+    };
+    open.onerror = () => reject(open.error);
+    open.onsuccess = () => {
+      const id = 'documento-de-antes';
+      const text = 'Una frase guardada por una versión anterior de la aplicación.';
+      const transaction = open.result.transaction(['docs', 'library'], 'readwrite');
+      transaction.objectStore('docs').put(
+        { id, name: 'viejo.pdf', language: 'es', addedAt: 1, blocks: [{ type: 'paragraph', text, page: 1, sentences: [text] }] },
+        id,
+      );
+      // Sin `bookmarks`, `rate`, `heardSections` ni `voiceName`: los rellena `complete()`.
+      transaction.objectStore('library').put(
+        { id, name: 'viejo.pdf', language: 'es', totalSentences: 1, addedAt: 1, blockIndex: 0, sentenceIndex: 0, position: 0, updatedAt: 1 },
+        id,
+      );
+      transaction.oncomplete = () => {
+        open.result.close();
+        resolve();
+      };
+      transaction.onerror = () => reject(transaction.error);
+    };
+  });
+
+const storedPosition = () =>
+  new Promise((resolve, reject) => {
+    // Sin número de versión: abre la que haya. Fijarlo caduca cada vez que sube el esquema.
+    const open = indexedDB.open('lecturame');
+    open.onerror = () => reject(open.error);
     open.onsuccess = () => {
       const get = open.result.transaction('library', 'readonly').objectStore('library').getAll();
       get.onsuccess = () => resolve(get.result[0] && get.result[0].position);
+      get.onerror = () => reject(get.error);
     };
   });
 
@@ -443,6 +476,45 @@ const storedPosition = () =>
     );
   }
 
+  // --- PDF original --------------------------------------------------------
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const readingPage = Number(/pág\. (\d+)/.exec(await page.locator('.status').innerText())[1]);
+  await page.click('button[aria-label*="PDF original"]');
+  await page.waitForSelector('.pdf-pane', { timeout: 5000 });
+  const frameSrc = await page.locator('.pdf-frame').getAttribute('src');
+  check(
+    'el panel abre el original por la página que se está leyendo',
+    frameSrc !== null && frameSrc.startsWith('blob:') && frameSrc.endsWith(`#page=${readingPage}`),
+    `${frameSrc} (se lee la pág. ${readingPage})`,
+  );
+  check('abrir el PDF recoge la barra lateral, que se reparten el hueco', !(await page.locator('.sidebar').isVisible()));
+
+  // Cambiar de página ofrece llevar el visor allí, en vez de recargarlo por su cuenta.
+  // Con el panel abierto el índice está recogido, así que se retrocede por bloques con el teclado.
+  const shownPage = () => page.locator('.status').innerText().then((text) => Number(/pág\. (\d+)/.exec(text)[1]));
+  let firstPage = readingPage;
+  for (let i = 0; i < 25 && firstPage === readingPage; i++) {
+    await page.keyboard.press('Shift+Tab');
+    await page.waitForTimeout(80);
+    firstPage = await shownPage();
+  }
+  const syncButton = page.locator('.pdf-bar button', { hasText: 'ir a la pág.' });
+  check(
+    'al cambiar de página ofrece llevar el visor a la que se lee',
+    firstPage !== readingPage && (await syncButton.count()) === 1,
+    await page.locator('.pdf-bar').innerText().then((text) => text.replace(/\n/g, ' · ')),
+  );
+  await syncButton.click();
+  await page.waitForTimeout(150);
+  check(
+    'y al pulsarlo el visor cambia de página',
+    (await page.locator('.pdf-frame').getAttribute('src')).endsWith(`#page=${firstPage}`) && (await syncButton.count()) === 0,
+  );
+
+  await page.click('button[aria-label="Cerrar el PDF original"]');
+  await page.waitForTimeout(150);
+  check('se cierra y suelta el visor', (await page.locator('.pdf-pane').count()) === 0);
+
   // --- Barra lateral en pantalla estrecha ----------------------------------
   // Con el lector ya montado a 900 px: es al abrirlo cuando se decide si cabe.
   await page.setViewportSize({ width: 900, height: 900 });
@@ -475,6 +547,35 @@ const storedPosition = () =>
   await page.locator('.outline-item').first().click();
   await page.waitForTimeout(200);
   check('saltar a una sección la recoge para dejar ver el texto', !(await page.locator('.sidebar').isVisible()));
+
+  // --- Subida de la base de datos ------------------------------------------
+  // Una biblioteca guardada por la versión anterior (sin el almacén de originales) no puede
+  // perderse al abrirla con esta. Se siembra en una pestaña aparte, con la aplicación sin cargar.
+  const oldContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const oldPage = await oldContext.newPage();
+  oldPage.on('pageerror', (error) => problems.push(`pageerror (base vieja): ${error.message}`));
+  await oldPage.route('**/__sin_aplicacion', (route) => route.fulfill({ contentType: 'text/html', body: '<html></html>' }));
+  await oldPage.goto(`${URL}__sin_aplicacion`);
+  await oldPage.evaluate(seedVersion1);
+  await oldPage.goto(URL);
+
+  await oldPage.waitForSelector('.doc', { timeout: 10000 });
+  check(
+    'una biblioteca de la versión anterior sigue ahí tras subir la base',
+    (await oldPage.locator('.doc').innerText()).includes('viejo.pdf'),
+    (await oldPage.locator('.doc').innerText()).replace(/\n/g, ' · '),
+  );
+
+  await oldPage.locator('.doc').first().click();
+  await oldPage.waitForSelector('article.reader');
+  await oldPage.click('button[aria-label*="PDF original"]');
+  await oldPage.waitForSelector('.pdf-pane');
+  check(
+    'y de un documento sin original guardado lo explica, en vez de romperse',
+    (await oldPage.locator('.pdf-note').innerText()).includes('Vuelve a subirlo') &&
+      (await oldPage.locator('.pdf-frame').count()) === 0,
+  );
+  await oldContext.close();
 
   check('sin errores de consola ni excepciones', problems.length === 0, problems.slice(0, 5).join(' || '));
 

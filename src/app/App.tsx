@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import type { Doc } from '../core/types';
 import type { Bookmark } from '../core/bookmarks';
 import { extractDoc } from '../core/pdf/extract';
-import { deleteDoc, getDoc, getEntry, listLibrary, saveDoc, type LibraryEntry } from '../core/storage';
+import { deleteDoc, getDoc, getEntry, listLibrary, saveDoc, saveFile, type LibraryEntry } from '../core/storage';
 import { Library } from './components/Library';
 import { Reader } from './components/Reader';
 import type { PlayerStart } from './usePlayer';
@@ -55,6 +55,8 @@ export function App() {
       try {
         const doc = await extractDoc(file);
         await saveDoc(doc);
+        // El original se guarda aparte, para poder consultar figuras y tablas que el texto pierde.
+        await saveFile(doc.id, file);
         refresh();
         await openDoc(doc.id);
       } catch (cause) {

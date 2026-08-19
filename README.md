@@ -65,6 +65,13 @@ Cada marcador admite una **nota**: pulsa `✎` (o la propia nota, para reescribi
 confirma con `Enter`; `Mayús+Enter` hace un salto de línea y `Esc` cancela sin guardar. Dejarla
 vacía la borra. Mientras escribes, los atajos de teclado del reproductor quedan desactivados.
 
+El botón `📄` abre el **PDF original** en un panel, por la página que se está escuchando, para
+consultar las figuras y las tablas que la vista de texto pierde. Es el visor del propio navegador,
+así que trae zoom, búsqueda y miniaturas. No persigue la lectura: cuando la voz cambia de página
+aparece un `ir a la pág. N` y decides tú, porque mover la página recarga el visor y perderías el
+zoom. Solo está disponible en los documentos añadidos desde que se guarda el original; para uno
+anterior, vuelve a subir el PDF —se reconoce por su contenido y conserva progreso y marcadores—.
+
 La barra lateral —índice, buscador y marcadores— se muestra y se recoge con el botón `☰` de la
 cabecera. Arranca abierta si la ventana mide 1100 px o más, y recogida si no. Cuando no cabe al
 lado del texto se superpone a él, así que saltar a una sección o a un resultado la recoge sola
@@ -94,6 +101,8 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
 - Si una lista **no está sangrada** y además sus puntos son **de una sola línea**, el párrafo
   que va detrás del último puede quedarse pegado a él.
-- No se muestra el PDF original: se lee una vista de texto limpia.
+- El panel del PDF **no resalta la frase que suena**: dentro del visor del navegador no se puede.
+  Tampoco se le pueden cerrar las miniaturas, porque Chromium ignora todo parámetro que no sea la
+  página.
 
 El trabajo pendiente, y por qué se dejó fuera cada cosa, está en [PENDIENTE.md](PENDIENTE.md).

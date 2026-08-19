@@ -25,15 +25,18 @@ export type LibraryEntry = {
 const DB_NAME = 'lecturame';
 const DOCS = 'docs';
 const LIBRARY = 'library';
+/** El PDF original tal cual, para poder enseñarlo; llegó en la versión 2 de la base. */
+const FILES = 'files';
 
 let connection: Promise<IDBDatabase> | null = null;
 
 /** Una sola conexión para toda la sesión: abrir y cerrar en cada operación era una fuente de carreras. */
 function connect(): Promise<IDBDatabase> {
   connection ??= new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1);
+    const request = indexedDB.open(DB_NAME, 2);
+    // Crea solo lo que falte: la misma función sirve para una base nueva y para subir una vieja.
     request.onupgradeneeded = () => {
-      for (const store of [DOCS, LIBRARY]) {
+      for (const store of [DOCS, LIBRARY, FILES]) {
         if (!request.result.objectStoreNames.contains(store)) request.result.createObjectStore(store);
       }
     };
@@ -129,7 +132,21 @@ export function deleteDoc(id: string): Promise<void> {
   return enqueue(async () => {
     await request(DOCS, 'readwrite', (s) => s.delete(id));
     await request(LIBRARY, 'readwrite', (s) => s.delete(id));
+    await request(FILES, 'readwrite', (s) => s.delete(id));
   });
+}
+
+/** Guarda el PDF tal cual: un `File` es un `Blob`, así que IndexedDB lo almacena sin convertirlo. */
+export function saveFile(id: string, file: Blob): Promise<void> {
+  return enqueue(async () => {
+    await request(FILES, 'readwrite', (s) => s.put(file, id));
+  });
+}
+
+/** El PDF original, o `undefined` si el documento se añadió antes de que se guardaran. */
+export async function getFile(id: string): Promise<Blob | undefined> {
+  await settled();
+  return request<Blob | undefined>(FILES, 'readonly', (s) => s.get(id));
 }
 
 export const getDoc = (id: string): Promise<Doc | undefined> => request(DOCS, 'readonly', (s) => s.get(id));

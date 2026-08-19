@@ -2,7 +2,7 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
 mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 61 tests unitarios y 60 comprobaciones de navegador en verde.
+donde ibas—. 61 tests unitarios y 67 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -12,9 +12,6 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
   deja fuera documentos enteros. Con `tesseract.js` en el navegador. Es lo más caro de la lista:
   dependencia pesada, descarga de datos por idioma y proceso lento, así que conviene decidir
   antes si de verdad hay escaneos que estudiar.
-- **Mostrar el PDF original junto al texto.** Se descartó al principio a favor de la vista de
-  lectura limpia, que sigue siendo la correcta para escuchar. Tendría sentido como vista
-  secundaria, para consultar figuras y tablas que hoy se pierden.
 
 ## Calidad de la extracción
 

@@ -12,6 +12,7 @@ import { PlayerControls } from './PlayerControls';
 import { Outline } from './Outline';
 import { Search } from './Search';
 import { Bookmarks } from './Bookmarks';
+import { PdfPane } from './PdfPane';
 
 type Props = {
   doc: Doc;
@@ -104,7 +105,14 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
   const { bookmarks, toggle, remove, annotate } = useBookmarks(doc.id, doc.blocks, initialBookmarks);
   const [query, setQuery] = useState('');
   const [sidebar, setSidebar] = useState(() => window.matchMedia(WIDE).matches);
+  const [pdf, setPdf] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Los dos paneles se reparten el mismo hueco a los lados del texto, así que no caben a la vez.
+  const showSidebar = useCallback((open: boolean) => {
+    setSidebar(open);
+    if (open) setPdf(false);
+  }, []);
 
   const spot = { blockIndex: state.blockIndex, sentenceIndex: state.sentenceIndex };
   const marked = useMemo(
@@ -125,9 +133,9 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
       return;
     }
     // Recogida, el buscador está oculto y no admite el foco hasta que React vuelve a pintarlo.
-    setSidebar(true);
+    showSidebar(true);
     requestAnimationFrame(() => searchRef.current?.focus());
-  }, [sidebar]);
+  }, [sidebar, showSidebar]);
 
   // Cuando se superpone al texto, saltar desde ella y dejarla abierta tapa lo que vas a leer.
   const jump = useCallback((blockIndex: number, sentenceIndex?: number) => {
@@ -154,10 +162,24 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           // Sin soltar el foco, la barra espaciadora volvería a pulsar este botón en vez de reproducir.
           onClick={(event) => {
             event.currentTarget.blur();
-            setSidebar((open) => !open);
+            showSidebar(!sidebar);
           }}
         >
           ☰
+        </button>
+        <button
+          className="ghost"
+          aria-expanded={pdf}
+          aria-controls="pdf-pane"
+          aria-label={pdf ? 'Cerrar el PDF original' : 'Ver el PDF original, para figuras y tablas'}
+          title={pdf ? 'Cerrar el PDF original' : 'Ver el PDF original'}
+          onClick={(event) => {
+            event.currentTarget.blur();
+            setPdf((open) => !open);
+            if (!pdf) setSidebar(false);
+          }}
+        >
+          📄
         </button>
         <h1>{doc.name}</h1>
         <span className="tag">{doc.language === 'es' ? 'Español' : 'Inglés'}</span>
@@ -188,6 +210,14 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           found={found}
           onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
         />
+        {pdf && (
+          <PdfPane
+            docId={doc.id}
+            name={doc.name}
+            readingPage={doc.blocks[state.blockIndex]?.page ?? 1}
+            onClose={() => setPdf(false)}
+          />
+        )}
       </div>
 
       <PlayerControls

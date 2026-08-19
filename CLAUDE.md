@@ -25,6 +25,12 @@ comprobar antes la versión de Node: dejan de arrancar.
 - **El desplazamiento solo se anima en saltos cortos** (`src/app/components/ReaderView.tsx`). Con
   `behavior: 'smooth'` siempre, reabrir un documento largo tarda segundos recorriendo decenas de
   miles de píxeles.
+- **El PDF original se enseña con el visor del navegador, en un `<iframe>`**
+  (`src/app/components/PdfPane.tsx`). Trae zoom, desplazamiento, búsqueda y miniaturas sin
+  escribirlos. De los parámetros de apertura, **Chromium solo respeta `#page`**: `pagemode` y
+  `view` se ignoran (comprobado), así que no hay forma de cerrar sus miniaturas ni de encajar la
+  página, y por eso el panel se abre ancho. Cambiar `#page` recarga el visor y con él se van el
+  zoom y la posición, de ahí que la página solo se mueva cuando se pulsa «ir a la pág. N».
 - **Los campos nuevos de `LibraryEntry` se normalizan al leer** (`complete()` en
   `src/core/storage.ts`). Hay documentos guardados de versiones anteriores; añadir un campo sin
   darle valor por defecto ahí rompe los datos que el usuario ya tiene.
