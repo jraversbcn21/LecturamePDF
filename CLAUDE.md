@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Aplicación web 100% cliente que convierte un PDF en una experiencia de lectura auditiva. El uso,
 los atajos, cómo funciona por dentro y las limitaciones conocidas están en @README.md; aquí solo
-va lo que no se deduce leyendo el código. El trabajo pendiente, en @PENDIENTE.md.
+va lo que no se deduce leyendo el código. El trabajo pendiente, en @PENDIENTE.md, y el mapa
+del grafo del proyecto, en @graphify-out/GRAPH_REPORT.md.
 
 ## Restricción de versiones
 
@@ -105,28 +106,20 @@ tocó. Las decisiones de fondo acaban en este fichero; los atajos deliberados, e
 
 ## graphify
 
-Hay un grafo de conocimiento del proyecto en `graphify-out/`: comunidades, nodos más conectados y
-relaciones entre ficheros, cruzando el código con el porqué que está escrito aquí y en
-@PENDIENTE.md. El mapa que sale de él se carga al empezar sesión, en @graphify-out/GRAPH_REPORT.md,
-y con eso el contexto ya está completo sin abrir nada más. Si ese fichero falta es que el grafo no
-se ha construido en esta copia —no se versiona, es regenerable—: se rehace con `/graphify`.
+Un grafo del proyecto en `graphify-out/`, que cruza el código con el porqué escrito aquí y en el
+pendiente. Su mapa se carga al empezar sesión y es lo único de esa carpeta que se versiona;
+`graph.json` y `graph.html` no, que son regenerables y abultan. Para bajar del mapa al detalle,
+`python -m graphify query "<pregunta>"`, y también `path "<A>" "<B>"` y `explain "<concepto>"`.
 
-El motor (`graphifyy`, en Python) es **global**, no dependencia del proyecto, igual que
-Playwright: la skill viaja en el repositorio, pero una copia recién clonada necesita
-`pip install graphifyy` antes de que `/graphify` haga nada. En esta máquina el binario
-`graphify` no está en el PATH, solo el módulo, de ahí el `python -m`.
+El motor (`graphifyy`, en Python) es **global**, no dependencia del proyecto, igual que Playwright:
+la skill viaja en el repositorio, pero una copia recién clonada necesita `pip install graphifyy`
+antes de que `/graphify` haga nada. El binario no está en el PATH de esta máquina, solo el módulo,
+de ahí el `python -m`.
 
-- `python -m graphify query "<pregunta>"` para preguntas sobre el código; para relaciones,
-  `python -m graphify path "<A>" "<B>"`; para un concepto suelto,
-  `python -m graphify explain "<concepto>"`. Devuelven un subgrafo acotado, bastante más pequeño
-  que rebuscar a mano.
-- Con 39 ficheros de código, para la mayoría de preguntas abrir el fichero sigue siendo más rápido.
-  Donde el grafo gana es en lo que no está en el código: por qué se decidió algo, y qué pendiente
-  cuelga de qué heurística.
-- Al reconstruirlo, **deja fuera `.claude/skills/graphify/`**: su propia documentación son diez
-  ficheros que no hablan de este proyecto y ensucian el grafo.
-- **`python -m graphify update .` no vale para mantenerlo al día**: rehace solo el AST, pero al
-  hacerlo renombra las comunidades con nombres de fichero y vuelve a tragarse la documentación de
-  graphify. Deja un respaldo en `graphify-out/<fecha>/`; si se lanza por error, se restaura de ahí.
-  Para actualizarlo de verdad, rehacerlo entero con `/graphify`, y solo cuando cambie la forma del
-  proyecto, no cada vez que se toque una función.
+Con un proyecto de este tamaño, para casi cualquier pregunta abrir el fichero sigue siendo más
+rápido; el grafo gana en lo que no está en el código —por qué se decidió algo, qué pendiente cuelga
+de qué heurística—. Así que se rehace **entero**, con `/graphify`, cuando cambia la forma del
+proyecto y no por costumbre. Dos trampas al rehacerlo: **deja fuera `.claude/skills/graphify/`**,
+que son diez ficheros de documentación que no hablan de este proyecto, y **`update .` no sirve**
+—rehace el AST, pero renombra las comunidades con nombres de fichero y vuelve a tragarse esa
+documentación; deja un respaldo en `graphify-out/<fecha>/` del que se restaura—.
