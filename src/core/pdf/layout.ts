@@ -124,28 +124,39 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
   const indentTolerance = bodyHeight * 0.5;
   let anchor: Line | undefined;
   let anchorIsListItem = false;
+  /** Hueco con el que se pegó la última línea al grupo en curso; 0 si el grupo es de una sola. */
+  let groupGap = 0;
 
   for (const [index, line] of lines.entries()) {
     const previous = lines[index - 1];
+    const gap = previous ? previous.y - line.y : 0;
     const isListItem = startsList(line.text);
     // Un ítem de lista termina cuando el texto vuelve al margen: sus líneas de
     // continuación van sangradas por debajo del marcador, nunca a su izquierda.
-    // ponytail: si la lista no está sangrada respecto al cuerpo, el párrafo que
-    // la sigue se queda pegado al último punto. Haría falta mirar el interlineado.
     const returnsToMargin = anchorIsListItem && anchor !== undefined && line.x < anchor.x - indentTolerance;
+    // Las líneas de un mismo bloque van a distancia constante, así que un hueco mayor que el
+    // del propio grupo delata uno nuevo aunque el margen izquierdo no cambie. Es lo único que
+    // separa una lista sin sangrar del párrafo que la sigue, cuando la maqueta va apretada y
+    // `leading * 1.5` no se alcanza nunca.
+    // ponytail: no ayuda si el bloque en curso es de una sola línea (no hay hueco con el que
+    // comparar); ahí sigue mandando `leading`. Haría falta el hueco típico entre puntos.
+    const opensGap = groupGap > 0 && gap > groupGap * 1.15;
     const startsBlock =
       !previous ||
-      previous.y - line.y > leading * 1.5 ||
+      gap > leading * 1.5 ||
       Math.abs(line.height - previous.height) > Math.max(previous.height, 1) * 0.15 ||
       isListItem ||
-      returnsToMargin;
+      returnsToMargin ||
+      opensGap;
 
     if (startsBlock) {
       groups.push([line]);
       anchor = line;
       anchorIsListItem = isListItem;
+      groupGap = 0;
     } else {
       groups[groups.length - 1]?.push(line);
+      groupGap = gap;
     }
   }
 

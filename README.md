@@ -92,8 +92,8 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 
 - **PDFs escaneados**: se detectan y se avisa, pero no se leen. Falta OCR.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
-- Si una lista **no está sangrada** respecto al cuerpo, el párrafo que va detrás del último
-  punto se queda pegado a él.
+- Si una lista **no está sangrada** y además sus puntos son **de una sola línea**, el párrafo
+  que va detrás del último puede quedarse pegado a él.
 - No se muestra el PDF original: se lee una vista de texto limpia.
 
 El trabajo pendiente, y por qué se dejó fuera cada cosa, está en [PENDIENTE.md](PENDIENTE.md).

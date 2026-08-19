@@ -64,6 +64,26 @@ describe('listas', () => {
     expect(blocks[3]?.text).toBe('Texto de cierre en el margen.');
   });
 
+  it('cierra el último punto aunque la lista vaya al margen del cuerpo', () => {
+    // Todo en x=30: la sangría no puede decir dónde acaba la lista. El hueco sí, porque
+    // las líneas de un mismo punto van más juntas (14) que los bloques entre sí (18).
+    const blocks = linesToBlocks(
+      [
+        line('1. Primer punto, que sigue', 200),
+        line('en una segunda línea.', 186),
+        line('2. Segundo punto, también', 168),
+        line('en dos líneas.', 154),
+        line('Texto de cierre, que no es parte', 136),
+        line('del punto anterior.', 122),
+      ],
+      bodyHeight,
+    );
+
+    expect(blocks.map((b) => b.type)).toEqual(['list-item', 'list-item', 'paragraph']);
+    expect(blocks[1]?.text).toBe('2. Segundo punto, también en dos líneas.');
+    expect(blocks[2]?.text).toBe('Texto de cierre, que no es parte del punto anterior.');
+  });
+
   it('reconoce letras y viñetas como marcadores', () => {
     const blocks = linesToBlocks(
       [line('A. Opción uno.', 200, 10, 1, 60), line('B. Opción dos.', 186, 10, 1, 60), line('• Opción tres.', 172, 10, 1, 60)],

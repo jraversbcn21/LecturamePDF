@@ -81,4 +81,35 @@ describe('listas en un PDF real', () => {
     expect(items[3]).not.toContain('To the international');
     expect(blocks[6]?.text).toMatch(/^To the international/);
   });
+
+  // Maqueta apretada: los bloques se separan menos de lo que pide `leading * 1.5`, así que
+  // la sangría es la única señal... y la primera lista no la tiene.
+  it('cierra la lista aunque no esté sangrada respecto al cuerpo', async () => {
+    const blocks = await blocksOf('./__fixtures__/lists-flush.pdf');
+
+    expect(blocks.map((block) => block.type)).toEqual([
+      'heading',
+      'paragraph',
+      'list-item',
+      'list-item',
+      'list-item',
+      'list-item',
+      'paragraph',
+      'heading',
+      'paragraph',
+      'list-item',
+      'list-item',
+      'list-item',
+      'paragraph',
+    ]);
+
+    const items = blocks.filter((block) => block.type === 'list-item').map((block) => block.text);
+    expect(items.map((text) => text.slice(0, 2))).toEqual(['1.', '2.', '3.', '4.', 'A.', 'B.', 'C.']);
+    // Cada punto llega entero: cerrar la lista no puede costar sus líneas de continuación.
+    expect(items[0]).toContain('respete el sentido de cada objetivo de aprendizaje');
+    expect(items[3]).toContain('no baje del mínimo acordado');
+    // Y el párrafo que sigue al último punto es un bloque aparte, no su cola.
+    expect(items[3]).not.toContain('A la organización internacional');
+    expect(blocks[6]?.text).toMatch(/^A la organización internacional/);
+  });
 });

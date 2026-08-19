@@ -2,7 +2,7 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
 mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 59 tests unitarios y 60 comprobaciones de navegador en verde.
+donde ibas—. 61 tests unitarios y 60 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -18,9 +18,11 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
 ## Calidad de la extracción
 
-- **Listas sin sangría**: si una lista no está sangrada respecto al cuerpo, el párrafo que va
-  detrás del último punto se queda pegado a él. La sangría es la señal que marca dónde acaba la
-  lista; habría que mirar también el interlineado. Anotado en `src/core/pdf/layout.ts`.
+- **Listas sin sangría de puntos cortos**: un bloque se cierra cuando el hueco crece respecto al
+  de sus propias líneas, así que una lista sin sangrar ya se separa del párrafo que la sigue
+  (`lists-flush.pdf`). Falta el caso en que los puntos son **de una sola línea**: sin dos líneas
+  que comparar no hay hueco propio, y manda `leading`, que en maquetas apretadas no se alcanza.
+  Haría falta el hueco típico entre puntos de la lista. Anotado en `src/core/pdf/layout.ts`.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
 - **Tablas, notas al pie y fórmulas** se leen tal cual, y suenan mal en medio de un párrafo.
 
