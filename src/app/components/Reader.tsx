@@ -96,7 +96,7 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
     [outline, doc.blocks.length, doc.id],
   );
 
-  const { state, dispatch, voice, word } = usePlayer(doc, start, onBlockFinished);
+  const { state, dispatch, voice, voices, setVoiceName, word } = usePlayer(doc, start, onBlockFinished);
   const { bookmarks, toggle, remove, annotate } = useBookmarks(doc.id, doc.blocks, initialBookmarks);
   const [query, setQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -161,7 +161,9 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
       <PlayerControls
         state={state}
         dispatch={dispatch}
-        voiceName={voice?.name ?? null}
+        voice={voice}
+        voices={voices}
+        onVoiceChange={setVoiceName}
         page={doc.blocks[state.blockIndex]?.page ?? 1}
         isBookmarked={isBookmarked(bookmarks, spot)}
         onToggleBookmark={toggleCurrent}

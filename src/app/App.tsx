@@ -5,10 +5,11 @@ import { extractDoc } from '../core/pdf/extract';
 import { deleteDoc, getDoc, getEntry, listLibrary, saveDoc, type LibraryEntry } from '../core/storage';
 import { Library } from './components/Library';
 import { Reader } from './components/Reader';
+import type { PlayerStart } from './usePlayer';
 
 type Open = {
   doc: Doc;
-  start: { blockIndex: number; sentenceIndex: number; rate: number };
+  start: PlayerStart;
   bookmarks: Bookmark[];
   heardSections: number[];
 };
@@ -30,7 +31,12 @@ export function App() {
     }
     setOpen({
       doc,
-      start: { blockIndex: entry?.blockIndex ?? 0, sentenceIndex: entry?.sentenceIndex ?? 0, rate: entry?.rate ?? 1 },
+      start: {
+        blockIndex: entry?.blockIndex ?? 0,
+        sentenceIndex: entry?.sentenceIndex ?? 0,
+        rate: entry?.rate ?? 1,
+        voiceName: entry?.voiceName ?? null,
+      },
       bookmarks: entry?.bookmarks ?? [],
       heardSections: entry?.heardSections ?? [],
     });

@@ -552,6 +552,11 @@ button:disabled {
   border-radius: 6px;
 }
 
+/* Los nombres de las voces de Edge son larguísimos; sin tope se comen la fila. */
+.group select.voice {
+  max-width: 15rem;
+}
+
 .primary {
   font-size: 1.1rem;
   padding: 0.45rem 1.1rem;

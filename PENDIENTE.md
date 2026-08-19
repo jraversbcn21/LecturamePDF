@@ -1,9 +1,8 @@
 # Trabajo pendiente
 
-Estado a cierre de la primera sesión: el caso principal funciona de punta a punta —subir un PDF,
-detectar idioma, elegir voz, reproducir con resaltado sincronizado, saltar bloques, buscar,
-marcar con notas y retomar donde ibas—. 55 tests unitarios y 50 comprobaciones de navegador en
-verde.
+El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
+mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
+donde ibas—. 59 tests unitarios y 52 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -18,8 +17,6 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
   secundaria, para consultar figuras y tablas que hoy se pierden.
 - **Resaltar las coincidencias de búsqueda en el texto principal**, no solo en la lista lateral.
   Se dejó fuera porque el renderizado del lector ya gestiona frase activa y palabra en curso.
-- **Selector manual de voz.** Ahora se elige automáticamente por idioma. Con selector, tendría
-  sentido recordarla por documento igual que se recuerda la velocidad; hoy no lo tiene.
 
 ## Calidad de la extracción
 

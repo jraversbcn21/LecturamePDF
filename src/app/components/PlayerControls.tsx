@@ -1,16 +1,19 @@
 import type { Dispatch, MouseEvent } from 'react';
 import { flatIndex, RATES, totalSentences, type PlayerAction, type PlayerState } from '../playerReducer';
+import { voiceLabel } from '../../core/tts';
 
 type Props = {
   state: PlayerState;
   dispatch: Dispatch<PlayerAction>;
-  voiceName: string | null;
+  voice: SpeechSynthesisVoice | null;
+  voices: SpeechSynthesisVoice[];
+  onVoiceChange: (name: string) => void;
   page: number;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
 };
 
-export function PlayerControls({ state, dispatch, voiceName, page, isBookmarked, onToggleBookmark }: Props) {
+export function PlayerControls({ state, dispatch, voice, voices, onVoiceChange, page, isBookmarked, onToggleBookmark }: Props) {
   const total = totalSentences(state.counts);
   const position = flatIndex(state.counts, state.blockIndex, state.sentenceIndex);
   const percent = total === 0 ? 0 : Math.round(((position + 1) / total) * 100);
@@ -57,7 +60,7 @@ export function PlayerControls({ state, dispatch, voiceName, page, isBookmarked,
 
         <label className="group">
           Velocidad
-          <select value={state.rate} onChange={(e) => dispatch({ type: 'SET_RATE', rate: Number(e.target.value) })}>
+          <select className="rate" value={state.rate} onChange={(e) => dispatch({ type: 'SET_RATE', rate: Number(e.target.value) })}>
             {RATES.map((rate) => (
               <option key={rate} value={rate}>
                 {rate}×
@@ -66,9 +69,26 @@ export function PlayerControls({ state, dispatch, voiceName, page, isBookmarked,
           </select>
         </label>
 
+        <label className="group">
+          Voz
+          <select
+            className="voice"
+            value={voice?.name ?? ''}
+            onChange={(e) => onVoiceChange(e.target.value)}
+            disabled={voices.length === 0}
+            title={voice?.name ?? 'sin voz disponible'}
+          >
+            {voice ? null : <option value="">sin voz disponible</option>}
+            {voices.map((option) => (
+              <option key={option.name} value={option.name}>
+                {voiceLabel(option.name)}
+              </option>
+            ))}
+          </select>
+        </label>
+
         <span className="status">
           {percent}% · frase {position + 1}/{total} · pág. {page}
-          {voiceName ? ` · ${voiceName}` : ' · sin voz disponible'}
         </span>
       </div>
     </footer>

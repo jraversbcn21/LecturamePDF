@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Doc } from '../core/types';
-import { loadVoices, pickVoice, tts } from '../core/tts';
-import { saveProgress, saveRate } from '../core/storage';
+import { loadVoices, pickVoice, sortVoices, tts } from '../core/tts';
+import { saveProgress, saveRate, saveVoice } from '../core/storage';
 import { flatIndex, initPlayer, playerReducer } from './playerReducer';
 
 export type WordRange = { start: number; end: number };
 
 export type Player = ReturnType<typeof usePlayer>;
 
-export type PlayerStart = { blockIndex: number; sentenceIndex: number; rate: number };
+export type PlayerStart = { blockIndex: number; sentenceIndex: number; rate: number; voiceName: string | null };
 
 /** Conecta el estado de reproducción con la síntesis de voz y con el progreso guardado. */
 export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockIndex: number) => void) {
@@ -16,7 +16,8 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
   const [state, dispatch] = useReducer(playerReducer, undefined, () =>
     initPlayer(counts, start.blockIndex, start.sentenceIndex, start.rate),
   );
-  const [voice, setVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voiceName, setVoiceName] = useState(start.voiceName);
   const [word, setWord] = useState<WordRange | null>(null);
   const spokenRef = useRef<string | null>(null);
 
@@ -32,13 +33,19 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
 
   useEffect(() => {
     let active = true;
-    void loadVoices().then((voices) => {
-      if (active) setVoice(pickVoice(voices, doc.language));
+    void loadVoices().then((available) => {
+      if (active) setVoices(sortVoices(available, doc.language));
     });
     return () => {
       active = false;
     };
   }, [doc.language]);
+
+  // La voz guardada puede no existir en este navegador: entonces se vuelve a elegir por idioma.
+  const voice = useMemo(
+    () => voices.find((v) => v.name === voiceName) ?? pickVoice(voices, doc.language),
+    [voices, voiceName, doc.language],
+  );
 
   useEffect(() => {
     const key = `${blockIndex}:${sentenceIndex}:${rate}:${voice?.name ?? ''}`;
@@ -80,5 +87,10 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
     void saveRate(doc.id, rate);
   }, [doc.id, rate]);
 
-  return { state, dispatch, voice, word, counts };
+  // Solo se guarda la elegida a mano: si no, escribiríamos la automática y dejaría de seguir al idioma.
+  useEffect(() => {
+    if (voiceName) void saveVoice(doc.id, voiceName);
+  }, [doc.id, voiceName]);
+
+  return { state, dispatch, voice, voices, setVoiceName, word, counts };
 }

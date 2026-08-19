@@ -14,16 +14,21 @@ export function loadVoices(): Promise<SpeechSynthesisVoice[]> {
   });
 }
 
-/** Prefiere las voces neurales ("Natural" en Edge), luego cualquier voz online, luego lo que haya. */
-export function pickVoice(voices: SpeechSynthesisVoice[], language: Language): SpeechSynthesisVoice | null {
-  const candidates = voices.filter((v) => v.lang.toLowerCase().startsWith(language));
-  return (
-    candidates.find((v) => /natural/i.test(v.name)) ??
-    candidates.find((v) => !v.localService) ??
-    candidates[0] ??
-    null
-  );
+const speaks = (voice: SpeechSynthesisVoice, language: Language): boolean => voice.lang.toLowerCase().startsWith(language);
+
+/** De mejor a peor: primero el idioma del documento, dentro de él las neurales ("Natural" en Edge) y las online. */
+export function sortVoices(voices: SpeechSynthesisVoice[], language: Language): SpeechSynthesisVoice[] {
+  const score = (voice: SpeechSynthesisVoice) =>
+    (speaks(voice, language) ? 4 : 0) + (/natural/i.test(voice.name) ? 2 : 0) + (voice.localService ? 0 : 1);
+  return [...voices].sort((a, b) => score(b) - score(a));
 }
+
+/** La mejor voz del idioma pedido, o ninguna: leer español con voz inglesa es peor que avisar. */
+export const pickVoice = (voices: SpeechSynthesisVoice[], language: Language): SpeechSynthesisVoice | null =>
+  sortVoices(voices.filter((v) => speaks(v, language)), language)[0] ?? null;
+
+/** «Microsoft Alvaro Online (Natural) - Spanish (Spain)» no cabe en el selector. */
+export const voiceLabel = (name: string): string => name.replace(/^Microsoft | Online/g, '');
 
 let current: SpeechSynthesisUtterance | null = null;
 

@@ -15,6 +15,8 @@ export type LibraryEntry = {
   bookmarks: Bookmark[];
   /** Velocidad elegida para este documento. */
   rate: number;
+  /** Voz elegida a mano, si la hay; si no, se escoge por idioma. */
+  voiceName: string | null;
   /** Índices de los títulos cuyas secciones se han escuchado enteras. */
   heardSections: number[];
   updatedAt: number;
@@ -94,6 +96,7 @@ export function saveDoc(doc: Doc): Promise<void> {
       position: previous?.position ?? 0,
       bookmarks: previous?.bookmarks ?? [],
       rate: previous?.rate ?? 1,
+      voiceName: previous?.voiceName ?? null,
       heardSections: previous?.heardSections ?? [],
       updatedAt: Date.now(),
     }));
@@ -106,6 +109,10 @@ export function saveBookmarks(id: string, bookmarks: Bookmark[]): Promise<void> 
 
 export function saveRate(id: string, rate: number): Promise<void> {
   return enqueue(() => updateEntry(id, (entry) => (entry ? { ...entry, rate } : null)));
+}
+
+export function saveVoice(id: string, voiceName: string): Promise<void> {
+  return enqueue(() => updateEntry(id, (entry) => (entry ? { ...entry, voiceName } : null)));
 }
 
 export function saveHeardSections(id: string, heardSections: number[]): Promise<void> {
@@ -135,6 +142,7 @@ const complete = (entry: LibraryEntry): LibraryEntry => ({
   ...entry,
   bookmarks: (entry.bookmarks ?? []).map((bookmark) => ({ ...bookmark, note: bookmark.note ?? '' })),
   rate: entry.rate ?? 1,
+  voiceName: entry.voiceName ?? null,
   heardSections: entry.heardSections ?? [],
 });
 

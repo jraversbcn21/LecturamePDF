@@ -46,6 +46,11 @@ El buscador de la barra lateral ignora tildes y mayúsculas (`analisis` encuentr
 muestra cada resultado con su sección y su página, y al pulsarlo empieza a leer desde esa
 frase. Mientras buscas, los resultados ocupan el sitio del índice.
 
+La voz se elige sola por idioma, prefiriendo las neurales, pero puedes cambiarla en el selector
+de los controles: la lista pone delante las del idioma del documento y detrás el resto, por si
+quieres leer con otra. La elegida a mano se recuerda con el documento; si algún día no está en
+el navegador, se vuelve a elegir automáticamente.
+
 Cada documento recuerda su velocidad, así que no hay que volver a ajustarla en cada sesión.
 En el índice, las secciones que ya has escuchado enteras aparecen con un `✓`; solo se marcan
 cuando la voz llega hasta el final de la sección, de modo que saltártela no la da por oída.

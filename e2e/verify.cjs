@@ -152,8 +152,8 @@ const storedPosition = () =>
   const headings = await page.locator('.reader .heading').allInnerTexts();
   check('extrae los 4 títulos del PDF', headings.length === 4, headings.join(' | '));
   check('detecta el idioma español', (await page.locator('.bar .tag').innerText()) === 'Español');
-  const status = await page.locator('.status').innerText();
-  check('elige la voz neural sobre la local básica', status.includes('Natural'), status);
+  const chosenVoice = await page.locator('.controls select.voice').inputValue();
+  check('elige la voz neural sobre la local básica', /Natural/.test(chosenVoice) && /Spanish/.test(chosenVoice), chosenVoice);
   await page.screenshot({ path: path.join(SHOTS, '01-reader.png') });
 
   // --- Reproducción y sincronización del resaltado -------------------------
@@ -219,13 +219,29 @@ const storedPosition = () =>
   await page.waitForTimeout(100);
   const atRateChange = await activeText();
   const spokenBefore = (await spoken()).length;
-  await page.selectOption('.controls select', '2');
+  await page.selectOption('.controls select.rate', '2');
   await page.waitForTimeout(150);
   const afterRate = (await spoken()).slice(spokenBefore);
   check('cambiar la velocidad no pierde la posición', (await activeText()) === atRateChange);
   check(
     'la frase se relanza a la nueva velocidad',
     afterRate.length > 0 && afterRate[afterRate.length - 1].rate === 2 && afterRate[afterRate.length - 1].text.trim() === atRateChange.trim(),
+  );
+
+  // --- Voz elegida a mano --------------------------------------------------
+  // En pausa: con la voz en marcha la frase activa cambia bajo los pies.
+  await page.click('button[aria-label^="Pausar"]');
+  await page.waitForTimeout(150);
+  const voiceSentence = await activeText();
+  const spokenBeforeVoice = (await spoken()).length;
+  await page.selectOption('.controls select.voice', 'Spanish Basic Local');
+  await page.keyboard.press('Space');
+  await page.waitForTimeout(200);
+  const afterVoice = (await spoken())[spokenBeforeVoice];
+  check(
+    'elegir otra voz relanza la frase con ella',
+    afterVoice !== undefined && afterVoice.voice === 'Spanish Basic Local' && afterVoice.text.trim() === voiceSentence.trim(),
+    afterVoice ? `${afterVoice.voice} · ${afterVoice.text.slice(0, 30)}` : 'no leyó nada',
   );
 
   // --- Clic directo sobre una frase ---------------------------------------
@@ -268,7 +284,12 @@ const storedPosition = () =>
   await page.waitForSelector('article.reader', { timeout: 10000 });
   await page.waitForTimeout(300);
   check('tras recargar, retoma en la misma frase', (await activeText()) === positionBefore);
-  check('y recuerda la velocidad elegida', (await page.locator('.controls select').inputValue()) === '2', `${await page.locator('.controls select').inputValue()}x`);
+  check('y recuerda la velocidad elegida', (await page.locator('.controls select.rate').inputValue()) === '2', `${await page.locator('.controls select.rate').inputValue()}x`);
+  check(
+    'y la voz elegida a mano, en vez de volver a la automática',
+    (await page.locator('.controls select.voice').inputValue()) === 'Spanish Basic Local',
+    await page.locator('.controls select.voice').inputValue(),
+  );
   check('al reabrir no arranca solo la reproducción', await page.evaluate(() => window.__spoken.length === 0));
   check(
     'al reabrir se ve la frase donde ibas, sin esperar al desplazamiento',
@@ -313,6 +334,9 @@ const storedPosition = () =>
   check('resalta el término tal y como está escrito', (await page.locator('.result mark').first().innerText()) === 'Atención');
   check('el índice deja sitio a los resultados', !(await page.locator('.outline').isVisible()));
 
+  // En pausa: con la voz en marcha, la frase que avanza sola se cuela antes del salto.
+  if (await page.locator('button[aria-label^="Pausar"]').count()) await page.click('button[aria-label^="Pausar"]');
+  await page.waitForTimeout(150);
   const spokenBeforeResult = (await spoken()).length;
   await page.locator('.result').first().click();
   await page.waitForTimeout(200);
