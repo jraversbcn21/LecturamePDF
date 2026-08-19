@@ -133,16 +133,19 @@ button:disabled {
   font-weight: 600;
 }
 
+/* En una pantalla grande, una columna fija se queda pequeña y obliga a subir el zoom del
+   navegador; pero el zoom agranda también la cabecera y la estantería, que no lo necesitan.
+   Por eso crece solo la presentación, y con el ancho de la ventana en vez de con el zoom. */
 .library {
-  width: min(52rem, 100%);
+  width: min(64rem, 100%);
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 3rem;
+  padding: clamp(2.5rem, 5vh, 4rem) 1.5rem 3rem;
 }
 
 .hero {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
-  gap: 2.5rem;
+  gap: clamp(2rem, 4vw, 3.5rem);
   align-items: center;
 }
 
@@ -150,7 +153,7 @@ button:disabled {
   margin: 0 0 0.7rem;
   font-family: Georgia, 'Iowan Old Style', serif;
   font-weight: 400;
-  font-size: 2rem;
+  font-size: clamp(2rem, 2.8vw, 3rem);
   line-height: 1.2;
   letter-spacing: -0.015em;
 }
@@ -161,8 +164,9 @@ button:disabled {
 }
 
 .pitch p {
-  margin: 0 0 1.3rem;
+  margin: 0 0 1.5rem;
   color: var(--muted);
+  font-size: clamp(1rem, 1.25vw, 1.35rem);
   line-height: 1.65;
 }
 
@@ -172,9 +176,16 @@ button:disabled {
   gap: 0.6rem;
 }
 
-.fine {
+.hero-actions button {
+  font-size: clamp(1rem, 1.1vw, 1.15rem);
+  padding: 0.55rem 1.25rem;
+}
+
+/* Con la especificidad de `.fine` a secas manda `.pitch p` y la letra pequeña crece con el
+   párrafo de la presentación, que es justo lo que no queremos que haga. */
+.pitch .fine {
   margin: 0.9rem 0 0;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--muted);
 }
 
@@ -183,7 +194,7 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  padding: 2.2rem 1.4rem;
+  padding: clamp(2.2rem, 3.5vw, 3.4rem) 1.4rem;
   border: 1.5px dashed var(--border);
   border-radius: 16px;
   background: var(--surface);
@@ -193,12 +204,13 @@ button:disabled {
 }
 
 .drop-icon {
-  font-size: 1.6rem;
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
   opacity: 0.55;
 }
 
 .dropzone p {
   margin: 0.3rem 0 0;
+  font-size: clamp(1rem, 1.15vw, 1.2rem);
   font-weight: 600;
 }
 
@@ -228,12 +240,14 @@ button:disabled {
   color: var(--muted);
 }
 
+/* La ficha no crece con la ventana: se reparte en más columnas cuando hay sitio. El mínimo
+   con `min()` evita que en una ventana estrecha la columna sea más ancha que la pantalla. */
 .docs {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(min(22rem, 100%), 1fr));
   gap: 0.8rem;
 }
 
@@ -308,8 +322,7 @@ button:disabled {
 }
 
 @media (max-width: 48rem) {
-  .hero,
-  .docs {
+  .hero {
     grid-template-columns: 1fr;
   }
 }
