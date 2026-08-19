@@ -1,6 +1,4 @@
-/* Paleta «Papel», la misma en toda la aplicación: no sigue el tema del sistema a propósito.
-   El texto se lee sobre hueso y el resaltado ámbar necesita fondo claro para verse; en oscuro
-   había que inventar un segundo juego de resaltados que nadie miraba. */
+/* Paleta «Papel»: hueso y azul tinta. */
 :root {
   --bg: #faf7f1;
   --surface: #ffffff;
@@ -8,10 +6,40 @@
   --muted: #6d665d;
   --border: #e5ded2;
   --accent: #1f5f8b;
+  /* Texto sobre el acento: el acento cambia de claridad entre modos y el blanco no vale en los dos. */
+  --on-accent: #ffffff;
   --highlight: #ffe9a8;
   --highlight-word: #ffc94d;
   --highlight-hit: #bcd8ff;
+  --paper-line: #0000000a;
   color-scheme: light;
+}
+
+/* «Tinta»: el mismo papel de noche —gris cálido, no negro azulado— y el azul de la portada
+   aclarado para que aguante sobre él. Los tres resaltados se eligen juntos, no por separado:
+   la coincidencia de búsqueda cae dentro de la frase que suena, así que se va al violeta
+   para no confundirse ni con ella ni con la palabra actual. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #171614;
+    --surface: #1e1d1a;
+    --text: #eae6df;
+    --muted: #9b948a;
+    --border: #302d28;
+    --accent: #7fb2e8;
+    --on-accent: #0b1a2a;
+    --highlight: #22303f;
+    --highlight-word: #2f5c8a;
+    --highlight-hit: #4b3a63;
+    /* El rayado del cuaderno es una veladura: negra sobre papel, blanca sobre tinta. */
+    --paper-line: #ffffff0a;
+    color-scheme: dark;
+  }
+
+  .error {
+    background: #3a1d1d;
+    color: #ffb4b4;
+  }
 }
 
 * {
@@ -94,14 +122,14 @@ button:disabled {
   height: 1.6rem;
   border-radius: 7px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.7rem;
 }
 
 .paper .primary {
   background: var(--accent);
   border-color: transparent;
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 600;
 }
 
@@ -160,7 +188,7 @@ button:disabled {
   border-radius: 16px;
   background: var(--surface);
   /* Rayado de cuaderno: el aire de papel sin cargar una imagen. */
-  background-image: repeating-linear-gradient(#0000 0 26px, #0000000a 26px 27px);
+  background-image: repeating-linear-gradient(#0000 0 26px, var(--paper-line) 26px 27px);
   text-align: center;
 }
 
