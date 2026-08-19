@@ -23,6 +23,16 @@ comprobar antes la versión de Node: dejan de arrancar.
   (`src/core/storage.ts`), y el `get`+`put` de una ficha ocurre en la misma transacción. Volver a
   abrir una conexión por operación reintroduce la carrera que hacía que un guardado antiguo se
   confirmara el último y borrara el progreso.
+- **Los tres resaltados se eligen juntos, no por separado** (`src/styles.css`). La coincidencia de
+  búsqueda cae **dentro** de la frase que suena, que ya va resaltada; si comparte familia de color
+  con ella o con la palabra actual, deja de distinguirse. Por eso hay dos juegos completos, uno por
+  modo: el ámbar de la voz no se lee sobre fondo oscuro, así que en «Tinta» la voz pasa al azul y
+  la búsqueda al violeta. Tocar uno solo de los tres rompe la lectura de los otros dos.
+- **La portada crece con el ancho de la ventana (`clamp()`), no con el zoom**
+  (`src/styles.css`). Subir el zoom era la salida obvia en un monitor grande, pero agranda también
+  la cabecera y la estantería, que no lo necesitan; con `clamp()` crece solo la presentación. Por
+  lo mismo, la ficha de la estantería tiene un mínimo generoso (`minmax(min(26rem, 100%), 1fr)`):
+  con más columnas, el nombre del PDF —que es largo— acaba en puntos suspensivos.
 - **El desplazamiento solo se anima en saltos cortos** (`src/app/components/ReaderView.tsx`). Con
   `behavior: 'smooth'` siempre, reabrir un documento largo tarda segundos recorriendo decenas de
   miles de píxeles.

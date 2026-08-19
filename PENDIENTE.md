@@ -39,6 +39,10 @@ recogidos aquí.
 
 - **`pause`/`resume` nativos**: si alguna voz local los ignora, habría que relanzar la frase.
   Anotado en `src/core/tts.ts`; no se ha visto ocurrir con las voces de Edge.
+- **La estrella del marcador sigue en oro** (`#d99000`, escrito a mano en `src/styles.css`), y con
+  ella el subrayado punteado de la frase marcada. Es el único color que no sale de la paleta: se
+  dejó porque ahí el oro es la señal de «marcado», no parte del tema, y se lee en los dos modos.
+  Si algún día molesta, pasa al acento; lo que no puede es competir con los tres resaltados.
 - **No se resalta en el PDF la frase que suena**, ni se le pueden cerrar las miniaturas al visor:
   Chromium ignora todo parámetro de apertura que no sea la página. Salir de ahí obligaría a dibujar
   las páginas nosotros con pdf.js, y con ello a escribir zoom, desplazamiento y paginación a mano.

@@ -35,6 +35,32 @@ audio, en cambio, solo se juzga de oído.
 (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En Chrome
 funciona igual pero con voces de menor calidad.
 
+## La portada
+
+Al abrir la aplicación no hay más que una pregunta: qué PDF quieres escuchar. Arrástralo sobre la
+zona de la derecha o pulsa «Elegir PDF»; se procesa en tu equipo, así que el archivo no sale de
+él. Si ya habías empezado algo, sale además un botón para **seguir con el último documento**, que
+es lo que se quiere hacer casi siempre al volver.
+
+Debajo, la estantería: una ficha por documento, con un anillo que enseña cuánto llevas escuchado
+sin tener que leer el porcentaje, el idioma detectado y un aspa para quitarlo. Están ordenadas por
+el último rato que les dedicaste, no por cuándo las subiste.
+
+La presentación crece con el ancho de la ventana, no con el zoom del navegador: en un monitor
+grande se lee sin tocar nada, y la cabecera y la estantería se quedan a su tamaño en vez de
+inflarse con lo demás.
+
+## Claro y oscuro
+
+Sigue el tema del sistema, sin interruptor: **«Papel»** de día —hueso y azul tinta, con la serif
+del lector— y **«Tinta»** de noche, que es el mismo papel apagado en gris cálido, no un negro
+azulado de otra aplicación.
+
+Lo que cambia de verdad entre los dos son los resaltados, y van juntos porque se pisan: la frase
+que suena, la palabra dentro de ella y la coincidencia de búsqueda, que cae dentro de la frase ya
+resaltada. De día, ámbar para la voz y azul para la búsqueda; de noche el ámbar no se lee, así que
+la voz pasa al azul y la búsqueda al violeta.
+
 ## Atajos de teclado
 
 | Tecla | Acción |
