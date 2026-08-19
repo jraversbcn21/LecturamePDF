@@ -1,9 +1,9 @@
-import { useMemo, type RefObject } from 'react';
-import type { Block } from '../../core/types';
-import { searchDoc, type SearchHit } from '../../core/search';
+import type { RefObject } from 'react';
+import type { SearchHit, SearchResult } from '../../core/search';
 
 type Props = {
-  blocks: Block[];
+  /** La búsqueda se hace en `Reader`: el texto principal también resalta las coincidencias. */
+  results: SearchResult;
   query: string;
   onQueryChange: (query: string) => void;
   onJump: (blockIndex: number, sentenceIndex: number) => void;
@@ -30,8 +30,7 @@ function summaryOf(total: number, shown: number): string {
   return total === 1 ? '1 resultado' : `${total} resultados`;
 }
 
-export function Search({ blocks, query, onQueryChange, onJump, inputRef }: Props) {
-  const { hits, total } = useMemo(() => searchDoc(blocks, query), [blocks, query]);
+export function Search({ results: { hits, total }, query, onQueryChange, onJump, inputRef }: Props) {
   const searching = query.trim() !== '';
 
   return (

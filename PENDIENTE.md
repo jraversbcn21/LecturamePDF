@@ -2,7 +2,7 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
 mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 59 tests unitarios y 52 comprobaciones de navegador en verde.
+donde ibas—. 59 tests unitarios y 54 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -15,8 +15,6 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 - **Mostrar el PDF original junto al texto.** Se descartó al principio a favor de la vista de
   lectura limpia, que sigue siendo la correcta para escuchar. Tendría sentido como vista
   secundaria, para consultar figuras y tablas que hoy se pierden.
-- **Resaltar las coincidencias de búsqueda en el texto principal**, no solo en la lista lateral.
-  Se dejó fuera porque el renderizado del lector ya gestiona frase activa y palabra en curso.
 
 ## Calidad de la extracción
 
@@ -37,8 +35,7 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
 ## Infraestructura
 
-- **Publicar el repositorio.** Hay git en local con dos commits, pero todo vive solo en esta
-  máquina. Con `gh` ya instalado, un `gh repo create` daría copia de seguridad. Es una decisión
+- **Publicar el repositorio.** Hay git en local, pero todo vive solo en esta máquina. Con `gh` ya instalado, un `gh repo create` daría copia de seguridad. Es una decisión
   del usuario: publicar código es un paso hacia fuera.
 - **Plugins recomendados**, que instala el usuario, no Claude:
   `/plugin install playwright@claude-plugins-official` (encaja especialmente: ya se verifica en

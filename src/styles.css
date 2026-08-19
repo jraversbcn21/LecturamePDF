@@ -7,6 +7,7 @@
   --accent: #1f6feb;
   --highlight: #ffe9a8;
   --highlight-word: #ffc94d;
+  --highlight-hit: #bcd8ff;
   color-scheme: light;
 }
 
@@ -20,6 +21,7 @@
     --accent: #6aa4ff;
     --highlight: #3d3a1f;
     --highlight-word: #6b6018;
+    --highlight-hit: #274a7d;
     color-scheme: dark;
   }
 }
@@ -236,6 +238,13 @@ button:disabled {
 
 .word {
   background: var(--highlight-word);
+  color: inherit;
+  border-radius: 3px;
+}
+
+/* Azul, no ámbar: la coincidencia cae dentro de la frase activa, que ya va resaltada. */
+.hit {
+  background: var(--highlight-hit);
   color: inherit;
   border-radius: 3px;
 }

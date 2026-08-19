@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import type { Doc } from '../../core/types';
+import type { SearchHit } from '../../core/search';
 import type { WordRange } from '../usePlayer';
 
 type Props = {
@@ -9,22 +10,41 @@ type Props = {
   word: WordRange | null;
   /** Claves «bloque:frase» de las frases marcadas. */
   bookmarked: Set<string>;
+  /** Coincidencias de la búsqueda, por clave «bloque:frase». */
+  found: Map<string, SearchHit>;
   onJump: (blockIndex: number, sentenceIndex: number) => void;
 };
 
-/** Resalta la palabra en curso dentro de la frase activa (si la voz emite límites de palabra). */
-function withWord(sentence: string, word: WordRange | null): ReactNode {
-  if (!word || word.start >= sentence.length) return sentence;
-  return (
-    <>
-      {sentence.slice(0, word.start)}
-      <mark className="word">{sentence.slice(word.start, word.end)}</mark>
-      {sentence.slice(word.end)}
-    </>
-  );
+type Mark = { start: number; end: number; className: string };
+
+/**
+ * Envuelve en `<mark>` los tramos señalados de la frase: el término buscado y la palabra que se
+ * está pronunciando (esta última, solo si la voz emite límites de palabra).
+ */
+function withMarks(sentence: string, marks: Mark[]): ReactNode {
+  const pieces: ReactNode[] = [];
+  let at = 0;
+
+  for (const mark of [...marks].sort((a, b) => a.start - b.start)) {
+    const start = Math.max(mark.start, at);
+    const end = Math.min(mark.end, sentence.length);
+    // Tramo vacío o solapado con el anterior: gana el que empieza antes.
+    if (end <= start) continue;
+    pieces.push(
+      sentence.slice(at, start),
+      <mark key={start} className={mark.className}>
+        {sentence.slice(start, end)}
+      </mark>,
+    );
+    at = end;
+  }
+
+  if (pieces.length === 0) return sentence;
+  pieces.push(sentence.slice(at));
+  return <>{pieces}</>;
 }
 
-export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, onJump }: Props) {
+export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, found, onJump }: Props) {
   const activeRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
@@ -50,6 +70,10 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, o
             {block.sentences.map((sentence, sIndex) => {
               const isActive = bIndex === blockIndex && sIndex === sentenceIndex;
               const isBookmarked = bookmarked.has(`${bIndex}:${sIndex}`);
+              const hit = found.get(`${bIndex}:${sIndex}`);
+              const marks: Mark[] = [];
+              if (hit) marks.push({ start: hit.start, end: hit.end, className: 'hit' });
+              if (isActive && word) marks.push({ start: word.start, end: word.end, className: 'word' });
               return (
                 <span
                   key={sIndex}
@@ -58,7 +82,7 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, o
                   onClick={() => onJump(bIndex, sIndex)}
                   title={isBookmarked ? 'Marcada para repasar' : 'Leer desde aquí'}
                 >
-                  {isActive ? withWord(sentence, word) : sentence}{' '}
+                  {marks.length > 0 ? withMarks(sentence, marks) : sentence}{' '}
                 </span>
               );
             })}

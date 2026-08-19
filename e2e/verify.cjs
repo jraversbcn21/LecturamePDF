@@ -334,6 +334,13 @@ const storedPosition = () =>
   check('resalta el término tal y como está escrito', (await page.locator('.result mark').first().innerText()) === 'Atención');
   check('el índice deja sitio a los resultados', !(await page.locator('.outline').isVisible()));
 
+  const inText = await page.locator('.reader mark.hit').allInnerTexts();
+  check(
+    'resalta las coincidencias también en el texto principal',
+    inText.length === (await page.locator('.result').count()) && inText.every((text) => /^atenci[óo]n$/i.test(text)),
+    `${inText.length} en el texto · ${inText.join(' | ')}`,
+  );
+
   // En pausa: con la voz en marcha, la frase que avanza sola se cuela antes del salto.
   if (await page.locator('button[aria-label^="Pausar"]').count()) await page.click('button[aria-label^="Pausar"]');
   await page.waitForTimeout(150);
@@ -352,6 +359,7 @@ const storedPosition = () =>
   await page.waitForTimeout(150);
   check('Escape limpia la búsqueda sin salir del documento', (await page.locator('article.reader').count()) === 1);
   check('al limpiar vuelve el índice', await page.locator('.outline').isVisible());
+  check('y el texto se queda sin resaltados de búsqueda', (await page.locator('.reader mark.hit').count()) === 0);
 
   // --- Marcadores ----------------------------------------------------------
   check('sin marcadores no aparece la sección', (await page.locator('.bookmarks').count()) === 0);

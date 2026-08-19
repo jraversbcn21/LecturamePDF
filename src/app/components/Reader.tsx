@@ -5,6 +5,7 @@ import { useBookmarks } from '../useBookmarks';
 import { RATES, type PlayerAction } from '../playerReducer';
 import { usePlayer, type PlayerStart } from '../usePlayer';
 import { outlineOf, sectionEndingAt } from '../../core/outline';
+import { searchDoc } from '../../core/search';
 import { saveHeardSections } from '../../core/storage';
 import { ReaderView } from './ReaderView';
 import { PlayerControls } from './PlayerControls';
@@ -107,6 +108,13 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
     [bookmarks],
   );
 
+  // Una sola búsqueda para los dos sitios que la enseñan: la lista lateral y el texto.
+  const results = useMemo(() => searchDoc(doc.blocks, query), [doc.blocks, query]);
+  const found = useMemo(
+    () => new Map(results.hits.map((hit) => [`${hit.blockIndex}:${hit.sentenceIndex}`, hit])),
+    [results],
+  );
+
   const focusSearch = useCallback(() => searchRef.current?.focus(), []);
   const toggleCurrent = useCallback(
     () => toggle({ blockIndex: state.blockIndex, sentenceIndex: state.sentenceIndex }),
@@ -125,7 +133,7 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
       <div className="body">
         <aside className="sidebar">
           <Search
-            blocks={doc.blocks}
+            results={results}
             query={query}
             onQueryChange={setQuery}
             onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
@@ -154,6 +162,7 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           sentenceIndex={state.sentenceIndex}
           word={word}
           bookmarked={marked}
+          found={found}
           onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
         />
       </div>
