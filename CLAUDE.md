@@ -111,7 +111,10 @@ relaciones entre ficheros, cruzando el código con el porqué que está escrito 
 y con eso el contexto ya está completo sin abrir nada más. Si ese fichero falta es que el grafo no
 se ha construido en esta copia —no se versiona, es regenerable—: se rehace con `/graphify`.
 
-Del mapa al detalle: el binario `graphify` no está en el PATH de esta máquina, solo el módulo.
+El motor (`graphifyy`, en Python) es **global**, no dependencia del proyecto, igual que
+Playwright: la skill viaja en el repositorio, pero una copia recién clonada necesita
+`pip install graphifyy` antes de que `/graphify` haga nada. En esta máquina el binario
+`graphify` no está en el PATH, solo el módulo, de ahí el `python -m`.
 
 - `python -m graphify query "<pregunta>"` para preguntas sobre el código; para relaciones,
   `python -m graphify path "<A>" "<B>"`; para un concepto suelto,
