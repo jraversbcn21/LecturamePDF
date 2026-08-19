@@ -105,19 +105,25 @@ tocó. Las decisiones de fondo acaban en este fichero; los atajos deliberados, e
 
 ## graphify
 
-Hay un grafo de conocimiento del proyecto en `graphify-out/` (no se versiona): comunidades, nodos
-más conectados y relaciones entre ficheros. El binario `graphify` no está en el PATH de esta
-máquina; se invoca como módulo.
+Hay un grafo de conocimiento del proyecto en `graphify-out/`: comunidades, nodos más conectados y
+relaciones entre ficheros, cruzando el código con el porqué que está escrito aquí y en
+@PENDIENTE.md. El mapa que sale de él se carga al empezar sesión, en @graphify-out/GRAPH_REPORT.md,
+y con eso el contexto ya está completo sin abrir nada más. Si ese fichero falta es que el grafo no
+se ha construido en esta copia —no se versiona, es regenerable—: se rehace con `/graphify`.
 
-- Para preguntas sobre el código, primero `python -m graphify query "<pregunta>"` si existe
-  `graphify-out/graph.json`. Para relaciones, `python -m graphify path "<A>" "<B>"`; para un
-  concepto suelto, `python -m graphify explain "<concepto>"`. Devuelven un subgrafo acotado,
-  bastante más pequeño que `GRAPH_REPORT.md` o que rebuscar a mano.
-- `graphify-out/GRAPH_REPORT.md`, solo para una revisión amplia de la arquitectura o cuando lo
-  anterior no dé contexto suficiente.
+Del mapa al detalle: el binario `graphify` no está en el PATH de esta máquina, solo el módulo.
+
+- `python -m graphify query "<pregunta>"` para preguntas sobre el código; para relaciones,
+  `python -m graphify path "<A>" "<B>"`; para un concepto suelto,
+  `python -m graphify explain "<concepto>"`. Devuelven un subgrafo acotado, bastante más pequeño
+  que rebuscar a mano.
+- Con 39 ficheros de código, para la mayoría de preguntas abrir el fichero sigue siendo más rápido.
+  Donde el grafo gana es en lo que no está en el código: por qué se decidió algo, y qué pendiente
+  cuelga de qué heurística.
 - Al reconstruirlo, **deja fuera `.claude/skills/graphify/`**: su propia documentación son diez
   ficheros que no hablan de este proyecto y ensucian el grafo.
 - **`python -m graphify update .` no vale para mantenerlo al día**: rehace solo el AST, pero al
   hacerlo renombra las comunidades con nombres de fichero y vuelve a tragarse la documentación de
   graphify. Deja un respaldo en `graphify-out/<fecha>/`; si se lanza por error, se restaura de ahí.
-  Para actualizarlo de verdad, rehacerlo entero con `/graphify`.
+  Para actualizarlo de verdad, rehacerlo entero con `/graphify`, y solo cuando cambie la forma del
+  proyecto, no cada vez que se toque una función.

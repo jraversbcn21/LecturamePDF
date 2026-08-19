@@ -2,4 +2,5 @@ node_modules/
 dist/
 e2e/screenshots/
 *.local
-graphify-out/
+graphify-out/*
+!graphify-out/GRAPH_REPORT.md
