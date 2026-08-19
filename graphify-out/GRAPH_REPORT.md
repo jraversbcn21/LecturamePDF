@@ -1,29 +1,27 @@
 # Graph Report - Lecturame  (2026-08-19)
 
 ## Corpus Check
-- Corpus is ~30,025 words - fits in a single context window. You may not need a graph.
+- Corpus is ~30,885 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 332 nodes · 625 edges · 17 communities (14 shown, 3 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 25 edges (avg confidence: 0.8)
-- Token cost: 135,519 input · 0 output
+- 337 nodes · 632 edges · 15 communities
+- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 23 edges (avg confidence: 0.75)
+- Token cost: 72,404 input · 0 output
 
 ## Community Hubs (Navigation)
-- Verificación y decisiones de fondo
 - Núcleo de extracción de PDF
 - Reproductor y controles
-- Biblioteca y almacenamiento
-- Vista de lectura, índice y búsqueda
+- Índice, marcadores y notas
+- Biblioteca, portada y almacenamiento
+- Decisiones que no conviene deshacer
 - Cadena de lint
+- Heurísticas, convenciones y pendientes
 - Configuración de TypeScript
-- Marcadores y notas
+- Vista de lectura y búsqueda
 - Dependencias y scripts npm
 - Fixtures de maquetación
 - Comprobaciones de navegador
-- Tablas, fórmulas y panel del PDF
-- Skill graphify
-- Maquetación a varias columnas
-- Notas al pie sin numerar
+- Skill verify
 
 ## God Nodes (most connected - your core abstractions)
 1. `compilerOptions` - 15 edges
@@ -38,96 +36,100 @@
 10. `useBookmarks()` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Normalización de LibraryEntry al leer (complete())` --semantically_similar_to--> `Selección automática de voz`  [INFERRED] [semantically similar]
+- `El riesgo no es simétrico: ante la duda, prosa` --semantically_similar_to--> `OCR para PDFs escaneados (descartado)`  [INFERRED] [semantically similar]
+  CLAUDE.md → PENDIENTE.md
+- `Desplazamiento animado solo en saltos cortos` --conceptually_related_to--> `Los tres resaltados`  [INFERRED]
   CLAUDE.md → README.md
-- `OCR para PDFs escaneados (descartado)` --semantically_similar_to--> `Restricción de versiones (Node 18)`  [INFERRED] [semantically similar]
-  PENDIENTE.md → CLAUDE.md
-- `Desplazamiento animado solo en saltos cortos` --conceptually_related_to--> `Tubería PDF → bloques → frases → voz → resaltado`  [INFERRED]
-  CLAUDE.md → README.md
-- `Restricción de versiones (Node 18)` --conceptually_related_to--> `Lecturame`  [INFERRED]
-  CLAUDE.md → README.md
-- `index.html (punto de entrada)` --implements--> `Lecturame`  [INFERRED]
+- `Punto de montaje #root` --implements--> `LecturamePDF`  [INFERRED]
   index.html → README.md
+- `layout.ts es lógica pura, sin pdf.js` --rationale_for--> `Extracción de líneas y bloques`  [EXTRACTED]
+  CLAUDE.md → README.md
+- `Una frase = una SpeechSynthesisUtterance` --conceptually_related_to--> `Selección de voz por idioma`  [INFERRED]
+  CLAUDE.md → README.md
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
-- **Heurísticas de maquetación del PDF** — claude_md_extraccion_pdf, claude_md_umbrales_calibrados, claude_md_comparar_con_el_mayor, claude_md_lookslikeformula, claude_md_aviso_tablas_formulas, claude_md_fixtures_pdf_reales [EXTRACTED 1.00]
-- **Flujo de verificación antes de terminar** — claude_md_antes_de_terminar, _claude_skills_verify_skill_md_verify, _claude_skills_verify_skill_md_tests_unitarios, _claude_skills_verify_skill_md_servidor_desarrollo, _claude_skills_verify_skill_md_comprobaciones_navegador, _claude_skills_verify_skill_md_build, readme_md_e2e_verify_cjs [EXTRACTED 1.00]
-- **Persistencia por documento en IndexedDB** — readme_md_progreso_sha256, claude_md_cola_escrituras_indexeddb, claude_md_normalizacion_libraryentry, readme_md_marcadores_con_notas, readme_md_seleccion_de_voz, claude_md_indexeddb_sin_version [INFERRED 0.85]
-- **Contenido del que se avisa en vez de recitarlo** — src_core_pdf___fixtures___tables_columnas_alineadas, src_core_pdf___fixtures___tables_formula_con_exponente, src_core_pdf___fixtures___tables_nota_al_pie, src_core_pdf___fixtures___tables_llamada_de_nota [INFERRED 0.85]
+- **Flujo de verificación antes de terminar** — _claude_skills_verify_skill_md_verify, _claude_skills_verify_skill_md_tests_unitarios, _claude_skills_verify_skill_md_servidor_desarrollo, _claude_skills_verify_skill_md_comprobaciones_navegador, _claude_skills_verify_skill_md_build [EXTRACTED 1.00]
 - **Señales con las que se decide dónde acaba un bloque** — src_core_pdf___fixtures___lists_sangria_como_senal, src_core_pdf___fixtures___lists_flush_maqueta_apretada, src_core_pdf___fixtures___lists_flush_marcador_sin_sangria, src_core_pdf___fixtures___sample_orden_de_lectura [INFERRED 0.85]
+- **Contenido del que se avisa en vez de recitarlo** — src_core_pdf___fixtures___tables_columnas_alineadas, src_core_pdf___fixtures___tables_formula_con_exponente, src_core_pdf___fixtures___tables_nota_al_pie, src_core_pdf___fixtures___tables_llamada_de_nota [INFERRED 0.85]
+- **Flujo PDF → bloques → frases → voz → resaltado** — readme_extraccion_de_bloques, readme_deteccion_de_idioma, readme_seleccion_de_voz, claude_una_frase_una_utterance, readme_tres_resaltados, readme_progreso_por_sha256 [EXTRACTED 1.00]
+- **Heurísticas de layout.ts y su calibración** — claude_layout_logica_pura, claude_umbrales_verticales_calibrados, claude_comparar_con_el_mayor_de_los_dos, claude_riesgo_asimetrico, claude_fixtures_de_pdf [EXTRACTED 1.00]
+- **Persistencia en IndexedDB y su migración** — claude_cola_de_escrituras_indexeddb, claude_normalizacion_de_libraryentry, claude_base_lecturame, claude_indexeddb_sin_version_fija, readme_progreso_por_sha256 [EXTRACTED 1.00]
 
-## Communities (17 total, 3 thin omitted)
+## Communities (15 total, 0 thin omitted)
 
-### Community 0 - "Verificación y decisiones de fondo"
-Cohesion: 0.06
-Nodes (42): Paso 4: build, Paso 3: comprobaciones en navegador, Informe de verificación, Paso 2: servidor de desarrollo, Paso 1: tests, typecheck y lint, Skill verify, Antes de dar algo por terminado, Cola de escrituras a IndexedDB (+34 more)
-
-### Community 1 - "Núcleo de extracción de PDF"
+### Community 0 - "Núcleo de extracción de PDF"
 Cohesion: 0.12
 Nodes (31): detectLanguage(), score(), STOPWORDS, announce(), extractDoc(), isAnnounced(), linesPerPage(), ScannedPdfError (+23 more)
 
-### Community 2 - "Reproductor y controles"
+### Community 1 - "Reproductor y controles"
 Cohesion: 0.12
 Nodes (28): PlayerControls(), Props, Props, clamp(), flatIndex(), initPlayer(), PlayerAction, playerReducer() (+20 more)
 
-### Community 3 - "Biblioteca y almacenamiento"
+### Community 2 - "Índice, marcadores y notas"
 Cohesion: 0.13
-Nodes (31): App(), Open, Library(), percentOf(), Props, PdfPane(), Props, usePdfUrl() (+23 more)
+Nodes (27): Bookmarks(), keyOf(), Props, Outline(), Props, Reader(), useKeyboard(), Spot (+19 more)
 
-### Community 4 - "Vista de lectura, índice y búsqueda"
-Cohesion: 0.10
-Nodes (25): Outline(), Props, Reader(), useKeyboard(), Mark, Props, ReaderView(), withMarks() (+17 more)
+### Community 3 - "Biblioteca, portada y almacenamiento"
+Cohesion: 0.14
+Nodes (30): App(), Open, Library(), percentOf(), Props, PdfPane(), Props, usePdfUrl() (+22 more)
+
+### Community 4 - "Decisiones que no conviene deshacer"
+Cohesion: 0.07
+Nodes (33): La base sigue llamándose lecturame, Cola de escrituras a IndexedDB, Comprobaciones en navegador con Playwright, Desplazamiento animado solo en saltos cortos, Abrir IndexedDB sin fijar versión en las comprobaciones, No medir el estado tras una espera fija, Normalización de LibraryEntry al leer, npm run verify (+25 more)
 
 ### Community 5 - "Cadena de lint"
 Cohesion: 0.07
 Nodes (27): eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, devDependencies, eslint, @eslint/js (+19 more)
 
-### Community 6 - "Configuración de TypeScript"
+### Community 6 - "Heurísticas, convenciones y pendientes"
+Cohesion: 0.10
+Nodes (24): Skill graphify (.claude/skills/graphify/SKILL.md), Comentarios `ponytail:`, Un fragmento se compara con el mayor de los dos, Convenciones del repositorio, Fixtures de PDFs reales, graphify: el grafo del proyecto, El grafo se rehace entero, no con `update .`, layout.ts es lógica pura, sin pdf.js (+16 more)
+
+### Community 7 - "Configuración de TypeScript"
 Cohesion: 0.09
 Nodes (22): DOM, DOM.Iterable, ES2022, node, src, vite/client, compilerOptions, isolatedModules (+14 more)
 
-### Community 7 - "Marcadores y notas"
-Cohesion: 0.21
-Nodes (17): Bookmarks(), keyOf(), Props, Spot, useBookmarks(), Bookmark, byPosition(), isBookmarked() (+9 more)
+### Community 8 - "Vista de lectura y búsqueda"
+Cohesion: 0.14
+Nodes (16): Mark, Props, ReaderView(), withMarks(), Props, Search(), snippetOf(), summaryOf() (+8 more)
 
-### Community 8 - "Dependencias y scripts npm"
+### Community 9 - "Dependencias y scripts npm"
 Cohesion: 0.10
 Nodes (19): dependencies, pdfjs-dist, react, react-dom, name, private, scripts, build (+11 more)
 
-### Community 9 - "Fixtures de maquetación"
+### Community 10 - "Fixtures de maquetación"
 Cohesion: 0.14
 Nodes (18): Cierre de la lista ante el párrafo que la sigue, Fixture lists.pdf: listas sangradas, Fixture lists-flush.pdf: listas al margen del cuerpo, Maqueta apretada sin hueco suficiente, Marcador de lista sin sangría (startsList), Ítem largo con líneas de continuación, La sangría como señal de lista, Detección de idioma sobre el texto reconstruido (+10 more)
 
-### Community 10 - "Comprobaciones de navegador"
+### Community 11 - "Comprobaciones de navegador"
 Cohesion: 0.17
 Nodes (7): { chromium }, fs, path, PDF, results, SHOTS, TABLES_PDF
 
-### Community 11 - "Tablas, fórmulas y panel del PDF"
-Cohesion: 0.24
-Nodes (10): Riesgo asimétrico al detectar tablas y fórmulas, Desplazamiento animado solo en saltos cortos, looksLikeFormula exige tres señales, PDF original en el visor del navegador (iframe), Pendiente: fórmulas dentro de un párrafo, Pendiente: resaltar la frase en el PDF, Limitación: fórmulas dentro de un párrafo, Limitación: el panel del PDF no resalta (+2 more)
+### Community 12 - "Skill verify"
+Cohesion: 0.40
+Nodes (6): Paso 4: build, Paso 3: comprobaciones en navegador, Informe de verificación, Paso 2: servidor de desarrollo, Paso 1: tests, typecheck y lint, Skill verify
 
 ## Knowledge Gaps
-- **96 isolated node(s):** `fs`, `path`, `{ chromium }`, `PDF`, `TABLES_PDF` (+91 more)
+- **89 isolated node(s):** `fs`, `path`, `{ chromium }`, `PDF`, `TABLES_PDF` (+84 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
+- **Why does `Extracción de líneas y bloques` connect `Heurísticas, convenciones y pendientes` to `Decisiones que no conviene deshacer`?**
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Why does `devDependencies` connect `Cadena de lint` to `Dependencias y scripts npm`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
-- **Why does `Block` connect `Vista de lectura, índice y búsqueda` to `Núcleo de extracción de PDF`, `Marcadores y notas`?**
-  _High betweenness centrality (0.012) - this node is a cross-community bridge._
-- **Why does `Extracción de bloques y títulos` connect `Verificación y decisiones de fondo` to `Tablas, fórmulas y panel del PDF`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
 - **What connects `fs`, `path`, `{ chromium }` to the rest of the system?**
-  _96 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Verificación y decisiones de fondo` be split into smaller, more focused modules?**
-  _Cohesion score 0.06039488966318235 - nodes in this community are weakly interconnected._
+  _89 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Núcleo de extracción de PDF` be split into smaller, more focused modules?**
   _Cohesion score 0.1207897793263647 - nodes in this community are weakly interconnected._
 - **Should `Reproductor y controles` be split into smaller, more focused modules?**
   _Cohesion score 0.12162162162162163 - nodes in this community are weakly interconnected._
+- **Should `Índice, marcadores y notas` be split into smaller, more focused modules?**
+  _Cohesion score 0.12698412698412698 - nodes in this community are weakly interconnected._
+- **Should `Biblioteca, portada y almacenamiento` be split into smaller, more focused modules?**
+  _Cohesion score 0.13781512605042018 - nodes in this community are weakly interconnected._
