@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bodyHeightOf, dropRunningHeads, itemsToLines, linesToBlocks, type Line, type RawItem } from './layout';
+import { bodyHeightOf, dropRunningHeads, itemsToLines, linesToBlocks, looksLikeFormula, type Line, type RawItem } from './layout';
 
 const item = (text: string, x: number, y: number, width = text.length * 5, height = 10): RawItem => ({
   text,
@@ -41,6 +41,24 @@ describe('linesToBlocks', () => {
   it('marca como título el texto corto con fuente mayor', () => {
     const blocks = linesToBlocks([line('Capítulo 1', 100, 15), line('cuerpo del texto', 80)], bodyHeight);
     expect(blocks.map((b) => b.type)).toEqual(['heading', 'paragraph']);
+  });
+});
+
+describe('looksLikeFormula', () => {
+  it('reconoce una fórmula suelta', () => {
+    expect(looksLikeFormula('R = e−t / S, con S = S₀ · (1 + α · n)')).toBe(true);
+    expect(looksLikeFormula('σ² = Σ (x − μ)² / n')).toBe(true);
+    expect(looksLikeFormula('a ≤ b ≤ c')).toBe(true);
+  });
+
+  // Un falso positivo deja mudo un párrafo entero, que es peor que leer mal una fórmula:
+  // por eso hacen falta las tres señales, y basta que falte una para descartarlo.
+  it('no se traga prosa con números ni símbolos sueltos', () => {
+    expect(looksLikeFormula('El coste es 250 € = 300 $ al cambio')).toBe(false);
+    expect(looksLikeFormula('La cobertura es del 80 % y el margen de error ± 2 puntos')).toBe(false);
+    expect(looksLikeFormula('PDF → bloques → frases → voz')).toBe(false);
+    expect(looksLikeFormula('El nivel 2 dura 6 meses y cuesta 480 euros')).toBe(false);
+    expect(looksLikeFormula('x = 1')).toBe(false);
   });
 });
 

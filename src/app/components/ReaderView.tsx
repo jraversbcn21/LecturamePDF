@@ -86,8 +86,8 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, f
                 </span>
               );
             })}
-            {/* La voz solo anuncia la tabla; los renglones siguen a la vista para poder leerlos. */}
-            {block.type === 'table' && <span className="table-rows">{block.text}</span>}
+            {/* De tablas y fórmulas la voz solo da el aviso; el contenido se queda a la vista. */}
+            {(block.type === 'table' || block.type === 'formula') && <span className="not-spoken">{block.text}</span>}
           </Tag>
         );
       })}

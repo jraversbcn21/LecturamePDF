@@ -1,8 +1,8 @@
 export type Language = 'es' | 'en';
 
 export type Block = {
-  /** `table`: renglones alineados en columnas. Se enseñan, pero no se recitan celda a celda. */
-  type: 'heading' | 'paragraph' | 'list-item' | 'table';
+  /** `table` y `formula` se enseñan tal cual, pero la voz solo los anuncia: recitarlos no se entiende. */
+  type: 'heading' | 'paragraph' | 'list-item' | 'table' | 'formula';
   /** En una tabla, un renglón por línea. */
   text: string;
   page: number;

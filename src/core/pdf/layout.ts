@@ -144,6 +144,25 @@ export function dropFootnotes(pages: Line[][], bodyHeight: number): Line[][] {
   });
 }
 
+/** Símbolos que la prosa no usa: subíndices, superíndices, operadores y letras griegas. */
+// `²³¹` viven en Latin-1, fuera del rango de superíndices, y son justo los que más aparecen.
+const MATH_ONLY = /[·×÷±∓√∑∏∫≈≠≤≥∞∂∆→⇒ΣΠΩαβγδεθλμπρσφψω]|[₀-₉]|[⁰-⁹⁺⁻]|[²³¹]/u;
+const COMPARISON = /[=<>≤≥≈≠]/;
+/** Un token cuenta como palabra a partir de tres letras: «con» sí, «e−t» o «S₀» no. */
+const MIN_WORD_LETTERS = 3;
+
+/**
+ * Una fórmula suelta, de las que ocupan su propio renglón. Se exigen las tres señales a la vez
+ * —casi ningún token es palabra, hay una comparación y aparece algún símbolo ajeno a la prosa—
+ * porque dar por fórmula un párrafo lo dejaría mudo, y eso es peor que leer una fórmula mal.
+ */
+export function looksLikeFormula(text: string): boolean {
+  const tokens = text.split(/\s+/).filter((token) => token !== '');
+  if (tokens.length < 2 || !COMPARISON.test(text) || !MATH_ONLY.test(text)) return false;
+  const words = tokens.filter((token) => (token.match(/\p{L}/gu) ?? []).length >= MIN_WORD_LETTERS);
+  return words.length <= tokens.length * 0.25;
+}
+
 const MAX_HEADING_WORDS = 15;
 
 /** Marcadores de lista: «1.» «2)» «(3)» «A.» «iv)» «•» «-». */
@@ -246,7 +265,13 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
     const height = median(group.map((l) => l.height));
     const isHeading = height > bodyHeight * 1.15 && text.split(/\s+/).length <= MAX_HEADING_WORDS;
     // Un título numerado («1. Introducción») es un título, no un ítem de lista.
-    const type = isHeading ? 'heading' : startsList(text) ? 'list-item' : 'paragraph';
+    const type = isHeading
+      ? 'heading'
+      : startsList(text)
+        ? 'list-item'
+        : looksLikeFormula(text)
+          ? 'formula'
+          : 'paragraph';
     return { type, text, page: group[0]?.page ?? 1 };
   });
 }

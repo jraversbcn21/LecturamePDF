@@ -51,15 +51,22 @@ async function linesPerPage(bytes: ArrayBuffer): Promise<Line[][]> {
 }
 
 /**
- * Lo que se dice de una tabla: recitarla celda a celda no se entiende, y el original está a un
- * clic. El número de página es la referencia para buscarla allí.
+ * Lo que se dice de una tabla o una fórmula: recitarlas no se entiende, y el original está a un
+ * clic, además bien compuesto. El número de página es la referencia para buscarlas allí.
  */
-function tableSummary(block: BlockText, language: Language): string {
+function announce(block: BlockText, language: Language): string {
   const rows = block.text.split('\n').length;
+  if (block.type === 'formula') {
+    return language === 'es'
+      ? `Fórmula, en la página ${block.page} del original.`
+      : `Formula, on page ${block.page} of the original.`;
+  }
   return language === 'es'
     ? `Tabla de ${rows} ${rows === 1 ? 'fila' : 'filas'}, en la página ${block.page} del original.`
     : `Table of ${rows} ${rows === 1 ? 'row' : 'rows'}, on page ${block.page} of the original.`;
 }
+
+const isAnnounced = (block: BlockText): boolean => block.type === 'table' || block.type === 'formula';
 
 /** PDF -> documento listo para escuchar: bloques ordenados, idioma e id estable. */
 export async function extractDoc(file: File): Promise<Doc> {
@@ -75,7 +82,7 @@ export async function extractDoc(file: File): Promise<Doc> {
   const blocks: Block[] = blockTexts
     .map((block) => ({
       ...block,
-      sentences: block.type === 'table' ? [tableSummary(block, language)] : splitSentences(block.text, language),
+      sentences: isAnnounced(block) ? [announce(block, language)] : splitSentences(block.text, language),
     }))
     .filter((block) => block.sentences.length > 0);
 

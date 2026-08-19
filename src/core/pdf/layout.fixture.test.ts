@@ -92,12 +92,22 @@ describe('tablas, llamadas de nota y fórmulas en un PDF real', () => {
     expect(paragraph?.text).toContain('y S la fuerza');
   });
 
-  it('el exponente de una fórmula ya no se lee antes que la fórmula', async () => {
+  it('la fórmula es un bloque propio, entero y en orden', async () => {
     const blocks = await blocksOf('./__fixtures__/tables.pdf');
-    const texts = blocks.map((block) => block.text);
+    const formulas = blocks.filter((block) => block.type === 'formula');
 
-    expect(texts).not.toContain('−t / S');
-    expect(texts.find((text) => text.startsWith('R = e'))).toContain('−t / S,');
+    // El exponente iba en un bloque suelto y, por ir más arriba, se leía antes que la fórmula.
+    expect(blocks.map((block) => block.text)).not.toContain('−t / S');
+    expect(formulas).toHaveLength(1);
+    expect(formulas[0]?.text).toBe('R = e−t / S, con S = S₀ · (1 + α · n)');
+  });
+
+  it('los párrafos que rodean a la fórmula siguen siendo párrafos', async () => {
+    const blocks = await blocksOf('./__fixtures__/tables.pdf');
+    const around = blocks.filter((block) => block.text.startsWith('La retención') || block.text.startsWith('El resultado'));
+
+    expect(around).toHaveLength(2);
+    expect(around.every((block) => block.type === 'paragraph')).toBe(true);
   });
 });
 

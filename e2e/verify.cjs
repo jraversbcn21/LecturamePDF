@@ -562,8 +562,14 @@ const storedPosition = () =>
   check('la tabla se reconoce como tal', (await tableBlock.count()) === 1);
   check(
     'y sus renglones siguen a la vista, para poder leerlos',
-    (await tableBlock.locator('.table-rows').innerText()).split('\n').length === 4,
-    (await tableBlock.locator('.table-rows').innerText()).replace(/\n/g, ' | '),
+    (await tableBlock.locator('.not-spoken').innerText()).split('\n').length === 4,
+    (await tableBlock.locator('.not-spoken').innerText()).replace(/\n/g, ' | '),
+  );
+  check(
+    'la fórmula también se reconoce, y se queda a la vista',
+    (await tablesPage.locator('.reader .formula').count()) === 1 &&
+      (await tablesPage.locator('.reader .formula .not-spoken').innerText()).startsWith('R = e'),
+    await tablesPage.locator('.reader .formula .not-spoken').innerText(),
   );
 
   // Lo que suena al llegar a la tabla: el anuncio, no las celdas.
@@ -583,6 +589,22 @@ const storedPosition = () =>
   check(
     'la llamada de nota al pie no se lee como un número suelto',
     !(await tablesPage.locator('.reader').innerText()).includes('lectivas exige. 1'),
+  );
+
+  // En pausa y midiendo el primero nuevo: la voz venía leyendo desde la tabla, y tanto la frase
+  // que avanza sola como la que sigue al aviso —que es corto— se colarían en la medición.
+  if (await tablesPage.locator('button[aria-label^="Pausar"]').count()) {
+    await tablesPage.click('button[aria-label^="Pausar"]');
+  }
+  await tablesPage.waitForTimeout(150);
+  const spokenBeforeFormula = (await tablesPage.evaluate(() => window.__spoken)).length;
+  await tablesPage.locator('.reader .formula .sentence').first().click();
+  await tablesPage.waitForTimeout(250);
+  const afterFormula = (await tablesPage.evaluate(() => window.__spoken))[spokenBeforeFormula];
+  check(
+    'la fórmula se anuncia en vez de deletrear los símbolos',
+    afterFormula !== undefined && /^Fórmula, en la página \d+ del original\.$/.test(afterFormula.text),
+    afterFormula ? afterFormula.text : 'no leyó nada',
   );
   await tablesContext.close();
 

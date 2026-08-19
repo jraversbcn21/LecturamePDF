@@ -223,8 +223,8 @@ button:disabled {
   margin-top: 0.9rem;
 }
 
-/* Tabla: la voz solo la anuncia, así que los renglones se enseñan aparte y en cuerpo menor. */
-.reader .table .table-rows {
+/* De tablas y fórmulas la voz solo da el aviso, así que su contenido se enseña aparte. */
+.reader .not-spoken {
   display: block;
   margin-top: 0.4rem;
   padding-left: 0.9rem;

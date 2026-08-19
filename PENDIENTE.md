@@ -2,7 +2,7 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
 mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas y retomar
-donde ibas—. 66 tests unitarios y 72 comprobaciones de navegador en verde.
+donde ibas—. 69 tests unitarios y 74 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
@@ -25,9 +25,10 @@ Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
   que comparar no hay hueco propio, y manda `leading`, que en maquetas apretadas no se alcanza.
   Haría falta el hueco típico entre puntos de la lista. Anotado en `src/core/pdf/layout.ts`.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
-- **Fórmulas**: se leen símbolo a símbolo, que no es lo que significan. Verbalizar matemáticas
-  bien es un problema en sí mismo; lo que se arregló fue el orden, que era lo que las volvía
-  ininteligibles. Anunciarlas y saltarlas, como se hace con las tablas, sería el paso siguiente.
+- **Fórmulas dentro de un párrafo**: las que ocupan su propio renglón ya se anuncian, pero una
+  expresión en mitad de una frase se sigue leyendo símbolo a símbolo. Aislarla exigiría partir el
+  párrafo por dentro, y equivocarse ahí deja muda la frase que la rodea: el listón para dar algo
+  por fórmula es alto a propósito (`looksLikeFormula` en `src/core/pdf/layout.ts`).
 - **Notas al pie sin numerar** no se distinguen de un pie de figura y siguen leyéndose. La llamada
   numerada es hoy la única señal fiable; haría falta mirar también el filete de separación.
 

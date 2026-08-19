@@ -87,9 +87,11 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
   números de página repetidos. Las listas (`1.` `2.`, `A.` `B.`, viñetas) se cortan en cada
   marcador y se muestran con sangría francesa, así que la numeración queda en columna como en
   el PDF; el marcador forma parte del texto, de modo que también se lee en voz alta.
-- **Tablas, llamadas y notas al pie** (`src/core/pdf/layout.ts`): una tabla se reconoce porque sus
-  renglones comparten columnas, y se anuncia («Tabla de 4 filas, en la página 2 del original»)
-  en vez de recitarse celda a celda; los renglones siguen a la vista para leerlos con los ojos.
+- **Tablas, fórmulas, llamadas y notas al pie** (`src/core/pdf/layout.ts`): una tabla se reconoce
+  porque sus renglones comparten columnas, y una fórmula porque casi ningún token suyo es una
+  palabra. Las dos se anuncian —«Tabla de 4 filas, en la página 2 del original», «Fórmula, en la
+  página 3 del original»— en vez de recitarse, y su contenido sigue a la vista para leerlo con los
+  ojos, además de bien compuesto en el PDF original, a un clic.
   El número en volado de una llamada de nota se une a su línea —antes partía el párrafo en tres— y
   no se pronuncia. Las notas al pie, en cuerpo menor al final de la página, se dejan fuera del hilo.
 - **Idioma** (`src/core/language.ts`): recuento de palabras vacías en español e inglés.
@@ -105,8 +107,8 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 - **PDFs escaneados**: se detectan y se avisa, pero no se leen, y no está previsto que se lean
   (el porqué, en [PENDIENTE.md](PENDIENTE.md)).
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
-- **Las fórmulas se leen tal cual**: los símbolos se pronuncian como lo que son, no como lo que
-  significan. Al menos ya no se leen al revés, que era lo que hacía el exponente.
+- **Las fórmulas dentro de un párrafo** se leen tal cual: solo se anuncian las que ocupan su
+  propio renglón. Detectarlas en mitad de una frase costaría dejar mudo lo que las rodea.
 - Las notas al pie **sin número** no se distinguen de un pie de figura, así que se leen.
 - Si una lista **no está sangrada** y además sus puntos son **de una sola línea**, el párrafo
   que va detrás del último puede quedarse pegado a él.
