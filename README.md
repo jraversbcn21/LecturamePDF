@@ -102,7 +102,8 @@ para dejar ver lo que vas a escuchar. La tecla `/` la abre si estaba recogida.
 
 ## Limitaciones conocidas
 
-- **PDFs escaneados**: se detectan y se avisa, pero no se leen. Falta OCR.
+- **PDFs escaneados**: se detectan y se avisa, pero no se leen, y no está previsto que se lean
+  (el porqué, en [PENDIENTE.md](PENDIENTE.md)).
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
 - **Las fórmulas se leen tal cual**: los símbolos se pronuncian como lo que son, no como lo que
   significan. Al menos ya no se leen al revés, que era lo que hacía el exponente.

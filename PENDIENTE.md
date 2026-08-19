@@ -6,12 +6,16 @@ donde ibas—. 66 tests unitarios y 72 comprobaciones de navegador en verde.
 
 Lo de abajo está ordenado por lo que más aportaría, no por dificultad.
 
-## Funcionalidad
+## Descartado
 
-- **OCR para PDFs escaneados.** Hoy se detectan y se avisa, pero no se leen: es la limitación que
-  deja fuera documentos enteros. Con `tesseract.js` en el navegador. Es lo más caro de la lista:
-  dependencia pesada, descarga de datos por idioma y proceso lento, así que conviene decidir
-  antes si de verdad hay escaneos que estudiar.
+- **OCR para PDFs escaneados.** Era la única limitación que dejaba fuera documentos enteros, pero
+  el usuario ha confirmado que los suyos llevan texto dentro, así que nunca llegaría a usarse.
+  Habría costado una dependencia pesada, megas de datos por idioma —o descargados en el primer
+  uso, y entonces la aplicación deja de funcionar sin conexión, o incluidos, y entonces pesa más
+  para todos—, minutos de espera por documento y un texto con erratas que, escuchando, no se
+  distinguen de lo que escribió el autor. Además, el índice, las listas y las tablas se detectan
+  a partir de posiciones exactas, que un reconocimiento de imagen no da. **No reabrir esto sin un
+  caso real**: un escaneo concreto que haya que estudiar.
 
 ## Calidad de la extracción
 

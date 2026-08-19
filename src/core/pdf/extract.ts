@@ -21,7 +21,10 @@ const MIN_CHARS_PER_PAGE = 40;
 
 export class ScannedPdfError extends Error {
   constructor() {
-    super('Este PDF no contiene texto extraíble (probablemente es un escaneo). El OCR llegará más adelante.');
+    super(
+      'Este PDF no lleva texto dentro: es una imagen de las páginas, probablemente de un escáner. ' +
+        'Para escucharlo haría falta reconocer las letras de la imagen, que no es algo que esta aplicación haga.',
+    );
     this.name = 'ScannedPdfError';
   }
 }
