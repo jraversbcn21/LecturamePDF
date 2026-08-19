@@ -1,29 +1,17 @@
+/* Paleta «Papel», la misma en toda la aplicación: no sigue el tema del sistema a propósito.
+   El texto se lee sobre hueso y el resaltado ámbar necesita fondo claro para verse; en oscuro
+   había que inventar un segundo juego de resaltados que nadie miraba. */
 :root {
-  --bg: #fbfaf7;
+  --bg: #faf7f1;
   --surface: #ffffff;
-  --text: #1e1c1a;
-  --muted: #6b6560;
-  --border: #e2ddd5;
-  --accent: #1f6feb;
+  --text: #211e1a;
+  --muted: #6d665d;
+  --border: #e5ded2;
+  --accent: #1f5f8b;
   --highlight: #ffe9a8;
   --highlight-word: #ffc94d;
   --highlight-hit: #bcd8ff;
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181d;
-    --surface: #1d2027;
-    --text: #e9e6e1;
-    --muted: #9aa0a8;
-    --border: #2c313a;
-    --accent: #6aa4ff;
-    --highlight: #3d3a1f;
-    --highlight-word: #6b6018;
-    --highlight-hit: #274a7d;
-    color-scheme: dark;
-  }
 }
 
 * {
@@ -94,28 +82,99 @@ button:disabled {
   font-size: 0.85rem;
 }
 
-/* Biblioteca */
+/* Biblioteca — «Papel» */
+
+/* Lo propio de la portada: el resto de la paleta ya viene de :root. */
+
+.paper .mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 7px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+}
+
+.paper .primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
 
 .library {
-  width: min(46rem, 100%);
+  width: min(52rem, 100%);
   margin: 0 auto;
-  padding: 2rem 1.25rem;
+  padding: 2.5rem 1.5rem 3rem;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+.pitch h2 {
+  margin: 0 0 0.7rem;
+  font-family: Georgia, 'Iowan Old Style', serif;
+  font-weight: 400;
+  font-size: 2rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.pitch h2 em {
+  display: block;
+  color: var(--accent);
+}
+
+.pitch p {
+  margin: 0 0 1.3rem;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.fine {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .dropzone {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 2.5rem;
-  border: 2px dashed var(--border);
-  border-radius: 14px;
+  gap: 0.2rem;
+  padding: 2.2rem 1.4rem;
+  border: 1.5px dashed var(--border);
+  border-radius: 16px;
   background: var(--surface);
+  /* Rayado de cuaderno: el aire de papel sin cargar una imagen. */
+  background-image: repeating-linear-gradient(#0000 0 26px, #0000000a 26px 27px);
   text-align: center;
 }
 
+.drop-icon {
+  font-size: 1.6rem;
+  opacity: 0.55;
+}
+
 .dropzone p {
-  margin: 0;
+  margin: 0.3rem 0 0;
+  font-weight: 600;
+}
+
+.dropzone small {
   color: var(--muted);
 }
 
@@ -127,39 +186,76 @@ button:disabled {
   color: #8a1f1f;
 }
 
-@media (prefers-color-scheme: dark) {
-  .error {
-    background: #3a1d1d;
-    color: #ffb4b4;
-  }
+
+.shelf {
+  margin-top: 2.6rem;
+}
+
+.shelf h3 {
+  margin: 0 0 0.9rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .docs {
   list-style: none;
-  margin: 1.5rem 0 0;
+  margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
 }
 
+/* Referencia del botón de borrar, que va superpuesto en la esquina de la ficha. */
 .docs li {
-  display: flex;
-  gap: 0.5rem;
+  position: relative;
 }
 
 .doc {
-  flex: 1;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
   text-align: left;
-  padding: 0.8rem 1rem;
+  /* Hueco a la derecha para que el nombre no pase por debajo del aspa. */
+  padding: 0.9rem 2.2rem 0.9rem 0.9rem;
+  border-radius: 12px;
+}
+
+/* Anillo de progreso: un gradiente cónico con el centro tapado, sin SVG ni dependencia. */
+.ring {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--border) 0);
+  display: grid;
+  place-items: center;
+}
+
+.ring::before {
+  content: '';
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+/* Sin el mínimo en cero, el nombre largo empuja la ficha y desencaja la rejilla. */
+.doc-text {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
 }
 
 .doc-name {
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .doc-meta {
@@ -171,6 +267,23 @@ button:disabled {
   background: none;
   border-color: transparent;
   color: var(--muted);
+}
+
+/* Solo en la ficha: `.ghost` también lo llevan los botones de los marcadores, y allí
+   sacarlo del flujo los superpone sobre el de la nota. */
+.docs .ghost {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  padding: 0.25rem 0.4rem;
+  line-height: 1;
+}
+
+@media (max-width: 48rem) {
+  .hero,
+  .docs {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Lector */

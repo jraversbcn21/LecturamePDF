@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent, type DragEvent } from 'react';
+import { useRef, type ChangeEvent, type CSSProperties, type DragEvent } from 'react';
 import type { LibraryEntry } from '../../core/storage';
 
 type Props = {
@@ -31,39 +31,75 @@ export function Library({ entries, busy, error, onFile, onOpen, onDelete }: Prop
     event.target.value = '';
   };
 
+  // listLibrary() ordena por updatedAt, así que el primero empezado es el último que sonó.
+  const resume = entries.find((entry) => entry.position > 0);
+
   return (
-    <div className="screen">
+    <div className="screen paper">
       <header className="bar">
+        <span className="mark" aria-hidden="true">
+          ▶
+        </span>
         <h1>LecturamePDF</h1>
         <span className="tag">Escucha tus PDFs</span>
       </header>
 
       <div className="library">
-        <div className="dropzone" onDrop={onDrop} onDragOver={(event) => event.preventDefault()}>
-          <p>{busy ? 'Extrayendo el texto del PDF…' : 'Arrastra un PDF aquí'}</p>
-          <button onClick={() => inputRef.current?.click()} disabled={busy}>
-            Elegir PDF
-          </button>
-          <input ref={inputRef} type="file" accept="application/pdf" onChange={onChange} hidden />
+        <div className="hero">
+          <div className="pitch">
+            <h2>
+              Deja de leer apuntes. <em>Escúchalos.</em>
+            </h2>
+            <p>
+              Suelta un PDF y suena en voz alta, frase a frase y resaltado según avanza. Vuelve donde lo dejaste.
+            </p>
+            <div className="hero-actions">
+              <button className="primary" onClick={() => inputRef.current?.click()} disabled={busy}>
+                Elegir PDF
+              </button>
+              {resume && (
+                <button onClick={() => onOpen(resume.id)}>Seguir con «{resume.name.replace(/\.pdf$/i, '')}»</button>
+              )}
+            </div>
+            <p className="fine">Todo ocurre en tu navegador. Ningún archivo sale de tu equipo.</p>
+          </div>
+
+          <div className="dropzone" onDrop={onDrop} onDragOver={(event) => event.preventDefault()}>
+            <span className="drop-icon" aria-hidden="true">
+              📄
+            </span>
+            <p>{busy ? 'Extrayendo el texto del PDF…' : 'Arrastra un PDF aquí'}</p>
+            <small>o pulsa «Elegir PDF»</small>
+            <input ref={inputRef} type="file" accept="application/pdf" onChange={onChange} hidden />
+          </div>
         </div>
 
         {error && <p className="error">{error}</p>}
 
-        <ul className="docs">
-          {entries.map((entry) => (
-            <li key={entry.id}>
-              <button className="doc" onClick={() => onOpen(entry.id)}>
-                <span className="doc-name">{entry.name}</span>
-                <span className="doc-meta">
-                  {entry.language === 'es' ? 'Español' : 'Inglés'} · {percentOf(entry)}% escuchado
-                </span>
-              </button>
-              <button className="ghost" onClick={() => onDelete(entry.id)} aria-label={`Eliminar ${entry.name}`}>
-                ✕
-              </button>
-            </li>
-          ))}
-        </ul>
+        {entries.length > 0 && (
+          <section className="shelf">
+            <h3>Tu estantería</h3>
+            <ul className="docs">
+              {entries.map((entry) => (
+                <li key={entry.id}>
+                  <button className="doc" onClick={() => onOpen(entry.id)}>
+                    {/* El arco es decorativo: el porcentaje va en el texto, que es lo que se lee en voz alta. */}
+                    <span className="ring" style={{ '--p': percentOf(entry) } as CSSProperties} aria-hidden="true" />
+                    <span className="doc-text">
+                      <span className="doc-name">{entry.name}</span>
+                      <span className="doc-meta">
+                        {entry.language === 'es' ? 'Español' : 'Inglés'} · {percentOf(entry)}% escuchado
+                      </span>
+                    </span>
+                  </button>
+                  <button className="ghost" onClick={() => onDelete(entry.id)} aria-label={`Eliminar ${entry.name}`}>
+                    ✕
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );
