@@ -34,7 +34,7 @@ export function Library({ entries, busy, error, onFile, onOpen, onDelete }: Prop
   return (
     <div className="screen">
       <header className="bar">
-        <h1>Lecturame</h1>
+        <h1>LecturamePDF</h1>
         <span className="tag">Escucha tus PDFs</span>
       </header>
 

@@ -37,7 +37,9 @@ comprobar antes la versión de Node: dejan de arrancar.
   darle valor por defecto ahí rompe los datos que el usuario ya tiene. Lo mismo con los almacenes:
   uno nuevo obliga a subir la versión de la base, y `onupgradeneeded` **crea solo lo que falte**,
   para que sirva igual a una base recién hecha que a una vieja. Hay una comprobación de navegador
-  que siembra una base de la versión anterior y confirma que la biblioteca sobrevive.
+  que siembra una base de la versión anterior y confirma que la biblioteca sobrevive. El
+  nombre de la base sigue siendo `lecturame` aunque el proyecto se llame LecturamePDF: no es
+  un descuido, es que renombrarla dejaría huérfano lo que el usuario ya tiene guardado.
 - **De una tabla o una fórmula se da un aviso; no se recitan** (`layout.ts` y `extract.ts`). Al
   ajustar esas heurísticas, ten presente que **el riesgo no es simétrico**: dar por tabla o por
   fórmula algo que era prosa deja un párrafo mudo, y quien escucha no se entera de que ha perdido

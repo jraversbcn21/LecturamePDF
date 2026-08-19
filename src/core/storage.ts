@@ -22,6 +22,11 @@ export type LibraryEntry = {
   updatedAt: number;
 };
 
+/**
+ * No sigue al nombre del proyecto a propósito: renombrarlo abre una base nueva y vacía, y
+ * deja los documentos, el progreso, los marcadores y las notas del usuario huérfanos en la
+ * vieja, sin aviso. Cambiarlo exigiría migrar los datos, no renombrar.
+ */
 const DB_NAME = 'lecturame';
 const DOCS = 'docs';
 const LIBRARY = 'library';
