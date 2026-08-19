@@ -102,3 +102,22 @@ tocó. Las decisiones de fondo acaban en este fichero; los atajos deliberados, e
 
 `npm run verify` (lint, tests, typecheck y build) y `npm run e2e`, ambos en verde. La skill
 `/verify` los encadena y levanta el servidor de desarrollo si hace falta.
+
+## graphify
+
+Hay un grafo de conocimiento del proyecto en `graphify-out/` (no se versiona): comunidades, nodos
+más conectados y relaciones entre ficheros. El binario `graphify` no está en el PATH de esta
+máquina; se invoca como módulo.
+
+- Para preguntas sobre el código, primero `python -m graphify query "<pregunta>"` si existe
+  `graphify-out/graph.json`. Para relaciones, `python -m graphify path "<A>" "<B>"`; para un
+  concepto suelto, `python -m graphify explain "<concepto>"`. Devuelven un subgrafo acotado,
+  bastante más pequeño que `GRAPH_REPORT.md` o que rebuscar a mano.
+- `graphify-out/GRAPH_REPORT.md`, solo para una revisión amplia de la arquitectura o cuando lo
+  anterior no dé contexto suficiente.
+- Al reconstruirlo, **deja fuera `.claude/skills/graphify/`**: su propia documentación son diez
+  ficheros que no hablan de este proyecto y ensucian el grafo.
+- **`python -m graphify update .` no vale para mantenerlo al día**: rehace solo el AST, pero al
+  hacerlo renombra las comunidades con nombres de fichero y vuelve a tragarse la documentación de
+  graphify. Deja un respaldo en `graphify-out/<fecha>/`; si se lanza por error, se restaura de ahí.
+  Para actualizarlo de verdad, rehacerlo entero con `/graphify`.
