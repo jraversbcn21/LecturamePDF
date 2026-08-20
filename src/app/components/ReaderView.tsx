@@ -12,7 +12,10 @@ type Props = {
   bookmarked: Set<string>;
   /** Coincidencias de la búsqueda, por clave «bloque:frase». */
   found: Map<string, SearchHit>;
+  /** Bloques que la voz no lee; el texto queda a la vista, atenuado. */
+  muted: number[];
   onJump: (blockIndex: number, sentenceIndex: number) => void;
+  onToggleMute: (blockIndex: number) => void;
 };
 
 type Mark = { start: number; end: number; className: string };
@@ -44,7 +47,7 @@ function withMarks(sentence: string, marks: Mark[]): ReactNode {
   return <>{pieces}</>;
 }
 
-export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, found, onJump }: Props) {
+export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, found, muted, onJump, onToggleMute }: Props) {
   const activeRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
@@ -65,8 +68,21 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, f
     <article className="reader">
       {doc.blocks.map((block, bIndex) => {
         const Tag = block.type === 'heading' ? 'h2' : 'p';
+        const isMuted = muted.includes(bIndex);
         return (
-          <Tag key={bIndex} className={block.type}>
+          <Tag key={bIndex} className={`${block.type}${isMuted ? ' muted' : ''}`}>
+            <button
+              className="mute-toggle"
+              aria-pressed={isMuted}
+              aria-label={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
+              title={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
+              onClick={(event) => {
+                event.currentTarget.blur(); // que los atajos de teclado sigan respondiendo
+                onToggleMute(bIndex);
+              }}
+            >
+              {isMuted ? '🔊' : '🔇'}
+            </button>
             {block.sentences.map((sentence, sIndex) => {
               const isActive = bIndex === blockIndex && sIndex === sentenceIndex;
               const isBookmarked = bookmarked.has(`${bIndex}:${sIndex}`);

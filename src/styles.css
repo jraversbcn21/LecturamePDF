@@ -390,6 +390,28 @@ button:disabled {
   color: var(--muted);
 }
 
+/* Silenciar un bloque: el botón solo asoma al pasar por encima, salvo en los ya silenciados. */
+.mute-toggle {
+  float: right;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.35rem;
+  font-size: 0.7rem;
+  opacity: 0;
+  border-color: transparent;
+}
+
+.reader > *:hover .mute-toggle,
+.mute-toggle:focus-visible,
+.reader .muted .mute-toggle {
+  opacity: 1;
+}
+
+/* El texto silenciado sigue a la vista, atenuado: se sabe qué hay, solo que no sonará. */
+.reader .muted .sentence,
+.reader .muted .not-spoken {
+  opacity: 0.45;
+}
+
 .sentence {
   cursor: pointer;
   border-radius: 4px;

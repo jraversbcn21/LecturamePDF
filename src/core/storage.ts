@@ -19,6 +19,8 @@ export type LibraryEntry = {
   voiceName: string | null;
   /** Índices de los títulos cuyas secciones se han escuchado enteras. */
   heardSections: number[];
+  /** Bloques silenciados a mano: la voz los salta, el texto sigue a la vista. */
+  muted: number[];
   updatedAt: number;
 };
 
@@ -106,6 +108,7 @@ export function saveDoc(doc: Doc): Promise<void> {
       rate: previous?.rate ?? 1,
       voiceName: previous?.voiceName ?? null,
       heardSections: previous?.heardSections ?? [],
+      muted: previous?.muted ?? [],
       updatedAt: Date.now(),
     }));
   });
@@ -125,6 +128,10 @@ export function saveVoice(id: string, voiceName: string): Promise<void> {
 
 export function saveHeardSections(id: string, heardSections: number[]): Promise<void> {
   return enqueue(() => updateEntry(id, (entry) => (entry ? { ...entry, heardSections } : null)));
+}
+
+export function saveMuted(id: string, muted: number[]): Promise<void> {
+  return enqueue(() => updateEntry(id, (entry) => (entry ? { ...entry, muted } : null)));
 }
 
 export function saveProgress(id: string, blockIndex: number, sentenceIndex: number, position: number): Promise<void> {
@@ -166,6 +173,7 @@ const complete = (entry: LibraryEntry): LibraryEntry => ({
   rate: entry.rate ?? 1,
   voiceName: entry.voiceName ?? null,
   heardSections: entry.heardSections ?? [],
+  muted: entry.muted ?? [],
 });
 
 export async function getEntry(id: string): Promise<LibraryEntry | undefined> {

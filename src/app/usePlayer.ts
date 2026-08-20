@@ -8,13 +8,13 @@ export type WordRange = { start: number; end: number };
 
 export type Player = ReturnType<typeof usePlayer>;
 
-export type PlayerStart = { blockIndex: number; sentenceIndex: number; rate: number; voiceName: string | null };
+export type PlayerStart = { blockIndex: number; sentenceIndex: number; rate: number; voiceName: string | null; muted: number[] };
 
 /** Conecta el estado de reproducción con la síntesis de voz y con el progreso guardado. */
 export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockIndex: number) => void) {
   const counts = useMemo(() => doc.blocks.map((block) => block.sentences.length), [doc]);
   const [state, dispatch] = useReducer(playerReducer, undefined, () =>
-    initPlayer(counts, start.blockIndex, start.sentenceIndex, start.rate),
+    initPlayer(counts, start.blockIndex, start.sentenceIndex, start.rate, start.muted),
   );
   const [voices, setVoices] = useState<Voice[]>([]);
   const [voiceName, setVoiceName] = useState(start.voiceName);

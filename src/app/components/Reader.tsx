@@ -6,7 +6,7 @@ import { RATES, type PlayerAction } from '../playerReducer';
 import { usePlayer, type PlayerStart } from '../usePlayer';
 import { outlineOf, sectionEndingAt } from '../../core/outline';
 import { searchDoc } from '../../core/search';
-import { saveHeardSections } from '../../core/storage';
+import { saveHeardSections, saveMuted } from '../../core/storage';
 import { ReaderView } from './ReaderView';
 import { PlayerControls } from './PlayerControls';
 import { Outline } from './Outline';
@@ -103,6 +103,18 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
 
   const { state, dispatch, voice, voices, setVoiceName, word, notice } = usePlayer(doc, start, onBlockFinished);
   const { bookmarks, toggle, remove, annotate } = useBookmarks(doc.id, doc.blocks, initialBookmarks);
+
+  // El reducer es la única fuente de los silenciados; aquí solo se persiste el cambio.
+  const toggleMute = useCallback(
+    (blockIndex: number) => {
+      const muted = state.muted.includes(blockIndex)
+        ? state.muted.filter((block) => block !== blockIndex)
+        : [...state.muted, blockIndex];
+      dispatch({ type: 'SET_MUTED', muted });
+      void saveMuted(doc.id, muted);
+    },
+    [state.muted, dispatch, doc.id],
+  );
   const [query, setQuery] = useState('');
   const [sidebar, setSidebar] = useState(() => window.matchMedia(WIDE).matches);
   const [pdf, setPdf] = useState(false);
@@ -208,7 +220,9 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           word={word}
           bookmarked={marked}
           found={found}
+          muted={state.muted}
           onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
+          onToggleMute={toggleMute}
         />
         {pdf && (
           <PdfPane

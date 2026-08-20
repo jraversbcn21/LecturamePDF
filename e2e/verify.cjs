@@ -717,6 +717,44 @@ const storedPosition = () =>
   );
   await aiContext.close();
 
+  // --- Silenciar bloques: la voz los salta, el texto se queda ---------------
+  const muteContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await muteContext.addInitScript(fakeSpeech);
+  const mutePage = await muteContext.newPage();
+  mutePage.on('pageerror', (error) => problems.push(`pageerror (silenciar): ${error.message}`));
+  await mutePage.goto(URL);
+  await mutePage.setInputFiles('input[type=file]', PDF);
+  await mutePage.waitForSelector('article.reader', { timeout: 30000 });
+
+  const blockAt = (index) => mutePage.locator('.reader > *').nth(index);
+  await blockAt(1).locator('.mute-toggle').click();
+  check('el botón del bloque lo deja silenciado y atenuado', await blockAt(1).evaluate((el) => el.className.includes('muted')));
+
+  // Leer desde el título: al acabar debe saltar directo al bloque 2, sin pasar por el 1.
+  const skippedText = (await blockAt(1).locator('.sentence').first().innerText()).trim();
+  const expectedNext = (await blockAt(2).locator('.sentence').first().innerText()).trim();
+  const beforeMutedPlay = (await mutePage.evaluate(() => window.__spoken)).length;
+  await blockAt(0).locator('.sentence').first().click();
+  await mutePage.waitForFunction((from) => window.__spoken.length >= from + 2, beforeMutedPlay, { timeout: 10000 });
+  const afterMutedPlay = (await mutePage.evaluate(() => window.__spoken)).slice(beforeMutedPlay).map((u) => u.text.trim());
+  check(
+    'la voz salta el bloque silenciado y sigue en el siguiente',
+    afterMutedPlay[1] === expectedNext && !afterMutedPlay.includes(skippedText),
+    afterMutedPlay.slice(0, 2).join(' | '),
+  );
+
+  // El silencio se guarda con el documento.
+  await mutePage.waitForTimeout(200);
+  await mutePage.reload();
+  await mutePage.waitForSelector('.doc');
+  await mutePage.locator('.doc').first().click();
+  await mutePage.waitForSelector('article.reader');
+  check('el bloque sigue silenciado tras recargar', await blockAt(1).evaluate((el) => el.className.includes('muted')));
+
+  await blockAt(1).locator('.mute-toggle').click();
+  check('y el mismo botón lo devuelve a la lectura', !(await blockAt(1).evaluate((el) => el.className.includes('muted'))));
+  await muteContext.close();
+
   check('sin errores de consola ni excepciones', problems.length === 0, problems.slice(0, 5).join(' || '));
 
   await browser.close();

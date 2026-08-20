@@ -7,6 +7,8 @@ export type PlayerState = {
   rate: number;
   /** Número de frases de cada bloque. */
   counts: number[];
+  /** Bloques silenciados a mano: el avance y Tab los saltan; un clic dentro (JUMP) sí los lee. */
+  muted: number[];
 };
 
 export type PlayerAction =
@@ -18,10 +20,11 @@ export type PlayerAction =
   | { type: 'NEXT_BLOCK' }
   | { type: 'PREV_BLOCK' }
   | { type: 'SET_RATE'; rate: number }
+  | { type: 'SET_MUTED'; muted: number[] }
   | { type: 'JUMP'; blockIndex: number; sentenceIndex?: number };
 
-export function initPlayer(counts: number[], blockIndex = 0, sentenceIndex = 0, rate = 1): PlayerState {
-  return { status: 'idle', counts, rate, ...clamp(counts, blockIndex, sentenceIndex) };
+export function initPlayer(counts: number[], blockIndex = 0, sentenceIndex = 0, rate = 1, muted: number[] = []): PlayerState {
+  return { status: 'idle', counts, rate, muted, ...clamp(counts, blockIndex, sentenceIndex) };
 }
 
 function clamp(counts: number[], blockIndex: number, sentenceIndex: number): { blockIndex: number; sentenceIndex: number } {
@@ -37,19 +40,26 @@ export function flatIndex(counts: number[], blockIndex: number, sentenceIndex: n
 
 export const totalSentences = (counts: number[]): number => counts.reduce((total, count) => total + count, 0);
 
+/** El bloque vecino en esa dirección, saltando los silenciados. Puede salirse del rango. */
+function neighbor(state: PlayerState, delta: 1 | -1): number {
+  let block = state.blockIndex + delta;
+  while (block >= 0 && block < state.counts.length && state.muted.includes(block)) block += delta;
+  return block;
+}
+
 function step(state: PlayerState, delta: 1 | -1): PlayerState {
   const { counts, blockIndex, sentenceIndex } = state;
   const next = sentenceIndex + delta;
   if (next >= 0 && next < (counts[blockIndex] ?? 0)) return { ...state, sentenceIndex: next };
 
-  const block = blockIndex + delta;
+  const block = neighbor(state, delta);
   if (block < 0) return { ...state, sentenceIndex: 0 };
   if (block >= counts.length) return { ...state, status: 'idle' };
   return { ...state, blockIndex: block, sentenceIndex: delta === 1 ? 0 : Math.max((counts[block] ?? 1) - 1, 0) };
 }
 
 function toBlock(state: PlayerState, delta: 1 | -1): PlayerState {
-  const block = state.blockIndex + delta;
+  const block = neighbor(state, delta);
   if (block < 0) return { ...state, sentenceIndex: 0 };
   if (block >= state.counts.length) return { ...state, status: 'idle' };
   return { ...state, blockIndex: block, sentenceIndex: 0 };
@@ -72,6 +82,8 @@ export function playerReducer(state: PlayerState, action: PlayerAction): PlayerS
       return toBlock(state, -1);
     case 'SET_RATE':
       return { ...state, rate: action.rate };
+    case 'SET_MUTED':
+      return { ...state, muted: action.muted };
     case 'JUMP':
       return { ...state, status: 'playing', ...clamp(state.counts, action.blockIndex, action.sentenceIndex ?? 0) };
   }

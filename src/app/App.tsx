@@ -36,6 +36,7 @@ export function App() {
         sentenceIndex: entry?.sentenceIndex ?? 0,
         rate: entry?.rate ?? 1,
         voiceName: entry?.voiceName ?? null,
+        muted: entry?.muted ?? [],
       },
       bookmarks: entry?.bookmarks ?? [],
       heardSections: entry?.heardSections ?? [],

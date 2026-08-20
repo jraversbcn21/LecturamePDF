@@ -47,3 +47,44 @@ describe('playerReducer', () => {
     expect(flatIndex([2, 1, 2], 2, 1)).toBe(4);
   });
 });
+
+describe('bloques silenciados', () => {
+  const silenced = (over: Partial<PlayerState> = {}): PlayerState => ({
+    ...initPlayer([2, 1, 2], 0, 0, 1, [1]),
+    status: 'playing',
+    ...over,
+  });
+
+  it('el avance automático se salta el bloque silenciado', () => {
+    const end = playerReducer(silenced({ sentenceIndex: 1 }), { type: 'SENTENCE_ENDED' });
+    expect(position(end)).toEqual([2, 0]);
+  });
+
+  it('Tab lo salta en las dos direcciones', () => {
+    expect(position(playerReducer(silenced(), { type: 'NEXT_BLOCK' }))).toEqual([2, 0]);
+    expect(position(playerReducer(silenced({ blockIndex: 2 }), { type: 'PREV_BLOCK' }))).toEqual([0, 0]);
+  });
+
+  it('retroceder frase a frase tampoco entra en él', () => {
+    expect(position(playerReducer(silenced({ blockIndex: 2, sentenceIndex: 0 }), { type: 'PREV_SENTENCE' }))).toEqual([0, 1]);
+  });
+
+  it('si todo lo que queda está silenciado, se detiene', () => {
+    const end = playerReducer(
+      { ...initPlayer([2, 1], 0, 1, 1, [1]), status: 'playing' },
+      { type: 'SENTENCE_ENDED' },
+    );
+    expect(end.status).toBe('idle');
+  });
+
+  it('un clic dentro del bloque silenciado sí lo lee: la elección explícita manda', () => {
+    const jumped = playerReducer(silenced(), { type: 'JUMP', blockIndex: 1 });
+    expect(position(jumped)).toEqual([1, 0]);
+    expect(jumped.status).toBe('playing');
+  });
+
+  it('SET_MUTED cambia la lista en caliente', () => {
+    const unmuted = playerReducer(silenced(), { type: 'SET_MUTED', muted: [] });
+    expect(position(playerReducer(unmuted, { type: 'NEXT_BLOCK' }))).toEqual([1, 0]);
+  });
+});
