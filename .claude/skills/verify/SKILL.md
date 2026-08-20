@@ -14,26 +14,32 @@ npm test; if ($?) { npx tsc --noEmit }; if ($?) { npm run lint }
 
 ## 2. Servidor de desarrollo
 
-Las comprobaciones de navegador atacan `http://localhost:5173`. Mira si ya está levantado antes
-de arrancar otro:
+Las comprobaciones de navegador atacan `http://localhost:5173` por defecto, pero **un 200 no
+basta**: el usuario suele tener otros proyectos servidos en ese puerto (se ha visto), y el e2e
+se queda esperando un `input[type=file]` que no existe. Comprueba que lo que responde es
+**esta** aplicación, mirando el título:
 
 ```powershell
 $ErrorActionPreference = 'SilentlyContinue'
-$up = (Invoke-WebRequest http://localhost:5173/ -UseBasicParsing).StatusCode -eq 200
-if ($up) { "servidor ya levantado" } else { "hay que arrancarlo" }
+$body = (Invoke-WebRequest http://localhost:5173/ -UseBasicParsing).Content
+if ($body -match 'LecturamePDF') { "servidor ya levantado en 5173" }
+elseif ($body) { "el 5173 lo ocupa OTRA aplicacion: arrancar en otro puerto" }
+else { "hay que arrancarlo" }
 ```
 
-Si no lo está, arráncalo en segundo plano con `npm run dev` (`run_in_background: true`) y espera
-a que responda antes de seguir. Si lo arrancas tú, déjalo corriendo al terminar y dilo en el
-resumen; no lo mates, que el usuario suele estar usándolo.
+Si hay que arrancarlo, `npm run dev` en segundo plano (`run_in_background: true`) y espera a que
+responda. Vite coge el primer puerto libre (5174 si el 5173 está ocupado): lee el puerto real de
+su salida y pásalo al e2e con `LECTURAME_URL`. Si lo arrancas tú, déjalo corriendo al terminar y
+dilo en el resumen; no lo mates, que el usuario suele estar usándolo.
 
 ## 3. Comprobaciones en navegador
 
 Playwright está instalado de forma **global**, no como dependencia del proyecto, así que hay que
-apuntarle el `NODE_PATH`. Sin esto falla con «Cannot find module 'playwright'»:
+apuntarle el `NODE_PATH`. Sin esto falla con «Cannot find module 'playwright'». Si el servidor
+no está en el 5173, apunta el e2e con `LECTURAME_URL`:
 
 ```powershell
-$env:NODE_PATH = (npm root -g); npm run e2e
+$env:NODE_PATH = (npm root -g); $env:LECTURAME_URL = 'http://localhost:5174/'; npm run e2e
 ```
 
 Si un fallo parece intermitente, repítelo tres o cuatro veces antes de darlo por bueno o por

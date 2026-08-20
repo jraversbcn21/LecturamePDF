@@ -1,13 +1,31 @@
 # Trabajo pendiente
 
-El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (sola o a
-mano), reproducir con resaltado sincronizado, saltar bloques, buscar, marcar con notas, consultar
-el original y retomar donde ibas—, con `npm run verify` y `npm run e2e` en verde.
+El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (local o
+de IA por OpenRouter), reproducir con resaltado sincronizado, saltar bloques, silenciar los que
+no interesan, buscar, marcar con notas, consultar el original y retomar donde ibas—, con
+`npm run verify` y `npm run e2e` en verde.
 
 Nada de lo de abajo bloquea el uso normal: son casos concretos en documentos que ya funcionan.
 Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir si merece la pena
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
+
+## Próxima sesión
+
+- **Decidir la cuota de la voz de IA con datos de uso real.** El usuario la está probando con la
+  cuenta free de OpenRouter: ~50 peticiones/día (una por frase) y 20/min. Si se queda corta, la
+  recarga única de ~$10 sube el límite free a 1.000/día para siempre y de paso da saldo para
+  Kokoro de pago ($0.62 por millón de caracteres). Cuando la lectura se pause con «La voz de IA
+  no responde (429)», es esta cuota, no un fallo.
+- **Resubir los PDFs antiguos que arrastren cabeceras.** La limpieza de cabeceras de dos líneas
+  solo aplica al extraer; un documento ya guardado se re-extrae al volver a subir el mismo PDF
+  (conserva progreso y marcadores, aunque los índices de bloque pueden desplazarse un poco).
+- **Páginas de índice con puntos de guía** («Preguntas ..... 7»): se leen enteras, renglón a
+  renglón. Una heurística de líneas `texto···número` podría anunciarlas como se hace con las
+  tablas. Se dejó fuera porque el silenciado manual ya lo resuelve y equivocarse dejaría muda una
+  línea de contenido; retomar solo si silenciar índices a mano se hace pesado.
+- **Caché de audio de la voz de IA**, si el coste o la espera empiezan a molestar (detalle abajo,
+  en «Interfaz»).
 
 ## Descartado
 

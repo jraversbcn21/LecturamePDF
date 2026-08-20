@@ -164,10 +164,12 @@ documentos añadidos desde que se guarda el original; para uno anterior, vuelve 
   une a su línea —antes partía el párrafo en tres— y no se pronuncia. Las notas al pie, el cierre
   en cuerpo menor de la página, se dejan fuera del hilo de lectura.
 - **Idioma** (`src/core/language.ts`): recuento de palabras vacías en español e inglés.
-- **Voz** (`src/core/tts.ts`): **una frase = una utterance**. El fin de frase es un evento real
-  del navegador, así que el resaltado nunca se desincroniza aunque cambies de velocidad o
+- **Voz** (`src/core/tts.ts`): **una frase = una locución** — una utterance con las voces del
+  navegador, una petición TTS con su `Audio` con la voz de IA. El fin de frase es un evento real
+  en los dos casos, así que el resaltado nunca se desincroniza aunque cambies de velocidad o
   saltes de bloque. Los eventos de palabra (`onboundary`) se aprovechan si la voz los emite,
-  pero la sincronización no depende de ellos.
+  pero la sincronización no depende de ellos. Con la voz de IA, la frase siguiente se pide por
+  adelantado mientras suena la actual, para que no haya silencio entre frases.
 - **Progreso** (`src/core/storage.ts`): el documento se identifica por el SHA-256 de sus bytes,
   así que reabrir el mismo PDF recupera la posición exacta desde IndexedDB.
 
@@ -179,8 +181,9 @@ documentos añadidos desde que se guarda el original; para uno anterior, vuelve 
 - **Las fórmulas dentro de un párrafo** se leen tal cual: solo se anuncian las que ocupan su
   propio renglón. Detectarlas en mitad de una frase costaría dejar mudo lo que las rodea.
 - Las notas al pie **sin número** no se distinguen de un pie de figura, así que se leen.
-- Si una lista **no está sangrada** y además sus puntos son **de una sola línea**, el párrafo
-  que va detrás del último puede quedarse pegado a él.
+- Una lista de **un solo punto y una sola línea**, sin sangrar y en maqueta apretada, puede
+  quedarse pegada al párrafo que la sigue: sin un segundo punto ni una segunda línea no hay
+  ningún hueco con el que comparar.
 - El panel del PDF **no resalta la frase que suena**: dentro del visor del navegador no se puede.
   Tampoco se le pueden cerrar las miniaturas, porque Chromium ignora todo parámetro que no sea la
   página.
