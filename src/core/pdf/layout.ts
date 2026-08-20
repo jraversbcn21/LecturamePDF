@@ -210,6 +210,8 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
   let anchorIsListItem = false;
   /** Hueco con el que se pegó la última línea al grupo en curso; 0 si el grupo es de una sola. */
   let groupGap = 0;
+  /** Hueco entre puntos consecutivos de la lista en curso; 0 fuera de una lista. */
+  let itemGap = 0;
 
   for (const [index, line] of lines.entries()) {
     const previous = lines[index - 1];
@@ -221,10 +223,11 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
     // Las líneas de un mismo bloque van a distancia constante, así que un hueco mayor que el
     // del propio grupo delata uno nuevo aunque el margen izquierdo no cambie. Es lo único que
     // separa una lista sin sangrar del párrafo que la sigue, cuando la maqueta va apretada y
-    // `leading * 1.5` no se alcanza nunca.
-    // ponytail: no ayuda si el bloque en curso es de una sola línea (no hay hueco con el que
-    // comparar); ahí sigue mandando `leading`. Haría falta el hueco típico entre puntos.
-    const opensGap = groupGap > 0 && gap > groupGap * 1.15;
+    // `leading * 1.5` no se alcanza nunca. Si el punto es de una sola línea no hay hueco propio,
+    // y entonces la referencia es el hueco entre los propios puntos de la lista.
+    // ponytail: una lista de un solo punto no tiene ni eso; ahí sigue mandando `leading`.
+    const blockGap = groupGap > 0 ? groupGap : itemGap;
+    const opensGap = blockGap > 0 && gap > blockGap * 1.15;
     // La tabla es un bloque aparte, entero: ni se parte por dentro ni se pega a lo que la rodea.
     const inTable = rows[index] ?? false;
     const startsBlock =
@@ -240,6 +243,7 @@ export function linesToBlocks(lines: Line[], bodyHeight: number): BlockText[] {
     if (startsBlock) {
       groups.push([line]);
       isTable.push(inTable);
+      itemGap = isListItem && anchorIsListItem ? gap : 0;
       anchor = line;
       anchorIsListItem = isListItem;
       groupGap = 0;

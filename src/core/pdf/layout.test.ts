@@ -126,6 +126,25 @@ describe('listas', () => {
     expect(blocks[2]?.text).toBe('Texto de cierre, que no es parte del punto anterior.');
   });
 
+  it('cierra una lista de puntos de una sola línea, al margen y en maqueta apretada', () => {
+    // Todo en x=30 y cada punto en un solo renglón: no hay sangría ni hueco propio del bloque
+    // con el que comparar. La única señal es el hueco entre los propios puntos (14): el cierre
+    // llega a 18, por debajo de leading * 1.5 (21), así que sin esa referencia se pegaría.
+    const blocks = linesToBlocks(
+      [
+        line('1. Primer punto.', 200),
+        line('2. Segundo punto.', 186),
+        line('Texto de cierre, que no es parte', 168),
+        line('del punto anterior.', 154),
+      ],
+      bodyHeight,
+    );
+
+    expect(blocks.map((b) => b.type)).toEqual(['list-item', 'list-item', 'paragraph']);
+    expect(blocks[1]?.text).toBe('2. Segundo punto.');
+    expect(blocks[2]?.text).toBe('Texto de cierre, que no es parte del punto anterior.');
+  });
+
   // Fija el 0.5 de `indentTolerance = bodyHeight * 0.5`, que es lo único que separa aquí el
   // cierre del punto: el hueco es constante y la altura no cambia. El texto vuelve 8 puntos a
   // la izquierda del marcador, entre media línea y una entera; con la tolerancia en una línea

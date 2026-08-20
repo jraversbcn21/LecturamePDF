@@ -22,11 +22,10 @@ recogidos aquí.
 
 ## Calidad de la extracción
 
-- **Listas sin sangría de puntos cortos**: un bloque se cierra cuando el hueco crece respecto al
-  de sus propias líneas, así que una lista sin sangrar ya se separa del párrafo que la sigue
-  (`lists-flush.pdf`). Falta el caso en que los puntos son **de una sola línea**: sin dos líneas
-  que comparar no hay hueco propio, y manda `leading`, que en maquetas apretadas no se alcanza.
-  Haría falta el hueco típico entre puntos de la lista. Anotado en `src/core/pdf/layout.ts`.
+- **Lista de un solo punto, de una sola línea**: un bloque se cierra cuando el hueco crece
+  respecto al de sus propias líneas, y si el punto es de una sola línea, respecto al hueco entre
+  los puntos de la lista. Con un único punto no hay ni lo uno ni lo otro, y manda `leading`, que
+  en maquetas apretadas no se alcanza. Anotado en `src/core/pdf/layout.ts`.
 - **Maquetación a varias columnas** compleja puede desordenar el texto.
 - **Fórmulas dentro de un párrafo**: las que ocupan su propio renglón ya se anuncian, pero una
   expresión en mitad de una frase se sigue leyendo símbolo a símbolo. Aislarla exigiría partir el
