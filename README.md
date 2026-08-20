@@ -99,11 +99,12 @@ y si la red o la cuota fallan la lectura **se pausa y avisa** en vez de saltarse
 pulsar ▶ se reintenta desde la misma frase. Estas voces nunca se eligen solas: solo suenan si
 las eliges tú.
 
-Cada bloque tiene un botón `🔇` (asoma al pasar el ratón por encima) para **silenciarlo**: la
-voz lo salta al avanzar y al moverse con `Tab`, pero el texto sigue a la vista, atenuado — útil
-para cabeceras o avisos legales que la limpieza automática no cazó. Un clic dentro del bloque
-silenciado sí lo lee: la elección explícita manda. Se guarda con el documento, y el mismo botón
-(`🔊`) lo devuelve a la lectura.
+Cada bloque tiene un botón de altavoz (asoma al pasar el ratón por encima) para **silenciarlo**:
+la voz lo salta al avanzar y al moverse con `Tab`, pero el texto sigue a la vista, atenuado —
+útil para cabeceras o avisos legales que la limpieza automática no cazó. El icono es el estado,
+como en un reproductor: `🔊` suena, `🔇` silenciado. Un clic dentro del bloque silenciado sí lo
+lee: la elección explícita manda. Se guarda con el documento, y el mismo botón lo devuelve a la
+lectura.
 
 Con la estrella de los controles (o la tecla `M`) marcas la frase que estás escuchando para
 repasarla después. Los marcadores se listan en la barra lateral en orden de lectura, con su
