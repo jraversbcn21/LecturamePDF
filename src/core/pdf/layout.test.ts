@@ -196,6 +196,47 @@ describe('dropRunningHeads', () => {
       'contenido de la página 3',
     ]);
   });
+
+  // El caso del ISTQB: la cabecera ocupa dos líneas y el pie lleva el número dentro del texto.
+  it('elimina cabeceras y pies repetidos de dos líneas', () => {
+    const pages = [1, 2, 3].map((page) => [
+      line('Ejemplo de Examen Modelo A Qualifications Board', 200, 10, page),
+      line('Ejemplo de Examen - Preguntas', 186, 10, page),
+      line(`contenido distinto en la página ${page}`, 150, 10, page),
+      line(`Versión ES - V01.00 Página ${page} de 40`, 20, 10, page),
+    ]);
+    expect(dropRunningHeads(pages).flat().map((l) => l.text)).toEqual([
+      'contenido distinto en la página 1',
+      'contenido distinto en la página 2',
+      'contenido distinto en la página 3',
+    ]);
+  });
+
+  // Solo contiguas desde el borde: una frase repetida (un estribillo, una advertencia legal)
+  // en segunda línea, con contenido real por encima, es texto del cuerpo y se queda.
+  it('no toca una línea repetida si la del borde es contenido real', () => {
+    const openings = ['Abre la primera página con su texto.', 'La segunda arranca distinto.', 'Y la tercera, a su manera.'];
+    const closings = ['Cierra hablando de memoria.', 'Termina con otro asunto.', 'Acaba con una idea nueva.'];
+    const pages = [1, 2, 3].map((page) => [
+      line(openings[page - 1] ?? '', 200, 10, page),
+      line('Advertencia: no distribuir.', 186, 10, page),
+      line(closings[page - 1] ?? '', 150, 10, page),
+    ]);
+    expect(dropRunningHeads(pages).flat().map((l) => l.text)).toContain('Advertencia: no distribuir.');
+  });
+
+  // La segunda línea solo cae si se repite literalmente: «Pregunta: 01» y «Pregunta: 02» se
+  // parecen normalizados los dígitos, pero son contenido. La cabecera de dos líneas es idéntica.
+  it('no confunde títulos numerados consecutivos con una cabecera de dos líneas', () => {
+    const pages = [1, 2, 3].map((page) => [
+      line('Ejemplo de Examen - Preguntas', 200, 10, page),
+      line(`Pregunta: 0${page}`, 186, 10, page),
+      line(`enunciado de la pregunta ${page}`, 150, 10, page),
+    ]);
+    const kept = dropRunningHeads(pages).flat().map((l) => l.text);
+    expect(kept).toContain('Pregunta: 01');
+    expect(kept).not.toContain('Ejemplo de Examen - Preguntas');
+  });
 });
 
 describe('bodyHeightOf', () => {

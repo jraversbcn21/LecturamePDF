@@ -104,25 +104,49 @@ const isPageNumber = (text: string): boolean => /^[\divxlcIVXLC.\-—\s]{1,8}$/.
 const MAX_RUNNING_HEAD_CHARS = 80;
 const normalize = (text: string): string => text.replace(/\d+/g, '#').replace(/\s+/g, ' ').trim().toLowerCase();
 
+/** Una cabecera o un pie ocupan como mucho dos líneas; mirar más ya roza el cuerpo del texto. */
+const EDGE_LINES = 2;
+/** Sin plegar dígitos: «Pregunta: 01» y «Pregunta: 02» deben seguir siendo distintas. */
+const exact = (text: string): string => text.replace(/\s+/g, ' ').trim().toLowerCase();
+
 /**
  * Quita cabeceras, pies y números de página: escucharlos en cada página es insufrible.
- * Solo mira la primera y la última línea de cada página, y solo si son cortas,
- * para no tragarse texto real del cuerpo.
+ * Mira hasta dos líneas por borde de cada página —hay cabeceras que ocupan dos—, solo si son
+ * cortas, y solo contiguas desde el borde. La línea del borde mismo se compara plegando los
+ * dígitos («Página 6 de 40» cambia de número); la segunda solo cae si se repite literal, porque
+ * los títulos numerados consecutivos («Pregunta: 01», «Pregunta: 02») se plegarían a lo mismo
+ * y son contenido. Perder cuerpo del texto es peor que oír una cabecera de más.
  */
 export function dropRunningHeads(pages: Line[][]): Line[][] {
   const edgesOf = (lines: Line[]): Line[] =>
-    [lines[0], lines[lines.length - 1]].filter((line): line is Line => line !== undefined && line.text.length <= MAX_RUNNING_HEAD_CHARS);
+    [...lines.slice(0, EDGE_LINES), ...lines.slice(Math.max(EDGE_LINES, lines.length - EDGE_LINES))].filter(
+      (line) => line.text.length <= MAX_RUNNING_HEAD_CHARS,
+    );
   const counts = new Map<string, number>();
   for (const lines of pages) {
-    for (const key of new Set(edgesOf(lines).map((l) => normalize(l.text)))) {
+    for (const key of new Set(edgesOf(lines).flatMap((l) => [normalize(l.text), exact(l.text)]))) {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
   }
   const repeated = (key: string): boolean => pages.length >= 3 && (counts.get(key) ?? 0) > pages.length * 0.5;
 
   return pages.map((lines) => {
-    const edges = new Set(edgesOf(lines));
-    return lines.filter((line) => !(edges.has(line) && (isPageNumber(line.text) || repeated(normalize(line.text)))));
+    const short = (line: Line): boolean => line.text.length <= MAX_RUNNING_HEAD_CHARS;
+    const isOuter = (line: Line | undefined): boolean =>
+      line !== undefined && short(line) && (isPageNumber(line.text) || repeated(normalize(line.text)));
+    const isInner = (line: Line | undefined): boolean =>
+      line !== undefined && short(line) && (isPageNumber(line.text) || repeated(exact(line.text)));
+    const drop = new Set<Line>();
+    if (isOuter(lines[0])) {
+      drop.add(lines[0] as Line);
+      if (isInner(lines[1])) drop.add(lines[1] as Line);
+    }
+    const last = lines.length - 1;
+    if (lines.length > 1 && isOuter(lines[last])) {
+      drop.add(lines[last] as Line);
+      if (last - 1 > 0 && isInner(lines[last - 1])) drop.add(lines[last - 1] as Line);
+    }
+    return lines.filter((line) => !drop.has(line));
   });
 }
 
