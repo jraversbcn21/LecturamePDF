@@ -81,7 +81,8 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, f
                 onToggleMute(bIndex);
               }}
             >
-              {isMuted ? '🔊' : '🔇'}
+              {/* El icono es el estado, como en cualquier reproductor: 🔇 = silenciado. El título dice la acción. */}
+              {isMuted ? '🔇' : '🔊'}
             </button>
             {block.sentences.map((sentence, sIndex) => {
               const isActive = bIndex === blockIndex && sIndex === sentenceIndex;
