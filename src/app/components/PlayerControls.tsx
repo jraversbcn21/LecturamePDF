@@ -1,12 +1,12 @@
 import type { Dispatch, MouseEvent } from 'react';
 import { flatIndex, RATES, totalSentences, type PlayerAction, type PlayerState } from '../playerReducer';
-import { voiceLabel } from '../../core/tts';
+import type { Voice } from '../../core/tts';
 
 type Props = {
   state: PlayerState;
   dispatch: Dispatch<PlayerAction>;
-  voice: SpeechSynthesisVoice | null;
-  voices: SpeechSynthesisVoice[];
+  voice: Voice | null;
+  voices: Voice[];
   onVoiceChange: (name: string) => void;
   page: number;
   isBookmarked: boolean;
@@ -81,7 +81,7 @@ export function PlayerControls({ state, dispatch, voice, voices, onVoiceChange, 
             {voice ? null : <option value="">sin voz disponible</option>}
             {voices.map((option) => (
               <option key={option.name} value={option.name}>
-                {voiceLabel(option.name)}
+                {option.label}
               </option>
             ))}
           </select>

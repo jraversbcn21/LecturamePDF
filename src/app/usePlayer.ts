@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { Doc } from '../core/types';
-import { loadVoices, pickVoice, sortVoices, tts } from '../core/tts';
+import { loadVoices, pickVoice, sortVoices, tts, type Voice } from '../core/tts';
 import { saveProgress, saveRate, saveVoice } from '../core/storage';
 import { flatIndex, initPlayer, playerReducer } from './playerReducer';
 
@@ -16,7 +16,7 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
   const [state, dispatch] = useReducer(playerReducer, undefined, () =>
     initPlayer(counts, start.blockIndex, start.sentenceIndex, start.rate),
   );
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [voices, setVoices] = useState<Voice[]>([]);
   const [voiceName, setVoiceName] = useState(start.voiceName);
   const [word, setWord] = useState<WordRange | null>(null);
   const spokenRef = useRef<string | null>(null);
