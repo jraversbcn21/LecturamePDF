@@ -42,6 +42,30 @@ describe('linesToBlocks', () => {
     const blocks = linesToBlocks([line('Capítulo 1', 100, 15), line('cuerpo del texto', 80)], bodyHeight);
     expect(blocks.map((b) => b.type)).toEqual(['heading', 'paragraph']);
   });
+
+  // Fija el 1.5 de `gap > leading * 1.5`. Los huecos del segundo párrafo (15) caen en la franja
+  // que ningún fixture cubría: por encima de 1.2 · leading y por debajo de 1.5 · leading. Bajar
+  // el factor lo partiría línea a línea, y hasta ahora el cambio pasaba con los tests en verde.
+  it('mantiene junto un párrafo algo más aireado que el interlineado dominante', () => {
+    const blocks = linesToBlocks(
+      [
+        line('Primera línea del párrafo inicial', 300),
+        line('que continúa con el interlineado', 288),
+        line('más apretado de toda la página', 276),
+        line('y cierra aquí su tercera idea.', 264),
+        line('Segundo párrafo, algo más aireado', 242),
+        line('que el anterior pero sin llegar', 227),
+        line('al hueco que separa un bloque', 212),
+        line('de otro en esta misma página.', 197),
+      ],
+      bodyHeight,
+    );
+
+    expect(blocks.map((b) => b.type)).toEqual(['paragraph', 'paragraph']);
+    expect(blocks[1]?.text).toBe(
+      'Segundo párrafo, algo más aireado que el anterior pero sin llegar al hueco que separa un bloque de otro en esta misma página.',
+    );
+  });
 });
 
 describe('looksLikeFormula', () => {
@@ -100,6 +124,24 @@ describe('listas', () => {
     expect(blocks.map((b) => b.type)).toEqual(['list-item', 'list-item', 'paragraph']);
     expect(blocks[1]?.text).toBe('2. Segundo punto, también en dos líneas.');
     expect(blocks[2]?.text).toBe('Texto de cierre, que no es parte del punto anterior.');
+  });
+
+  // Fija el 0.5 de `indentTolerance = bodyHeight * 0.5`, que es lo único que separa aquí el
+  // cierre del punto: el hueco es constante y la altura no cambia. El texto vuelve 8 puntos a
+  // la izquierda del marcador, entre media línea y una entera; con la tolerancia en una línea
+  // completa se leería como cola del punto anterior.
+  it('cierra el punto cuando el texto vuelve al margen, aunque sea por poco', () => {
+    const blocks = linesToBlocks(
+      [
+        line('1. Primer punto, que sigue', 200, 10, 1, 60),
+        line('en una segunda línea.', 186, 10, 1, 68),
+        line('Texto de cierre en el margen.', 172, 10, 1, 52),
+      ],
+      bodyHeight,
+    );
+
+    expect(blocks.map((b) => b.type)).toEqual(['list-item', 'paragraph']);
+    expect(blocks[0]?.text).toBe('1. Primer punto, que sigue en una segunda línea.');
   });
 
   it('reconoce letras y viñetas como marcadores', () => {
