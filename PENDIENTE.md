@@ -42,6 +42,13 @@ recogidos aquí.
   ella el subrayado punteado de la frase marcada. Es el único color que no sale de la paleta: se
   dejó porque ahí el oro es la señal de «marcado», no parte del tema, y se lee en los dos modos.
   Si algún día molesta, pasa al acento; lo que no puede es competir con los tres resaltados.
+- **La voz de IA no cachea el audio**: re-escuchar una frase (o releer un documento) vuelve a
+  pagar la petición y a esperar la red; solo la frase siguiente se pide por adelantado (caché de
+  una entrada en `src/core/tts.ts`, anotada con `ponytail:`). Una caché en IndexedDB exigiría un
+  almacén nuevo (versión 3 de la base) y crecería sin límite; esperar a que el coste o la espera
+  molesten de verdad.
+- **La voz de IA no resalta la palabra en curso**, solo la frase: la API de OpenRouter devuelve
+  el audio sin timestamps por palabra. ElevenLabs sí los da, si algún día compensa su cuota.
 - **No se resalta en el PDF la frase que suena**, ni se le pueden cerrar las miniaturas al visor:
   Chromium ignora todo parámetro de apertura que no sea la página. Salir de ahí obligaría a dibujar
   las páginas nosotros con pdf.js, y con ello a escribir zoom, desplazamiento y paginación a mano.

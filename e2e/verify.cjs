@@ -108,6 +108,47 @@ const fakeSpeech = () => {
   };
 };
 
+/**
+ * Red falsa para la voz de IA: responde a OpenRouter con un WAV de silencio que el
+ * <Audio> real reproduce hasta su `ended`. Apunta cada frase pedida en window.__tts,
+ * y con window.__ttsFail responde 500 para provocar el camino de error.
+ */
+const fakeOpenRouter = () => {
+  window.__tts = [];
+  window.__ttsFail = false;
+  const wav = (() => {
+    const samples = 2000; // 0,25 s de silencio a 8 kHz
+    const buffer = new Uint8Array(44 + samples);
+    const view = new DataView(buffer.buffer);
+    const ascii = (offset, text) => {
+      for (let i = 0; i < text.length; i++) buffer[offset + i] = text.charCodeAt(i);
+    };
+    ascii(0, 'RIFF');
+    view.setUint32(4, 36 + samples, true);
+    ascii(8, 'WAVE');
+    ascii(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, 8000, true);
+    view.setUint32(28, 8000, true);
+    view.setUint16(32, 1, true);
+    view.setUint16(34, 8, true);
+    ascii(36, 'data');
+    view.setUint32(40, samples, true);
+    buffer.fill(128, 44); // el silencio de PCM en 8 bits es 128, no 0
+    return buffer;
+  })();
+  const realFetch = window.fetch.bind(window);
+  window.fetch = (input, init) => {
+    const url = typeof input === 'string' ? input : input.url;
+    if (!url.includes('openrouter.ai/api/v1/audio/speech')) return realFetch(input, init);
+    window.__tts.push(JSON.parse(init.body).input);
+    if (window.__ttsFail) return Promise.resolve(new Response('', { status: 500 }));
+    return Promise.resolve(new Response(wav, { status: 200, headers: { 'Content-Type': 'audio/wav' } }));
+  };
+};
+
 /** Base tal y como la dejaba la versión anterior: sin almacén de originales y con fichas incompletas. */
 const seedVersion1 = () =>
   new Promise((resolve, reject) => {
@@ -151,7 +192,8 @@ const storedPosition = () =>
   });
 
 (async () => {
-  const browser = await chromium.launch();
+  // Sin el primer flag, headless bloquea audio.play() sin gesto del usuario (la voz de IA).
+  const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] });
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   await context.addInitScript(fakeSpeech);
   const page = await context.newPage();
@@ -636,6 +678,44 @@ const storedPosition = () =>
       (await oldPage.locator('.pdf-frame').count()) === 0,
   );
   await oldContext.close();
+
+  // --- Voz de IA remota (Kokoro vía OpenRouter, con la red falseada) --------
+  const aiContext = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await aiContext.addInitScript(fakeSpeech);
+  await aiContext.addInitScript(fakeOpenRouter);
+  const aiPage = await aiContext.newPage();
+  aiPage.on('pageerror', (error) => problems.push(`pageerror (voz IA): ${error.message}`));
+  await aiPage.goto(URL);
+  await aiPage.evaluate(() => localStorage.setItem('lecturame:openrouter-key', 'clave-de-prueba'));
+  await aiPage.setInputFiles('input[type=file]', PDF);
+  await aiPage.waitForSelector('article.reader', { timeout: 30000 });
+  await aiPage.selectOption('select.voice', 'openrouter:ef_dora');
+
+  // La frase se apunta ANTES de pulsar ▶: el audio dura 0,25 s y el resaltado no espera.
+  const aiFirst = (await aiPage.locator('.sentence.active').first().innerText()).trim();
+  await aiPage.click('button[aria-label^="Reproducir"]');
+  await aiPage.waitForFunction(() => window.__tts.length >= 2, null, { timeout: 10000 });
+  const aiSpoken = await aiPage.evaluate(() => window.__tts);
+  check('la voz de IA pide a OpenRouter exactamente la frase resaltada', (aiSpoken[0] ?? '').trim() === aiFirst, aiSpoken[0]);
+  const aiAdvanced = await aiPage
+    .waitForFunction((first) => document.querySelector('.sentence.active')?.textContent?.trim() !== first, aiFirst, { timeout: 10000 })
+    .then(() => true, () => false);
+  check('el resaltado avanza cuando termina el audio', aiAdvanced);
+
+  // La red falla: pausa y aviso. Avanzar en silencio sería perder contenido sin que se note.
+  await aiPage.evaluate(() => {
+    window.__ttsFail = true;
+  });
+  await aiPage.waitForSelector('.status.notice', { timeout: 10000 });
+  const aiStuck = (await aiPage.locator('.sentence.active').first().innerText()).trim();
+  await aiPage.waitForTimeout(600);
+  check(
+    'si la red falla, pausa y avisa en vez de saltarse la frase',
+    (await aiPage.locator('.sentence.active').first().innerText()).trim() === aiStuck &&
+      (await aiPage.locator('button[aria-label^="Reproducir"]').count()) === 1,
+    await aiPage.locator('.status.notice').innerText(),
+  );
+  await aiContext.close();
 
   check('sin errores de consola ni excepciones', problems.length === 0, problems.slice(0, 5).join(' || '));
 

@@ -50,6 +50,15 @@ comprobar antes la versión de Node: dejan de arrancar.
   que siembra una base de la versión anterior y confirma que la biblioteca sobrevive. El
   nombre de la base sigue siendo `lecturame` aunque el proyecto se llame LecturamePDF: no es
   un descuido, es que renombrarla dejaría huérfano lo que el usuario ya tiene guardado.
+- **La voz de IA sigue la misma regla de oro: una frase = una petición TTS = un `Audio`**
+  (`src/core/tts.ts`). El fin de frase es el `ended` del audio, un evento real, y el resaltado no
+  se desincroniza. Tres decisiones dentro: `pickVoice` **jamás** elige la remota por sí sola
+  (gasta red y saldo; solo suena elegida a mano); en error de red **se pausa y se avisa, no se
+  avanza** —el mismo riesgo asimétrico de las tablas: saltarse una frase en silencio pierde
+  contenido sin que el oyente se entere, mientras que en la rama local el `onerror` sí avanza
+  porque ahí el riesgo es quedarse atascado—; y la cancelación va por un contador `generation`
+  que también sube `pause()` cuando el fetch está en vuelo, para que un blob tardío no suene
+  sobre lo que el usuario ya dejó atrás.
 - **De una tabla o una fórmula se da un aviso; no se recitan** (`layout.ts` y `extract.ts`). Al
   ajustar esas heurísticas, ten presente que **el riesgo no es simétrico**: dar por tabla o por
   fórmula algo que era prosa deja un párrafo mudo, y quien escucha no se entera de que ha perdido

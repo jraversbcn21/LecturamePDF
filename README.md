@@ -85,6 +85,20 @@ quieres leer con otra. La elegida a mano se recuerda con el documento; si algún
 el navegador, se vuelve a elegir automáticamente. Cada documento recuerda también su velocidad,
 así que no hay que volver a ajustarla en cada sesión.
 
+### Voz de IA (opcional)
+
+El selector incluye voces «(IA, con red)»: síntesis neuronal Kokoro a través de la API de
+[OpenRouter](https://openrouter.ai/), mucho más natural que las voces del navegador. Al elegir
+una por primera vez, los controles piden tu clave de API de OpenRouter, que se guarda en el
+`localStorage` del navegador y solo viaja a OpenRouter. Cuesta $0.62 por millón de caracteres
+(unos céntimos por hora de escucha) y requiere saldo en la cuenta.
+
+Tres cosas cambian con ella: hace falta **conexión** mientras esté elegida (el resto de la
+aplicación sigue funcionando sin red), no hay resaltado de **palabra** en curso (el de frase sí),
+y si la red o la cuota fallan la lectura **se pausa y avisa** en vez de saltarse la frase: al
+pulsar ▶ se reintenta desde la misma frase. Estas voces nunca se eligen solas: solo suenan si
+las eliges tú.
+
 Con la estrella de los controles (o la tecla `M`) marcas la frase que estás escuchando para
 repasarla después. Los marcadores se listan en la barra lateral en orden de lectura, con su
 sección y su página, y la frase queda subrayada en el texto. Se guardan con el documento, así

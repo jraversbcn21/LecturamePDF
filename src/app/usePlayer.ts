@@ -19,6 +19,7 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
   const [voices, setVoices] = useState<Voice[]>([]);
   const [voiceName, setVoiceName] = useState(start.voiceName);
   const [word, setWord] = useState<WordRange | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const spokenRef = useRef<string | null>(null);
 
   const { status, blockIndex, sentenceIndex, rate } = state;
@@ -67,6 +68,7 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
 
     spokenRef.current = key;
     setWord(null);
+    setNotice(null);
     tts.speak(sentence, { voice, rate }, {
       onEnd: () => {
         // Solo cuenta como bloque escuchado si la voz llegó a su última frase.
@@ -74,8 +76,18 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
         dispatch({ type: 'SENTENCE_ENDED' });
       },
       onWord: (charIndex, charLength) => setWord({ start: charIndex, end: charIndex + (charLength || 1) }),
+      // Solo la voz remota: pausar y avisar, nunca avanzar en silencio. Saltarse una frase
+      // sin que el oyente lo sepa es perder contenido (el mismo riesgo asimétrico de las tablas).
+      onError: (message) => {
+        spokenRef.current = null; // al reanudar se relanza la frase, no se pierde
+        setNotice(message);
+        dispatch({ type: 'PAUSE' });
+      },
     });
-  }, [status, blockIndex, sentenceIndex, rate, voice, sentence, counts]);
+    // La frase siguiente se pide ya, mientras suena esta: sin esto la voz remota calla entre frases.
+    const nextText = doc.blocks[blockIndex]?.sentences[sentenceIndex + 1] ?? doc.blocks[blockIndex + 1]?.sentences[0] ?? '';
+    tts.prefetch(nextText, voice);
+  }, [status, blockIndex, sentenceIndex, rate, voice, sentence, counts, doc]);
 
   useEffect(() => () => tts.cancel(), []);
 
@@ -92,5 +104,5 @@ export function usePlayer(doc: Doc, start: PlayerStart, onBlockFinished: (blockI
     if (voiceName) void saveVoice(doc.id, voiceName);
   }, [doc.id, voiceName]);
 
-  return { state, dispatch, voice, voices, setVoiceName, word, counts };
+  return { state, dispatch, voice, voices, setVoiceName, word, counts, notice };
 }

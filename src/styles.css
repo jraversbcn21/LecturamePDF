@@ -808,3 +808,20 @@ button:disabled {
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+/* Aviso de la voz remota (red o clave): sustituye al porcentaje, no compite con los resaltados. */
+.status.notice {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.api-key {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 14rem;
+}

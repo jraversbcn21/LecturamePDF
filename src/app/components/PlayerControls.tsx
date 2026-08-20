@@ -1,6 +1,6 @@
-import type { Dispatch, MouseEvent } from 'react';
+import { useState, type Dispatch, type MouseEvent } from 'react';
 import { flatIndex, RATES, totalSentences, type PlayerAction, type PlayerState } from '../playerReducer';
-import type { Voice } from '../../core/tts';
+import { getApiKey, isRemote, saveApiKey, type Voice } from '../../core/tts';
 
 type Props = {
   state: PlayerState;
@@ -8,12 +8,14 @@ type Props = {
   voice: Voice | null;
   voices: Voice[];
   onVoiceChange: (name: string) => void;
+  notice: string | null;
   page: number;
   isBookmarked: boolean;
   onToggleBookmark: () => void;
 };
 
-export function PlayerControls({ state, dispatch, voice, voices, onVoiceChange, page, isBookmarked, onToggleBookmark }: Props) {
+export function PlayerControls({ state, dispatch, voice, voices, onVoiceChange, notice, page, isBookmarked, onToggleBookmark }: Props) {
+  const [hasKey, setHasKey] = useState(() => !!getApiKey());
   const total = totalSentences(state.counts);
   const position = flatIndex(state.counts, state.blockIndex, state.sentenceIndex);
   const percent = total === 0 ? 0 : Math.round(((position + 1) / total) * 100);
@@ -87,8 +89,24 @@ export function PlayerControls({ state, dispatch, voice, voices, onVoiceChange, 
           </select>
         </label>
 
-        <span className="status">
-          {percent}% · frase {position + 1}/{total} · pág. {page}
+        {isRemote(voice) && !hasKey && (
+          <input
+            className="api-key"
+            type="password"
+            placeholder="Clave de OpenRouter y Enter"
+            aria-label="Clave de API de OpenRouter"
+            onKeyDown={(event) => {
+              const value = event.currentTarget.value.trim();
+              if (event.key === 'Enter' && value) {
+                saveApiKey(value);
+                setHasKey(true);
+              }
+            }}
+          />
+        )}
+
+        <span className={notice ? 'status notice' : 'status'}>
+          {notice ?? `${percent}% · frase ${position + 1}/${total} · pág. ${page}`}
         </span>
       </div>
     </footer>
