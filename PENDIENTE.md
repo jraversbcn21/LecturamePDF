@@ -11,11 +11,8 @@ El código está escrito y comprobado contra una API simulada; **lo que falta so
 el usuario a mano**, porque son pasos en la web de Vercel. Una vez hecho, no hay que repetirlo:
 cada `git push` publica solo.
 
-**1. Subir el código.** Desde el repositorio:
-
-```bash
-git push
-```
+**1. Subir el código.** ~~`git push`~~ — **hecho ya**, `main` está publicado en GitHub con todo
+dentro. Se empieza por el paso 2.
 
 **2. Inventar el código de sincronización.** Es un secreto compartido: el mismo texto irá en
 Vercel y en cada dispositivo. Cuanto más largo, mejor; que no sea una palabra:
