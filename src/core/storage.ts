@@ -22,6 +22,12 @@ export type LibraryEntry = {
   /** Bloques silenciados a mano: la voz los salta, el texto sigue a la vista. */
   muted: number[];
   updatedAt: number;
+  /**
+   * Tombstone de sincronización: el borrado se conserva como ficha marcada para que viaje a los
+   * demás dispositivos por la fusión normal (gana el `updatedAt` más reciente). Ausente = viva,
+   * así que las fichas antiguas no necesitan normalización.
+   */
+  deleted?: boolean;
 };
 
 /**
@@ -60,8 +66,18 @@ function connect(): Promise<IDBDatabase> {
 let queue: Promise<void> = Promise.resolve();
 function enqueue(task: () => Promise<void>): Promise<void> {
   queue = queue.catch(() => undefined).then(task);
+  void queue.then(() => onWrite?.()).catch(() => undefined);
   return queue;
 }
+
+/**
+ * Aviso de «algo se ha escrito», para que la sincronización empuje sin que este módulo la
+ * conozca (la dependencia al revés crearía un ciclo: sync escribe aquí lo que baja).
+ */
+let onWrite: (() => void) | null = null;
+export const setOnWrite = (callback: (() => void) | null): void => {
+  onWrite = callback;
+};
 
 async function request<T>(store: string, mode: IDBTransactionMode, action: (s: IDBObjectStore) => IDBRequest): Promise<T> {
   const db = await connect();
@@ -140,11 +156,29 @@ export function saveProgress(id: string, blockIndex: number, sentenceIndex: numb
   );
 }
 
+/** Borra el contenido pero deja la ficha como tombstone: así el borrado llega a los demás dispositivos. */
 export function deleteDoc(id: string): Promise<void> {
   return enqueue(async () => {
     await request(DOCS, 'readwrite', (s) => s.delete(id));
-    await request(LIBRARY, 'readwrite', (s) => s.delete(id));
     await request(FILES, 'readwrite', (s) => s.delete(id));
+    await updateEntry(id, (entry) => (entry ? { ...entry, deleted: true, updatedAt: Date.now() } : null));
+  });
+}
+
+/**
+ * Aplica la biblioteca fusionada que devuelve el servidor. Ficha a ficha y comparando fechas
+ * dentro de la transacción: entre el empuje y la respuesta el progreso local puede haber
+ * avanzado, y pisarlo con la copia remota lo haría retroceder.
+ */
+export function applyMerged(entries: LibraryEntry[]): Promise<void> {
+  return enqueue(async () => {
+    for (const entry of entries) {
+      await updateEntry(entry.id, (local) => (!local || entry.updatedAt > local.updatedAt ? entry : null));
+      if (entry.deleted) {
+        await request(DOCS, 'readwrite', (s) => s.delete(entry.id));
+        await request(FILES, 'readwrite', (s) => s.delete(entry.id));
+      }
+    }
   });
 }
 

@@ -6,7 +6,7 @@ import { RATES, type PlayerAction } from '../playerReducer';
 import { usePlayer, type PlayerStart } from '../usePlayer';
 import { outlineOf, sectionEndingAt } from '../../core/outline';
 import { searchDoc } from '../../core/search';
-import { saveHeardSections, saveMuted } from '../../core/storage';
+import { getFile, saveHeardSections, saveMuted } from '../../core/storage';
 import { ReaderView } from './ReaderView';
 import { PlayerControls } from './PlayerControls';
 import { Outline } from './Outline';
@@ -187,6 +187,17 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           title={pdf ? 'Cerrar el PDF original' : 'Ver el PDF original'}
           onClick={(event) => {
             event.currentTarget.blur();
+            // Chromium móvil no pinta PDFs dentro de un iframe: en táctil el original va a su
+            // propia pestaña. Se abre vacía ANTES del await para que no la pare el antipopups.
+            if (window.matchMedia('(hover: none)').matches) {
+              const tab = window.open('', '_blank');
+              void getFile(doc.id).then((file) => {
+                // ponytail: el blob: no se revoca (la pestaña lo sigue usando); una URL por apertura.
+                if (file && tab) tab.location.href = URL.createObjectURL(file);
+                else tab?.close();
+              });
+              return;
+            }
             setPdf((open) => !open);
             if (!pdf) setSidebar(false);
           }}

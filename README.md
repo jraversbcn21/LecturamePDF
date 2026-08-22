@@ -1,16 +1,18 @@
 # LecturamePDF
 
 Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Todo ocurre en el
-navegador: no hay servidor, ni cuentas, ni claves de API.
+navegador: no hay servidor obligatorio, ni cuentas, ni claves de API.
 
 - Reconstruye párrafos, títulos y listas a partir de las coordenadas del PDF, y **anuncia** las
   tablas y las fórmulas en vez de recitarlas símbolo a símbolo.
 - Recuerda dónde ibas, a qué velocidad y con qué voz, documento a documento.
 - Índice de secciones, buscador que ignora tildes, y marcadores con notas.
 - El PDF original a un clic, abierto por la página que estás escuchando.
+- **Sincronización opcional** entre dispositivos: sube en el ordenador, sigue en el móvil.
 
 Hecho con React y pdf.js sobre la síntesis de voz del navegador. Los documentos se guardan en
-IndexedDB, en tu propio equipo, y no salen de él.
+IndexedDB, en tu propio equipo, y no salen de él —salvo que actives la sincronización, que los
+copia a tu propio almacén privado de Vercel Blob.
 
 ## Uso
 
@@ -29,7 +31,9 @@ para— y Playwright global (`npm i -g playwright && playwright install chromium
 headless no trae voces, el script sustituye el motor de síntesis por uno falso: comprueba qué se
 pronuncia en cada momento, los atajos, la persistencia, la extracción de tablas y fórmulas, y que
 una biblioteca guardada por una versión anterior sobreviva a la subida de esquema. La calidad del
-audio, en cambio, solo se juzga de oído.
+audio, en cambio, solo se juzga de oído. La segunda mitad (`e2e/mobile.cjs`) repite lo esencial
+en emulación táctil de móvil y comprueba el cliente de sincronización contra una API simulada;
+las funciones de `api/` no corren bajo `vite dev`, así que su prueba real es el despliegue.
 
 **Ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de Microsoft
 (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En Chrome
@@ -99,7 +103,8 @@ y si la red o la cuota fallan la lectura **se pausa y avisa** en vez de saltarse
 pulsar ▶ se reintenta desde la misma frase. Estas voces nunca se eligen solas: solo suenan si
 las eliges tú.
 
-Cada bloque tiene un botón de altavoz (asoma al pasar el ratón por encima) para **silenciarlo**:
+Cada bloque tiene un botón de altavoz (asoma al pasar el ratón por encima; en táctil, donde no
+hay hover, está siempre a la vista) para **silenciarlo**:
 la voz lo salta al avanzar y al moverse con `Tab`, pero el texto sigue a la vista, atenuado —
 útil para cabeceras o avisos legales que la limpieza automática no cazó. El icono es el estado,
 como en un reproductor: `🔊` suena, `🔇` silenciado. Un clic dentro del bloque silenciado sí lo
@@ -142,6 +147,33 @@ No persigue la lectura: cuando la voz cambia de página aparece un `ir a la pág
 porque mover la página recarga el visor y perderías el zoom. Solo está disponible en los
 documentos añadidos desde que se guarda el original; para uno anterior, vuelve a subir el PDF
 —se reconoce por su contenido y conserva progreso, marcadores y notas—.
+
+En una pantalla **táctil** el mismo botón abre el original en una pestaña nueva en vez de en el
+panel: Chromium móvil no pinta PDFs dentro de un iframe, y en pestaña completa el visor del
+navegador funciona en Android y en iPhone (sin salto a la página que suena, eso sí).
+
+## Sincronización entre dispositivos (opcional)
+
+Sin tocar nada, cada navegador guarda lo suyo. Si quieres subir un PDF en el ordenador y seguirlo
+en el móvil, la portada admite un **código de sincronización**: pégalo una vez en cada dispositivo
+y a partir de ahí los PDFs y el progreso —posición, marcadores, notas, silenciados, velocidad—
+viajan solos. Cuando el mismo documento se toca en dos sitios, gana el último cambio. Borrar un
+documento lo borra en todos. «Dejar de sincronizar» vuelve al modo local sin perder nada.
+
+Por detrás no hay cuentas: la aplicación desplegada en Vercel guarda los datos en un almacén
+privado de Vercel Blob y las peticiones se autorizan comparando el código con la variable
+`SYNC_TOKEN` del proyecto. El plan gratuito (1 GB, ~10 GB de transferencia al mes) sobra para una
+biblioteca personal. El texto extraído no se sube: cada dispositivo re-extrae el PDF al abrirlo
+por primera vez, que para eso la extracción es determinista.
+
+Para desplegarlo: importa el repositorio en [vercel.com](https://vercel.com) (detecta Vite solo),
+crea un **Blob store** en la pestaña Storage del proyecto y define la variable de entorno
+`SYNC_TOKEN` con un código largo inventado por ti —ese mismo código es el que se pega en cada
+dispositivo—. Cada push a `main` publica.
+
+La **voz de IA funciona igual en el móvil**: la clave de OpenRouter se pega una vez en cada
+dispositivo (viaja del navegador a OpenRouter, nunca al servidor) y la cuota es por cuenta, no
+por aparato.
 
 ## Cómo funciona
 

@@ -12,6 +12,16 @@ recogidos aquí.
 
 ## Próxima sesión
 
+- **Desplegar en Vercel y probar la sincronización en los móviles reales.** El código está
+  listo y comprobado con la API simulada; falta lo que solo puede hacer el usuario: importar el
+  repo en vercel.com, crear el Blob store del proyecto (pestaña Storage) y definir `SYNC_TOKEN`
+  con un código largo inventado. Después, en Android y iPhone: subir un PDF en el ordenador,
+  pegar el código en el móvil y comprobar que el documento baja, se extrae y suena.
+- **Si en iPhone la voz de IA no arranca** (la local sí, que ya lleva su desbloqueo), la causa
+  será que iOS bloquea el `play()` de un `Audio` nuevo fuera del gesto: el arreglo es reutilizar
+  un único elemento de audio desbloqueado en el primer toque, cambiándole el `src` por frase. No
+  se hizo de antemano porque rompe la forma actual de los tests («un Audio por frase») y en el
+  WebKit moderno puede no hacer falta: primero verlo fallar en el dispositivo real.
 - **Decidir la cuota de la voz de IA con datos de uso real.** El usuario la está probando con la
   cuenta free de OpenRouter: ~50 peticiones/día (una por frase) y 20/min. Si se queda corta, la
   recarga única de ~$10 sube el límite free a 1.000/día para siempre y de paso da saldo para
@@ -51,6 +61,17 @@ recogidos aquí.
   por fórmula es alto a propósito (`looksLikeFormula` en `src/core/pdf/layout.ts`).
 - **Notas al pie sin numerar** no se distinguen de un pie de figura y siguen leyéndose. La llamada
   numerada es hoy la única señal fiable; haría falta mirar también el filete de separación.
+
+## Sincronización
+
+- **El empuje de despedida cabe en 64 KB** (`pagehide` con `keepalive`, anotado con `ponytail:`
+  en `src/core/sync.ts`): una biblioteca con muchísimas notas podría pasarse y perder ese último
+  empuje, que recogería el siguiente arranque. Ni cerca del límite con una biblioteca normal.
+- **La fusión del servidor es leer-fusionar-escribir sin lock** (`api/library.ts`, `ponytail:`):
+  dos dispositivos empujando en el mismo instante podrían pisarse una ficha. Con un usuario no se
+  da; si algún día se diera, un lock optimista (reintentar si la lista cambió entre medias).
+- **Escuchar el mismo documento en dos dispositivos a la vez** pisa el progreso del otro (gana el
+  último `updatedAt`). Es la resolución elegida a propósito; caso que no se da con un usuario.
 
 ## Interfaz
 

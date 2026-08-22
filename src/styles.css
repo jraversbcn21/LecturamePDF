@@ -189,6 +189,17 @@ button:disabled {
   color: var(--muted);
 }
 
+/* Botón con pinta de enlace, para acciones dentro de la letra pequeña. */
+.linky {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .dropzone {
   display: flex;
   flex-direction: column;
@@ -332,6 +343,8 @@ button:disabled {
 /* En el lector, la página no scrollea: lo hacen el índice y el texto por separado. */
 .screen.reading {
   height: 100vh;
+  /* En móvil, 100vh queda por debajo de la barra del navegador y tapa los controles. */
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -404,6 +417,13 @@ button:disabled {
 .mute-toggle:focus-visible,
 .reader .muted .mute-toggle {
   opacity: 1;
+}
+
+/* En táctil no hay hover: sin esto el botón sería invisible y silenciar, imposible. */
+@media (hover: none) {
+  .mute-toggle {
+    opacity: 1;
+  }
 }
 
 /* El texto silenciado sigue a la vista, atenuado: se sabe qué hay, solo que no sonará. */

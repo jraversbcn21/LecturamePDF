@@ -5,15 +5,18 @@ type Props = {
   entries: LibraryEntry[];
   busy: boolean;
   error: string | null;
+  synced: boolean;
   onFile: (file: File) => void;
   onOpen: (id: string) => void;
   onDelete: (id: string) => void;
+  onConnectSync: (code: string) => void;
+  onDisconnectSync: () => void;
 };
 
 const percentOf = (entry: LibraryEntry): number =>
   entry.totalSentences === 0 ? 0 : Math.round((entry.position / entry.totalSentences) * 100);
 
-export function Library({ entries, busy, error, onFile, onOpen, onDelete }: Props) {
+export function Library({ entries, busy, error, synced, onFile, onOpen, onDelete, onConnectSync, onDisconnectSync }: Props) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const takeFirstPdf = (files: FileList | null) => {
@@ -61,7 +64,31 @@ export function Library({ entries, busy, error, onFile, onOpen, onDelete }: Prop
                 <button onClick={() => onOpen(resume.id)}>Seguir con «{resume.name.replace(/\.pdf$/i, '')}»</button>
               )}
             </div>
-            <p className="fine">Todo ocurre en tu navegador. Ningún archivo sale de tu equipo.</p>
+            {synced ? (
+              <p className="fine">
+                Sincronizado: tus PDFs y tu progreso se copian a tu nube privada para tus otros dispositivos.{' '}
+                <button className="linky" onClick={onDisconnectSync}>
+                  Dejar de sincronizar
+                </button>
+              </p>
+            ) : (
+              <>
+                <p className="fine">Todo ocurre en tu navegador. Ningún archivo sale de tu equipo…</p>
+                <p className="fine">
+                  …salvo que actives la sincronización para seguir leyendo en otro dispositivo:{' '}
+                  <input
+                    className="api-key"
+                    type="password"
+                    placeholder="código de sincronización y Enter"
+                    aria-label="Código de sincronización entre dispositivos"
+                    onKeyDown={(event) => {
+                      const value = event.currentTarget.value.trim();
+                      if (event.key === 'Enter' && value) onConnectSync(value);
+                    }}
+                  />
+                </p>
+              </>
+            )}
           </div>
 
           <div className="dropzone" onDrop={onDrop} onDragOver={(event) => event.preventDefault()}>
