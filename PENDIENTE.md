@@ -5,51 +5,52 @@ de IA por OpenRouter), reproducir con resaltado sincronizado, saltar bloques, si
 no interesan, buscar, marcar con notas, consultar el original, retomar donde ibas y seguir en
 otro dispositivo—, con `npm run verify` y `npm run e2e` en verde.
 
-## ▶ Lo primero: poner en marcha el despliegue y la sincronización
+## ▶ Lo primero: terminar la puesta en marcha de la sincronización
 
-El código está escrito y comprobado contra una API simulada; **lo que falta solo lo puede hacer
-el usuario a mano**, porque son pasos en la web de Vercel. Una vez hecho, no hay que repetirlo:
-cada `git push` publica solo.
+La aplicación está desplegada y funcionando en **https://lecturamepdf.vercel.app**; lo que
+queda es que la sincronización termine de conectar. La sesión del 22-08-2026 destapó y arregló
+dos fallos que ninguna prueba local podía ver (la única prueba real de `api/` es el despliegue,
+como ya avisaba `CLAUDE.md`):
 
-~~**1. Subir el código.**~~ **Hecho**: `main` está publicado en `jraversbcn21/LecturamePDF`.
+- el import de `../src/core/merge` sin extensión `.js` tiraba la función entera (Vercel
+  transpila sin reescribir especificadores y Node ESM no resuelve sin extensión), y
+- **Vercel se queda la cabecera `Authorization`**: llegaba vacía a la función, así que el
+  código correcto también daba 401. La sincronización viaja ahora en `x-sync-token`.
 
-~~**2. Inventar el código de sincronización.**~~ **Hecho**: es un secreto compartido —el mismo
-texto va en Vercel y en cada dispositivo—, generado con
-`node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"`. Guárdalo donde
-tengas las contraseñas: hará falta otra vez en cada móvil, y en Vercel no se puede volver a leer.
+Estado de las variables (verificado con `/api/diag` contra producción):
+`SYNC_TOKEN` **bien puesta** —definida, 32 caracteres, Production—. `BLOB_READ_WRITE_TOKEN`
+**sigue faltando**: la conexión del store creó `..._STORE_ID` y `..._WEBHOOK_PUBLIC_KEY` pero
+no el token, porque el flujo nuevo de Vercel lo trae en una casilla opcional («Add a
+read-write token env var») que quedó sin marcar y el diálogo no deja re-conectar un proyecto
+ya conectado.
 
-~~**3. Importar el proyecto en Vercel.**~~ **Hecho**: la aplicación está en
-**https://lecturamepdf.vercel.app**. Si algún día hay que rehacerlo, es
-https://vercel.com/jorgeborn3-3085s-projects → **Add New → Project → Import Git Repository** →
-`jraversbcn21/LecturamePDF`; detecta Vite solo, y no se cambia el *framework preset*, ni el
-*build command*, ni el *output directory*. El primer despliegue sirve la aplicación pero **aún
-no sincroniza**: es lo esperado, faltan los pasos siguientes.
+Los pasos que quedan, en orden:
 
-Se sigue por el paso 4.
+1. **Crear `BLOB_READ_WRITE_TOKEN`** en el proyecto `lecturamepdf` (Settings → Environments →
+   Production). El valor (`vercel_blob_rw_…`) está en Storage → `lecturamepdf-blob` →
+   Quickstart → pestaña `.env.local`. Si ahí no aparece, desconectar el proyecto del store y
+   volver a conectarlo con la casilla marcada y el campo de prefijo **vacío**.
+2. **Redeploy** después (las variables solo entran en un despliegue nuevo).
+3. **Comprobar `/api/diag`**: con la cabecera `x-sync-token: <código>` debe responder
+   `blobTokenDefinido: true` y `coincide: true`.
+4. **Borrar `api/diag.ts`**, que es temporal y no debe quedarse en producción.
+5. **Probar de verdad**: en el ordenador, pegar el código en la portada y subir un PDF;
+   en el móvil, misma URL y mismo código, y el documento debe aparecer, bajarse y sonar;
+   avanzar en el móvil y comprobar que el progreso vuelve al ordenador al recargar.
+6. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
+   vez que se elija una voz «(IA, con red)».
 
-**4. Crear el almacén de los PDFs.** En el proyecto → pestaña **Storage** → **Create Database**
-→ **Blob** → conéctalo a este proyecto. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN`;
-no hay que tocarla.
+Dos cabos sueltos de la misma sesión:
 
-**5. Poner el código de sincronización en Vercel.** En el proyecto → **Settings → Environment
-Variables** → **Add**: nombre `SYNC_TOKEN`, valor el del paso 2, y **marca los tres entornos**
-(Production, Preview, Development).
-
-**6. Volver a desplegar, que es el paso que se olvida.** Las variables de entorno solo entran en
-un despliegue nuevo: pestaña **Deployments** → el de arriba → menú `⋯` → **Redeploy**.
-
-**7. Probarlo, en este orden.** En el ordenador, abre **https://lecturamepdf.vercel.app**, pega
-el código de sincronización en la portada y sube un PDF.
-Después, en el móvil: misma URL, mismo código, y el documento tiene que aparecer en la
-estantería, bajarse al abrirlo y sonar. Luego al revés: avanza un rato en el móvil, vuelve al
-ordenador y recarga; el progreso tiene que haber viajado (tarda hasta 10 segundos, o al salir
-de la pestaña).
-
-**8. La voz de IA en el móvil**, si la quieres allí: pega también tu clave de OpenRouter la
-primera vez que elijas una voz «(IA, con red)». La cuota es de la cuenta, no del aparato.
-
-Si algo no cuadra: el motivo de cada decisión de la sincronización está en `CLAUDE.md`, y el
-qué hace de cara al usuario, en el `README.md`.
+- **La comprobación «documento sin original guardado» de `e2e/verify.cjs` tiene una carrera**:
+  mide nada más abrir el panel y a veces pilla el «Abriendo el original…» transitorio en vez
+  del estado final (visto: falla ~1 de cada 4 rondas, y el detalle enseña la nota transitoria).
+  El arreglo es esperar a que la nota diga «Vuelve a subirlo» antes de medir, como manda la
+  regla de esperas de `CLAUDE.md`. Quedó escrito pero sin aplicar al cerrar la sesión.
+- **El store de Blob quedó como Private** y el código guarda con `access: 'public'` a
+  propósito (la biblioteca se relee con un `fetch` normal y los PDFs se sirven por URL). Si
+  tras arreglar el token la escritura falla quejándose del acceso, es esto: o el store pasa a
+  público o se cambia la lectura. Primero verlo fallar.
 
 ## Próxima sesión
 

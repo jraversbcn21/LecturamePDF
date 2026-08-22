@@ -73,7 +73,11 @@ comprobar antes la versión de Node: dejan de arrancar.
   fusión leería datos viejos; y los PDFs suben **directos del navegador a Blob** con token firmado
   por `api/file.ts`, porque el cuerpo de una función de Vercel capa en ~4,5 MB. Al aplicar lo que
   baja se compara `updatedAt` otra vez dentro de la transacción: entre el empuje y la respuesta el
-  progreso local ya ha avanzado.
+  progreso local ya ha avanzado. Y una quinta, aprendida del despliegue real: el código de
+  sincronización viaja en la cabecera **`x-sync-token`**, no en `Authorization`, porque Vercel
+  consume esa última y la función la recibe vacía —el token correcto también daba 401; se
+  demostró con un endpoint de diagnóstico contra producción—. Hacia OpenRouter sí se usa
+  `Authorization`, que ese viaje no pasa por Vercel.
 - **El desbloqueo de audio de iOS solo se registra en táctil** (`src/core/tts.ts`). iOS exige que
   la primera locución nazca de un gesto, y `speak()` llega siempre tras el `setTimeout` de
   Chromium; una locución vacía en el primer `pointerdown` lo resuelve. Se condiciona a
