@@ -1,5 +1,8 @@
 import { del, list, put } from '@vercel/blob';
-import { mergeEntries, type Mergeable } from '../src/core/merge';
+// La extensión es obligatoria: Vercel transpila esta función a ESM sin reescribir el
+// especificador, y Node se niega a resolver un import sin extensión (ERR_MODULE_NOT_FOUND en
+// producción, invisible para `tsc` y para el e2e, que responde esta API con page.route).
+import { mergeEntries, type Mergeable } from '../src/core/merge.js';
 
 /**
  * La biblioteca compartida, un JSON en Vercel Blob. Cada escritura crea un fichero nuevo
