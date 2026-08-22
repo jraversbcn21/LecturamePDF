@@ -6,8 +6,13 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
  * inmutable (el id ES el hash del PDF), así que aquí la caché del CDN no puede servir nada viejo.
  * La URL resultante es pública pero inadivinable: 256 bits de hash más el id aleatorio del store.
  */
+/**
+ * La cabecera es propia, no `Authorization`: Vercel se queda esa por el camino y la
+ * función la recibe vacía, así que el código correcto también daba 401. Comprobado con un
+ * endpoint de diagnóstico contra el despliegue real.
+ */
 const authorized = (request: Request): boolean =>
-  !!process.env.SYNC_TOKEN && request.headers.get('authorization') === `Bearer ${process.env.SYNC_TOKEN}`;
+  !!process.env.SYNC_TOKEN && request.headers.get('x-sync-token') === process.env.SYNC_TOKEN;
 
 const denied = (): Response => new Response('No autorizado', { status: 401 });
 

@@ -11,8 +11,13 @@ import { mergeEntries, type Mergeable } from '../src/core/merge.js';
  */
 const PREFIX = 'library';
 
+/**
+ * La cabecera es propia, no `Authorization`: Vercel se queda esa por el camino y la
+ * función la recibe vacía, así que el código correcto también daba 401. Comprobado con un
+ * endpoint de diagnóstico contra el despliegue real.
+ */
 const authorized = (request: Request): boolean =>
-  !!process.env.SYNC_TOKEN && request.headers.get('authorization') === `Bearer ${process.env.SYNC_TOKEN}`;
+  !!process.env.SYNC_TOKEN && request.headers.get('x-sync-token') === process.env.SYNC_TOKEN;
 
 const denied = (): Response => new Response('No autorizado', { status: 401 });
 

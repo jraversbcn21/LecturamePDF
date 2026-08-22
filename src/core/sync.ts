@@ -11,7 +11,8 @@ export const getSyncCode = (): string | null => localStorage.getItem(CODE_KEY);
 export const saveSyncCode = (code: string): void => localStorage.setItem(CODE_KEY, code);
 export const clearSyncCode = (): void => localStorage.removeItem(CODE_KEY);
 
-const auth = (): Record<string, string> => ({ Authorization: `Bearer ${getSyncCode()}` });
+// Cabecera propia y no `Authorization`: Vercel no reenvía esa última a la función.
+const auth = (): Record<string, string> => ({ 'x-sync-token': getSyncCode() ?? '' });
 
 /** Evita que aplicar lo que baja del servidor dispare a su vez otro empuje (bucle de 10 s en 10 s). */
 let applying = false;

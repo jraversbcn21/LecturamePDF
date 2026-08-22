@@ -4,7 +4,7 @@
  * Se borra en cuanto sepamos por dónde falla.
  */
 export async function GET(request: Request): Promise<Response> {
-  const header = request.headers.get('authorization');
+  const header = request.headers.get('x-sync-token');
   const token = process.env.SYNC_TOKEN;
   return Response.json({
     syncTokenDefinido: !!token,
@@ -12,6 +12,6 @@ export async function GET(request: Request): Promise<Response> {
     blobTokenDefinido: !!process.env.BLOB_READ_WRITE_TOKEN,
     cabeceraLlega: !!header,
     cabeceraLongitud: header?.length ?? 0,
-    coincide: !!token && header === `Bearer ${token}`,
+    coincide: !!token && header === token,
   });
 }

@@ -143,7 +143,7 @@ async function sync(browser) {
 
   await page.route('**/api/library', async (route) => {
     const request = route.request();
-    putAuth = request.headers()['authorization'] ?? null;
+    putAuth = request.headers()['x-sync-token'] ?? null;
     const client = request.method() === 'PUT' ? JSON.parse(request.postData() ?? '[]') : [];
     await route.fulfill({ json: [...client.filter((entry) => entry.id !== remoteId), remoteEntry] });
   });
@@ -156,7 +156,7 @@ async function sync(browser) {
   await input.press('Enter');
 
   await page.waitForSelector('.shelf', { timeout: 5000 }).catch(() => {});
-  check('conectar el código empuja la biblioteca con su Authorization', putAuth === 'Bearer codigo-de-prueba', String(putAuth));
+  check('conectar el código empuja la biblioteca con su cabecera', putAuth === 'codigo-de-prueba', String(putAuth));
   check(
     'lo que baja del servidor aparece en la estantería',
     await page.locator('.doc-name', { hasText: 'remoto.pdf' }).isVisible().catch(() => false),
