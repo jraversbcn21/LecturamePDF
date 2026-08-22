@@ -11,24 +11,21 @@ El código está escrito y comprobado contra una API simulada; **lo que falta so
 el usuario a mano**, porque son pasos en la web de Vercel. Una vez hecho, no hay que repetirlo:
 cada `git push` publica solo.
 
-**1. Subir el código.** ~~`git push`~~ — **hecho ya**, `main` está publicado en GitHub con todo
-dentro. Se empieza por el paso 2.
+~~**1. Subir el código.**~~ **Hecho**: `main` está publicado en `jraversbcn21/LecturamePDF`.
 
-**2. Inventar el código de sincronización.** Es un secreto compartido: el mismo texto irá en
-Vercel y en cada dispositivo. Cuanto más largo, mejor; que no sea una palabra:
+~~**2. Inventar el código de sincronización.**~~ **Hecho**: es un secreto compartido —el mismo
+texto va en Vercel y en cada dispositivo—, generado con
+`node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"`. Guárdalo donde
+tengas las contraseñas: hará falta otra vez en cada móvil, y en Vercel no se puede volver a leer.
 
-```bash
-node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
-```
+~~**3. Importar el proyecto en Vercel.**~~ **Hecho**: la aplicación está en
+**https://lecturamepdf.vercel.app**. Si algún día hay que rehacerlo, es
+https://vercel.com/jorgeborn3-3085s-projects → **Add New → Project → Import Git Repository** →
+`jraversbcn21/LecturamePDF`; detecta Vite solo, y no se cambia el *framework preset*, ni el
+*build command*, ni el *output directory*. El primer despliegue sirve la aplicación pero **aún
+no sincroniza**: es lo esperado, faltan los pasos siguientes.
 
-Guárdalo donde tengas las contraseñas: hará falta otra vez en cada móvil, y en Vercel no se
-puede volver a leer.
-
-**3. Importar el proyecto en Vercel.** En https://vercel.com/jorgeborn3-3085s-projects →
-**Add New → Project → Import Git Repository** → `jraversbcn21/LecturamePDF`. Detecta Vite solo:
-no cambies el *framework preset*, ni el *build command*, ni el *output directory*. Pulsa
-**Deploy** y espera. El primer despliegue sirve la aplicación pero **aún no sincroniza**; es
-lo esperado, faltan los dos pasos siguientes.
+Se sigue por el paso 4.
 
 **4. Crear el almacén de los PDFs.** En el proyecto → pestaña **Storage** → **Create Database**
 → **Blob** → conéctalo a este proyecto. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN`;
@@ -41,8 +38,8 @@ Variables** → **Add**: nombre `SYNC_TOKEN`, valor el del paso 2, y **marca los
 **6. Volver a desplegar, que es el paso que se olvida.** Las variables de entorno solo entran en
 un despliegue nuevo: pestaña **Deployments** → el de arriba → menú `⋯` → **Redeploy**.
 
-**7. Probarlo, en este orden.** En el ordenador, abre la URL que da Vercel (algo como
-`lecturame-pdf.vercel.app`), pega el código de sincronización en la portada y sube un PDF.
+**7. Probarlo, en este orden.** En el ordenador, abre **https://lecturamepdf.vercel.app**, pega
+el código de sincronización en la portada y sube un PDF.
 Después, en el móvil: misma URL, mismo código, y el documento tiene que aparecer en la
 estantería, bajarse al abrirlo y sonar. Luego al revés: avanza un rato en el móvil, vuelve al
 ordenador y recarga; el progreso tiene que haber viajado (tarda hasta 10 segundos, o al salir
@@ -61,7 +58,6 @@ Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
 
-- **Anotar aquí la URL pública** en cuanto Vercel la dé, y añadirla al `README.md`.
 - **Si en iPhone la voz de IA no arranca** (la local sí, que ya lleva su desbloqueo), la causa
   será que iOS bloquea el `play()` de un `Audio` nuevo fuera del gesto: el arreglo es reutilizar
   un único elemento de audio desbloqueado en el primer toque, cambiándole el `src` por frase. No

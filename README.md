@@ -3,6 +3,9 @@
 Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Ocurre todo en el
 navegador: sin cuentas, sin instalar nada y sin configurar nada para empezar.
 
+**En marcha, en https://lecturamepdf.vercel.app** — la misma URL sirve en el ordenador y en el
+móvil.
+
 - Reconstruye párrafos, títulos y listas a partir de las coordenadas del PDF, y **anuncia** las
   tablas y las fórmulas en vez de recitarlas símbolo a símbolo.
 - Recuerda dónde ibas, a qué velocidad y con qué voz, documento a documento.
