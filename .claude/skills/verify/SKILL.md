@@ -42,6 +42,10 @@ no está en el 5173, apunta el e2e con `LECTURAME_URL`:
 $env:NODE_PATH = (npm root -g); $env:LECTURAME_URL = 'http://localhost:5174/'; npm run e2e
 ```
 
+Son **dos suites encadenadas** y cada una da su propio recuento: `verify.cjs` (escritorio) y
+`mobile.cjs` (emulación táctil y cliente de sincronización). Si la primera falla, la segunda ni
+se lanza, así que no des por buena la parte móvil sin ver su línea final.
+
 Si un fallo parece intermitente, repítelo tres o cuatro veces antes de darlo por bueno o por
 malo: varias carreras de esta suite solo aparecían en una de cada cuatro pasadas.
 

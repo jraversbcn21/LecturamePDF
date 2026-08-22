@@ -2,26 +2,78 @@
 
 El caso principal funciona de punta a punta —subir un PDF, detectar idioma, elegir voz (local o
 de IA por OpenRouter), reproducir con resaltado sincronizado, saltar bloques, silenciar los que
-no interesan, buscar, marcar con notas, consultar el original y retomar donde ibas—, con
-`npm run verify` y `npm run e2e` en verde.
+no interesan, buscar, marcar con notas, consultar el original, retomar donde ibas y seguir en
+otro dispositivo—, con `npm run verify` y `npm run e2e` en verde.
 
-Nada de lo de abajo bloquea el uso normal: son casos concretos en documentos que ya funcionan.
+## ▶ Lo primero: poner en marcha el despliegue y la sincronización
+
+El código está escrito y comprobado contra una API simulada; **lo que falta solo lo puede hacer
+el usuario a mano**, porque son pasos en la web de Vercel. Una vez hecho, no hay que repetirlo:
+cada `git push` publica solo.
+
+**1. Subir el código.** Desde el repositorio:
+
+```bash
+git push
+```
+
+**2. Inventar el código de sincronización.** Es un secreto compartido: el mismo texto irá en
+Vercel y en cada dispositivo. Cuanto más largo, mejor; que no sea una palabra:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
+```
+
+Guárdalo donde tengas las contraseñas: hará falta otra vez en cada móvil, y en Vercel no se
+puede volver a leer.
+
+**3. Importar el proyecto en Vercel.** En https://vercel.com/jorgeborn3-3085s-projects →
+**Add New → Project → Import Git Repository** → `jraversbcn21/LecturamePDF`. Detecta Vite solo:
+no cambies el *framework preset*, ni el *build command*, ni el *output directory*. Pulsa
+**Deploy** y espera. El primer despliegue sirve la aplicación pero **aún no sincroniza**; es
+lo esperado, faltan los dos pasos siguientes.
+
+**4. Crear el almacén de los PDFs.** En el proyecto → pestaña **Storage** → **Create Database**
+→ **Blob** → conéctalo a este proyecto. Vercel añade solo la variable `BLOB_READ_WRITE_TOKEN`;
+no hay que tocarla.
+
+**5. Poner el código de sincronización en Vercel.** En el proyecto → **Settings → Environment
+Variables** → **Add**: nombre `SYNC_TOKEN`, valor el del paso 2, y **marca los tres entornos**
+(Production, Preview, Development).
+
+**6. Volver a desplegar, que es el paso que se olvida.** Las variables de entorno solo entran en
+un despliegue nuevo: pestaña **Deployments** → el de arriba → menú `⋯` → **Redeploy**.
+
+**7. Probarlo, en este orden.** En el ordenador, abre la URL que da Vercel (algo como
+`lecturame-pdf.vercel.app`), pega el código de sincronización en la portada y sube un PDF.
+Después, en el móvil: misma URL, mismo código, y el documento tiene que aparecer en la
+estantería, bajarse al abrirlo y sonar. Luego al revés: avanza un rato en el móvil, vuelve al
+ordenador y recarga; el progreso tiene que haber viajado (tarda hasta 10 segundos, o al salir
+de la pestaña).
+
+**8. La voz de IA en el móvil**, si la quieres allí: pega también tu clave de OpenRouter la
+primera vez que elijas una voz «(IA, con red)». La cuota es de la cuenta, no del aparato.
+
+Si algo no cuadra: el motivo de cada decisión de la sincronización está en `CLAUDE.md`, y el
+qué hace de cara al usuario, en el `README.md`.
+
+## Próxima sesión
+
+Nada de lo que sigue bloquea el uso normal: son casos concretos en documentos que ya funcionan.
 Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir si merece la pena
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
 
-## Próxima sesión
-
-- **Desplegar en Vercel y probar la sincronización en los móviles reales.** El código está
-  listo y comprobado con la API simulada; falta lo que solo puede hacer el usuario: importar el
-  repo en vercel.com, crear el Blob store del proyecto (pestaña Storage) y definir `SYNC_TOKEN`
-  con un código largo inventado. Después, en Android y iPhone: subir un PDF en el ordenador,
-  pegar el código en el móvil y comprobar que el documento baja, se extrae y suena.
+- **Anotar aquí la URL pública** en cuanto Vercel la dé, y añadirla al `README.md`.
 - **Si en iPhone la voz de IA no arranca** (la local sí, que ya lleva su desbloqueo), la causa
   será que iOS bloquea el `play()` de un `Audio` nuevo fuera del gesto: el arreglo es reutilizar
   un único elemento de audio desbloqueado en el primer toque, cambiándole el `src` por frase. No
   se hizo de antemano porque rompe la forma actual de los tests («un Audio por frase») y en el
   WebKit moderno puede no hacer falta: primero verlo fallar en el dispositivo real.
+- **Vigilar el gasto de Blob** las primeras semanas (Vercel lo enseña en la pestaña Storage). El
+  plan gratuito da 1 GB y ~10 GB de transferencia al mes, y pasarse **corta el acceso 30 días**
+  en vez de cobrar. Con PDFs de apuntes no debería acercarse; si se acerca, lo barato es borrar
+  de la estantería lo ya escuchado, que borra también el PDF de la nube.
 - **Decidir la cuota de la voz de IA con datos de uso real.** El usuario la está probando con la
   cuenta free de OpenRouter: ~50 peticiones/día (una por frase) y 20/min. Si se queda corta, la
   recarga única de ~$10 sube el límite free a 1.000/día para siempre y de paso da saldo para

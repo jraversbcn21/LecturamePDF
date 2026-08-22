@@ -1,7 +1,7 @@
 # LecturamePDF
 
-Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Todo ocurre en el
-navegador: no hay servidor obligatorio, ni cuentas, ni claves de API.
+Sube un PDF y escúchalo mientras ves resaltado lo que se está leyendo. Ocurre todo en el
+navegador: sin cuentas, sin instalar nada y sin configurar nada para empezar.
 
 - Reconstruye párrafos, títulos y listas a partir de las coordenadas del PDF, y **anuncia** las
   tablas y las fórmulas en vez de recitarlas símbolo a símbolo.
@@ -23,7 +23,7 @@ npm test        # tests unitarios de la lógica pura
 npm run lint    # ESLint
 npm run verify  # lint + tests + typecheck + build, de una vez
 npm run build   # bundle estático en dist/
-npm run e2e     # verificación en navegador (ver e2e/verify.cjs)
+npm run e2e     # verificación en navegador (e2e/verify.cjs y e2e/mobile.cjs)
 ```
 
 `npm run e2e` necesita el servidor de desarrollo en marcha —si no lo está, el script lo dice y
@@ -35,9 +35,11 @@ audio, en cambio, solo se juzga de oído. La segunda mitad (`e2e/mobile.cjs`) re
 en emulación táctil de móvil y comprueba el cliente de sincronización contra una API simulada;
 las funciones de `api/` no corren bajo `vite dev`, así que su prueba real es el despliegue.
 
-**Ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de Microsoft
-(las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En Chrome
-funciona igual pero con voces de menor calidad.
+**En el ordenador, ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de
+Microsoft (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En
+Chrome funciona igual pero con voces de menor calidad. En el móvil suenan las voces del sistema
+(Android e iPhone traen las suyas), y si no convencen, ahí está la voz de IA, que es la misma en
+todas partes.
 
 ## La portada
 
@@ -103,10 +105,10 @@ y si la red o la cuota fallan la lectura **se pausa y avisa** en vez de saltarse
 pulsar ▶ se reintenta desde la misma frase. Estas voces nunca se eligen solas: solo suenan si
 las eliges tú.
 
-Cada bloque tiene un botón de altavoz (asoma al pasar el ratón por encima; en táctil, donde no
-hay hover, está siempre a la vista) para **silenciarlo**:
-la voz lo salta al avanzar y al moverse con `Tab`, pero el texto sigue a la vista, atenuado —
-útil para cabeceras o avisos legales que la limpieza automática no cazó. El icono es el estado,
+Cada bloque tiene un botón de altavoz para **silenciarlo** (asoma al pasar el ratón por encima;
+en una pantalla táctil, donde no hay ratón que pasar, está siempre a la vista): la voz lo salta
+al avanzar y al moverse con `Tab`, pero el texto sigue a la vista, atenuado — útil para cabeceras
+o avisos legales que la limpieza automática no cazó. El icono es el estado,
 como en un reproductor: `🔊` suena, `🔇` silenciado. Un clic dentro del bloque silenciado sí lo
 lee: la elección explícita manda. Se guarda con el documento, y el mismo botón lo devuelve a la
 lectura.
@@ -166,10 +168,10 @@ privado de Vercel Blob y las peticiones se autorizan comparando el código con l
 biblioteca personal. El texto extraído no se sube: cada dispositivo re-extrae el PDF al abrirlo
 por primera vez, que para eso la extracción es determinista.
 
-Para desplegarlo: importa el repositorio en [vercel.com](https://vercel.com) (detecta Vite solo),
-crea un **Blob store** en la pestaña Storage del proyecto y define la variable de entorno
-`SYNC_TOKEN` con un código largo inventado por ti —ese mismo código es el que se pega en cada
-dispositivo—. Cada push a `main` publica.
+Desplegarlo pide tres cosas en el proyecto de Vercel: importar el repositorio (detecta Vite solo),
+crear un **Blob store** en la pestaña Storage y definir la variable de entorno `SYNC_TOKEN` con
+un código largo inventado —ese mismo código es el que se pega en cada dispositivo—. Después, cada
+push a `main` publica. El paso a paso con sus trampas está en [PENDIENTE.md](PENDIENTE.md).
 
 La **voz de IA funciona igual en el móvil**: la clave de OpenRouter se pega una vez en cada
 dispositivo (viaja del navegador a OpenRouter, nunca al servidor) y la cuota es por cuenta, no

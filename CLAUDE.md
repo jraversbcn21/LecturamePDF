@@ -2,10 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Aplicación web 100% cliente que convierte un PDF en una experiencia de lectura auditiva. El uso,
-los atajos, cómo funciona por dentro y las limitaciones conocidas están en @README.md; aquí solo
-va lo que no se deduce leyendo el código. El trabajo pendiente, en @PENDIENTE.md, y el mapa
-del grafo del proyecto, en @graphify-out/GRAPH_REPORT.md.
+Aplicación web que convierte un PDF en una experiencia de lectura auditiva. La lectura entera
+—extracción, voz, resaltado, progreso— ocurre **en el navegador**; lo único que hay de servidor
+son las dos funciones de `api/`, que guardan la biblioteca en Vercel Blob para quien active la
+sincronización entre dispositivos, y que la aplicación no necesita para funcionar. El uso, los
+atajos, cómo funciona por dentro y las limitaciones conocidas están en @README.md; aquí solo va
+lo que no se deduce leyendo el código. El trabajo pendiente, en @PENDIENTE.md, y el mapa del
+grafo del proyecto, en @graphify-out/GRAPH_REPORT.md.
 
 ## Restricción de versiones
 
@@ -130,6 +133,14 @@ es el motivo en la mayoría.
 Si una comprobación abre IndexedDB, **no le fijes el número de versión**: `indexedDB.open('lecturame')`
 abre la que haya. Fijarla caduca en cuanto sube el esquema, y además cuelga la comprobación en vez
 de fallar.
+
+`npm run e2e` encadena dos ficheros: `verify.cjs`, la suite de escritorio, y `mobile.cjs`,
+emulación táctil más el cliente de sincronización. Dos cosas del entorno que engañan al escribir
+en el segundo: **Chromium headless no trae visor de PDF**, así que navegar una pestaña a un
+`blob:` de PDF no la navega, la convierte en descarga —el evento `download` es la señal de que
+la pestaña recibió el documento—; y **las funciones de `api/` no corren bajo `vite dev`**, así
+que la API se responde desde Playwright con `page.route`: eso comprueba el cliente, nunca las
+funciones, cuya única prueba real es el despliegue.
 
 ## Convenciones del repositorio
 
