@@ -78,6 +78,14 @@ comprobar antes la versión de Node: dejan de arrancar.
   consume esa última y la función la recibe vacía —el token correcto también daba 401; se
   demostró con un endpoint de diagnóstico contra producción—. Hacia OpenRouter sí se usa
   `Authorization`, que ese viaje no pasa por Vercel.
+- **El recuadro de arrastrar no existe en táctil** (`src/styles.css`, `Library.tsx`). Con el dedo
+  no se arrastra un archivo, así que allí solo prometía algo imposible y, peor, empujaba la
+  estantería fuera de la pantalla —lo que un usuario que vuelve quiere ver primero—. Se oculta con
+  `@media (hover: none)`, **por puntero y no por ancho**: una ventana estrecha de escritorio sí
+  acepta el arrastre. Dos consecuencias que hay que respetar al tocarlo: el `<input type="file">`
+  vive **fuera** del recuadro, porque es el único camino que queda y no puede irse con él; y el
+  botón «Elegir PDF» **también lleva el estado «Extrayendo…»**, porque sin el recuadro sería el
+  único aviso de que algo está pasando y la espera parecería un cuelgue.
 - **El desbloqueo de audio de iOS solo se registra en táctil** (`src/core/tts.ts`). iOS exige que
   la primera locución nazca de un gesto, y `speak()` llega siempre tras el `setTimeout` de
   Chromium; una locución vacía en el primer `pointerdown` lo resuelve. Se condiciona a

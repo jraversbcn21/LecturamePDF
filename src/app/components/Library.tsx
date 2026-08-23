@@ -54,15 +54,19 @@ export function Library({ entries, busy, error, synced, onFile, onOpen, onDelete
               Deja de leer apuntes. <em>Escúchalos.</em>
             </h2>
             <p>
-              Suelta un PDF y suena en voz alta, frase a frase y resaltado según avanza. Vuelve donde lo dejaste.
+              Sube un PDF y suena en voz alta, frase a frase y resaltado según avanza. Vuelve donde lo dejaste.
             </p>
             <div className="hero-actions">
+              {/* El botón lleva el estado porque en táctil el recuadro no está: sería el único
+                  aviso de que se está extrayendo, y sin él la espera parece que no pasa nada. */}
               <button className="primary" onClick={() => inputRef.current?.click()} disabled={busy}>
-                Elegir PDF
+                {busy ? 'Extrayendo…' : 'Elegir PDF'}
               </button>
               {resume && (
                 <button onClick={() => onOpen(resume.id)}>Seguir con «{resume.name.replace(/\.pdf$/i, '')}»</button>
               )}
+              {/* Fuera del recuadro: en táctil ese se oculta, y el campo es el que abre el selector. */}
+              <input ref={inputRef} type="file" accept="application/pdf" onChange={onChange} hidden />
             </div>
             {synced ? (
               <p className="fine">
@@ -97,7 +101,6 @@ export function Library({ entries, busy, error, synced, onFile, onOpen, onDelete
             </span>
             <p>{busy ? 'Extrayendo el texto del PDF…' : 'Arrastra un PDF aquí'}</p>
             <small>o pulsa «Elegir PDF»</small>
-            <input ref={inputRef} type="file" accept="application/pdf" onChange={onChange} hidden />
           </div>
         </div>
 

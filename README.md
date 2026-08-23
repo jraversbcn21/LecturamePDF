@@ -48,8 +48,9 @@ todas partes.
 
 Al abrir la aplicación no hay más que una pregunta: qué PDF quieres escuchar. Arrástralo sobre la
 zona de la derecha o pulsa «Elegir PDF»; se procesa en tu equipo, así que el archivo no sale de
-él. Si ya habías empezado algo, sale además un botón para **seguir con el último documento**, que
-es lo que se quiere hacer casi siempre al volver.
+él. En un móvil o una tableta esa zona no aparece —no se pueden arrastrar archivos con el dedo—,
+así que ahí el botón es el único camino. Si ya habías empezado algo, sale además un botón para
+**seguir con el último documento**, que es lo que se quiere hacer casi siempre al volver.
 
 Debajo, la estantería: una ficha por documento, con un anillo que enseña cuánto llevas escuchado
 sin tener que leer el porcentaje, el idioma detectado y un aspa para quitarlo. Están ordenadas por

@@ -229,6 +229,15 @@ button:disabled {
   color: var(--muted);
 }
 
+/* En táctil no se puede arrastrar un archivo, así que el recuadro solo prometía algo imposible
+   y, de paso, empujaba la estantería fuera de la pantalla: ahí «Elegir PDF» es el único camino.
+   El criterio es el puntero, no el ancho: una ventana estrecha de escritorio sí acepta el arrastre. */
+@media (hover: none) {
+  .dropzone {
+    display: none;
+  }
+}
+
 .error {
   margin-top: 1rem;
   padding: 0.75rem 1rem;

@@ -85,6 +85,11 @@ async function mobile(browser) {
   );
   check('la portada no scrollea en horizontal', await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
 
+  // Con el dedo no se arrastra un archivo: el recuadro prometía algo imposible y tapaba la
+  // estantería. Se oculta, y con él el `<input>` no puede irse, que es el único camino que queda.
+  check('el recuadro de arrastrar no aparece en táctil', !(await page.locator('.dropzone').isVisible()));
+  check('y «Elegir PDF» sigue siendo el camino a mano', await page.locator('.hero-actions .primary').isVisible());
+
   await page.setInputFiles('input[type=file]', PDF);
   await page.waitForSelector('.screen.reading');
 
