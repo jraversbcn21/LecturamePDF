@@ -27,14 +27,15 @@ proyecto):
   actualiza a mano («Dejar de sincronizar» y volver a pegar el nuevo).
 - **`api/diag.ts` borrado** una vez cumplida su misión, y el borrado ya está desplegado.
 
-Queda solo:
+Vercel quedó limpio el mismo día: el store viejo y vacío se borró junto con sus dos variables
+huérfanas, y en el proyecto solo quedan las dos que se usan de verdad, `SYNC_TOKEN` y
+`BLOB_READ_WRITE_TOKEN`. El orden importó y conviene repetirlo si algún día se rehace: las
+huérfanas se llamaban `BLOB_READ_WRITE_TOKEN_*` —el store viejo se conectó con ese prefijo—,
+así que se borraron **por nombre exacto antes** de eliminar el store, no fuera a llevarse por
+delante el `BLOB_READ_WRITE_TOKEN` bueno.
 
-1. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
-   vez que se elija una voz «(IA, con red)».
-2. **Limpieza opcional en Vercel**: borrar el store viejo y vacío
-   (`vercel blob delete-store store_nJWOGNqUfoSBiaqw`) y sus dos variables huérfanas
-   (`vercel env rm BLOB_READ_WRITE_TOKEN_STORE_ID`, `vercel env rm
-   BLOB_READ_WRITE_TOKEN_WEBHOOK_PUBLIC_KEY`), que apuntan a él y nada las usa.
+Queda solo **la voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la
+primera vez que se elija una voz «(IA, con red)».
 
 Un cabo suelto que sigue pendiente:
 
