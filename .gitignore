@@ -4,3 +4,6 @@ e2e/screenshots/
 *.local
 graphify-out/*
 !graphify-out/GRAPH_REPORT.md
+
+.vercel
+.env*
