@@ -5,11 +5,13 @@ de IA por OpenRouter), reproducir con resaltado sincronizado, saltar bloques, si
 no interesan, buscar, marcar con notas, consultar el original, retomar donde ibas y seguir en
 otro dispositivo—, con `npm run verify` y `npm run e2e` en verde.
 
-## ▶ Lo primero: probar la sincronización desde los dispositivos reales
+## La sincronización ya funciona de verdad
 
-La sesión del 23-08-2026 dejó la sincronización **verificada de punta a punta contra
-producción** (ciclo completo por curl: `PUT` con ficha, fusión, `GET` de vuelta, tombstone).
-Lo que se arregló, todo por el CLI de Vercel (`vercel` ya está vinculado al proyecto):
+La sesión del 23-08-2026 la dejó **operativa y probada en dispositivos reales**: desktop y
+móvil físico (iOS Safari) sincronizan sin el aviso de error. Antes de eso, verificación de
+punta a punta contra producción por curl (`PUT` con ficha, fusión, `GET` de vuelta,
+tombstone). Lo que se arregló, todo por el CLI de Vercel (`vercel` ya está vinculado al
+proyecto):
 
 - **`BLOB_READ_WRITE_TOKEN` faltaba** (la conexión original del store no la creó): se resolvió
   creando un store nuevo con `vercel blob create-store lecturame-blob --access public --yes`,
@@ -18,21 +20,18 @@ Lo que se arregló, todo por el CLI de Vercel (`vercel` ya está vinculado al pr
   público, así que el conflicto latente desapareció con él.
 - **`SYNC_TOKEN` se rotó**: la original era *sensitive* (imposible de leer de vuelta, `vercel
   env pull` devuelve `[Encrypted]`) y no había forma de saber si el código que se pegaba en la
-  aplicación era el bueno. El código vigente lo tiene el usuario de esta sesión; si se pierde,
-  rotar de nuevo (`vercel env rm SYNC_TOKEN production -y`, `printf '<nuevo>' | vercel env add
-  SYNC_TOKEN production`, `vercel redeploy lecturamepdf.vercel.app`).
-- **`api/diag.ts` borrado** una vez cumplida su misión (falta desplegar ese borrado).
+  aplicación era el bueno. El nuevo código lo tiene el usuario; si se pierde, rotar de nuevo
+  (`vercel env rm SYNC_TOKEN production -y`, `printf '<nuevo>' | vercel env add SYNC_TOKEN
+  production`, `vercel --prod`) y volver a pegarlo en cada dispositivo — un 401 tras rotarlo es
+  justo eso, no una regresión: el dispositivo aún manda el código viejo hasta que se
+  actualiza a mano («Dejar de sincronizar» y volver a pegar el nuevo).
+- **`api/diag.ts` borrado** una vez cumplida su misión, y el borrado ya está desplegado.
 
-Los pasos que quedan, en orden:
+Queda solo:
 
-1. **Desplegar el borrado de `api/diag.ts`** (`vercel --prod` desde el repositorio; el
-   proyecto no está conectado a git, los despliegues son por CLI).
-2. **Probar de verdad**: en el ordenador, pegar el código en la portada y subir un PDF;
-   en el móvil, misma URL y mismo código, y el documento debe aparecer, bajarse y sonar;
-   avanzar en el móvil y comprobar que el progreso vuelve al ordenador al recargar.
-3. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
+1. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
    vez que se elija una voz «(IA, con red)».
-4. **Limpieza opcional en Vercel**: borrar el store viejo y vacío
+2. **Limpieza opcional en Vercel**: borrar el store viejo y vacío
    (`vercel blob delete-store store_nJWOGNqUfoSBiaqw`) y sus dos variables huérfanas
    (`vercel env rm BLOB_READ_WRITE_TOKEN_STORE_ID`, `vercel env rm
    BLOB_READ_WRITE_TOKEN_WEBHOOK_PUBLIC_KEY`), que apuntan a él y nada las usa.
