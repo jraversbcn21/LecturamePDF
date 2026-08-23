@@ -136,6 +136,15 @@ async function mobile(browser) {
   check('el original va a una pestaña nueva, no al iframe que Chromium móvil no pinta', !!download && download.url().startsWith('blob:'), download ? download.url() : 'sin descarga');
   check('y el panel del iframe no se abre', (await page.locator('#pdf-pane').count()) === 0);
 
+  // Al volver del PDF original, iOS puede rehacer la pestaña desde cero: antes eso caía a la
+  // portada en mitad de la lectura. La pestaña recuerda el documento y vuelve al lector.
+  await page.reload();
+  const restored = await page
+    .waitForSelector('article.reader', { timeout: 10000 })
+    .then(() => true)
+    .catch(() => false);
+  check('si la pestaña se rehace (p. ej. al volver del original), sigue en la lectura', restored);
+
   // Borrar pedía un solo toque en un aspa pegada al botón de abrir, y el borrado viaja a la
   // nube sin deshacer: ahora confirma. Sin listener Playwright descartaría el diálogo solo;
   // se escucha para leer la pregunta y elegir la respuesta en cada caso.

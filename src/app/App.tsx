@@ -15,6 +15,14 @@ type Open = {
   heardSections: number[];
 };
 
+/**
+ * La pestaña recuerda qué documento tiene abierto. Al volver del PDF original en el móvil
+ * (o tras cualquier recarga) iOS rehace la página desde cero, y sin esto la lectura caía
+ * a la portada. En sessionStorage a propósito: vive y muere con la pestaña, así que una
+ * visita nueva sigue empezando en la portada.
+ */
+const OPEN_KEY = 'lecturame:open-doc';
+
 export function App() {
   const [entries, setEntries] = useState<LibraryEntry[]>([]);
   const [open, setOpen] = useState<Open | null>(null);
@@ -55,9 +63,11 @@ export function App() {
       }
     }
     if (!doc) {
+      sessionStorage.removeItem(OPEN_KEY); // que un arranque no reintente abrir lo que ya no está
       setError('No se ha podido abrir el documento.');
       return;
     }
+    sessionStorage.setItem(OPEN_KEY, id);
     setOpen({
       doc,
       start: {
@@ -74,9 +84,16 @@ export function App() {
 
   // Refrescar antes de salir: si no, la biblioteca aparece un instante con el progreso viejo.
   const closeDoc = useCallback(async () => {
+    sessionStorage.removeItem(OPEN_KEY);
     await refresh();
     setOpen(null);
   }, [refresh]);
+
+  // Arranque: si esta pestaña estaba leyendo, se vuelve a la lectura, no a la portada.
+  useEffect(() => {
+    const id = sessionStorage.getItem(OPEN_KEY);
+    if (id) void openDoc(id);
+  }, [openDoc]);
 
   const addFile = useCallback(
     async (file: File) => {

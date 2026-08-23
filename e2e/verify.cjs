@@ -449,12 +449,12 @@ const storedPosition = () =>
   check('la estrella refleja que está marcada', (await page.locator('.bookmark-toggle').innerText()) === '★');
   check('la frase queda señalada en el texto', (await page.locator('.sentence.bookmarked').count()) === 1);
 
+  // La pestaña recuerda el documento abierto: recargar vuelve a la lectura, no a la portada.
   await page.reload();
-  await page.waitForSelector('.doc');
-  await page.locator('.doc').first().click();
   await page.waitForSelector('article.reader');
   await page.waitForTimeout(200);
-  check('el marcador sobrevive a cerrar y volver', (await page.locator('.bookmark').count()) === 1);
+  check('recargar a mitad de lectura vuelve al lector, no a la portada', (await page.locator('article.reader').count()) === 1);
+  check('el marcador sobrevive a la recarga', (await page.locator('.bookmark').count()) === 1);
   check(
     'y conserva la frase marcada',
     (await page.locator('.bookmark-text').first().innerText()).trim() === marked.trim(),
@@ -482,11 +482,9 @@ const storedPosition = () =>
   check('Enter guarda la nota', (await page.locator('.bookmark-note').innerText()) === 'repasar mapa mental antes del examen');
 
   await page.reload();
-  await page.waitForSelector('.doc');
-  await page.locator('.doc').first().click();
   await page.waitForSelector('article.reader');
   await page.waitForTimeout(200);
-  check('la nota sobrevive a cerrar y volver', (await page.locator('.bookmark-note').count()) === 1);
+  check('la nota sobrevive a la recarga', (await page.locator('.bookmark-note').count()) === 1);
 
   await page.locator('.bookmark-note').click();
   await page.waitForTimeout(150);
@@ -561,9 +559,7 @@ const storedPosition = () =>
   // --- Barra lateral en pantalla estrecha ----------------------------------
   // Con el lector ya montado a 900 px: es al abrirlo cuando se decide si cabe.
   await page.setViewportSize({ width: 900, height: 900 });
-  await page.reload();
-  await page.waitForSelector('.doc');
-  await page.locator('.doc').first().click();
+  await page.reload(); // la pestaña recuerda el documento: el lector se monta directo, ya a 900 px
   await page.waitForSelector('article.reader');
   await page.waitForTimeout(200);
   check('en pantalla estrecha la barra lateral empieza recogida', !(await page.locator('.sidebar').isVisible()));
@@ -746,8 +742,6 @@ const storedPosition = () =>
   // El silencio se guarda con el documento.
   await mutePage.waitForTimeout(200);
   await mutePage.reload();
-  await mutePage.waitForSelector('.doc');
-  await mutePage.locator('.doc').first().click();
   await mutePage.waitForSelector('article.reader');
   check('el bloque sigue silenciado tras recargar', await blockAt(1).evaluate((el) => el.className.includes('muted')));
 
