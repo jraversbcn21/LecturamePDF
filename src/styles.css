@@ -144,7 +144,10 @@ button:disabled {
 
 .hero {
   display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
+  /* El minmax(0) importa: sin él, el botón «Seguir con…» con nowrap ensancha la columna
+     hasta su texto completo y desborda la página; la elipsis solo actúa si la columna
+     puede encoger por debajo del contenido. */
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: clamp(2rem, 4vw, 3.5rem);
   align-items: center;
 }
@@ -179,6 +182,14 @@ button:disabled {
 .hero-actions button {
   font-size: clamp(1rem, 1.2vw, 1.25rem);
   padding: 0.55rem 1.25rem;
+  /* «Seguir con «nombre»» lleva el nombre del PDF, que puede ser larguísimo: se corta con
+     puntos suspensivos en vez de partir el botón en dos líneas. El title lleva el completo.
+     El min-width deja al botón encoger por debajo de su texto, que es cuando corta. */
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Con la especificidad de `.fine` a secas manda `.pitch p` y la letra pequeña crece con el
@@ -355,7 +366,14 @@ button:disabled {
 
 @media (max-width: 48rem) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Apilados, dos botones de anchos distintos hacen escalón: a todo el ancho, como
+     manda el patrón móvil, quedan parejos y el dedo tiene más donde caer. */
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 

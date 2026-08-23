@@ -63,14 +63,18 @@ export function Library({ entries, busy, error, synced, onFile, onOpen, onDelete
                 {busy ? 'Extrayendo…' : 'Elegir PDF'}
               </button>
               {resume && (
-                <button onClick={() => onOpen(resume.id)}>Seguir con «{resume.name.replace(/\.pdf$/i, '')}»</button>
+                <button onClick={() => onOpen(resume.id)} title={`Seguir con «${resume.name}»`}>
+                  Seguir con «{resume.name.replace(/\.pdf$/i, '')}»
+                </button>
               )}
               {/* Fuera del recuadro: en táctil ese se oculta, y el campo es el que abre el selector. */}
               <input ref={inputRef} type="file" accept="application/pdf" onChange={onChange} hidden />
             </div>
             {synced ? (
               <p className="fine">
-                Sincronizado: tus PDFs y tu progreso se copian a tu nube privada para tus otros dispositivos.{' '}
+                {/* La explicación larga vive en el estado sin sincronizar, que es donde se decide;
+                    aquí ya se sabe y solo empujaba la estantería tres líneas más abajo en móvil. */}
+                Sincronizado: tu biblioteca te sigue en tus otros dispositivos.{' '}
                 <button className="linky" onClick={onDisconnectSync}>
                   Dejar de sincronizar
                 </button>
