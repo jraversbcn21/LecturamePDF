@@ -37,6 +37,18 @@ delante el `BLOB_READ_WRITE_TOKEN` bueno.
 Queda solo **la voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la
 primera vez que se elija una voz «(IA, con red)».
 
+## El móvil quedó pulido el 23-08-2026
+
+Cinco arreglos de la misma tarde, todos **probados en el iPhone físico y desplegados**
+(`e77202e..d1dab2a`): el recuadro de arrastrar no existe en táctil (prometía algo imposible y
+empujaba la estantería fuera de pantalla), borrar confirma antes con el diálogo nativo (el aspa
+estaba a un dedo de abrir y el borrado viaja a la nube sin deshacer), los botones apilados van
+parejos a todo el ancho con el nombre largo en elipsis, el lector solo se mueve arriba y abajo
+(el marco se descolocaba en iOS, detalle en `CLAUDE.md`), y volver del PDF original retoma la
+lectura en vez de caer a la portada (la pestaña recuerda el documento en `sessionStorage`).
+El e2e móvil pasó de 14 a 21 comprobaciones por el camino; nada de esto puede volver a romperse
+en silencio.
+
 Un cabo suelto que sigue pendiente:
 
 - **La comprobación «documento sin original guardado» de `e2e/verify.cjs` tiene una carrera**:

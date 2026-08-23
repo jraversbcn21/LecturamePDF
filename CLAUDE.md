@@ -86,6 +86,13 @@ comprobar antes la versión de Node: dejan de arrancar.
   vive **fuera** del recuadro, porque es el único camino que queda y no puede irse con él; y el
   botón «Elegir PDF» **también lleva el estado «Extrayendo…»**, porque sin el recuadro sería el
   único aviso de que algo está pasando y la espera parecería un cuelgue.
+- **El lector solo se mueve arriba y abajo, y son tres propiedades que van juntas**
+  (`src/styles.css`). En el iPhone real un gesto en diagonal descolocaba el marco entero y la
+  emulación no lo veía (mide el ancho de la página, no si un contenedor interno se puede panear).
+  Las tres patas: `overflow-x: hidden` + `overflow-wrap` en `.reader` (una URL sin espacios del
+  PDF lo volvía panneable), `position: fixed` en `.screen.reading` (a iOS el `overflow: hidden`
+  no le impide arrastrar la página con el rebote elástico) y `touch-action: pan-y` (mata también
+  el doble toque con zoom). Quitar cualquiera reabre un fallo que solo se ve en el dispositivo.
 - **El desbloqueo de audio de iOS solo se registra en táctil** (`src/core/tts.ts`). iOS exige que
   la primera locución nazca de un gesto, y `speak()` llega siempre tras el `setTimeout` de
   Chromium; una locución vacía en el primer `pointerdown` lo resuelve. Se condiciona a
