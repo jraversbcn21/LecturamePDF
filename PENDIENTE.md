@@ -5,52 +5,45 @@ de IA por OpenRouter), reproducir con resaltado sincronizado, saltar bloques, si
 no interesan, buscar, marcar con notas, consultar el original, retomar donde ibas y seguir en
 otro dispositivo—, con `npm run verify` y `npm run e2e` en verde.
 
-## ▶ Lo primero: terminar la puesta en marcha de la sincronización
+## ▶ Lo primero: probar la sincronización desde los dispositivos reales
 
-La aplicación está desplegada y funcionando en **https://lecturamepdf.vercel.app**; lo que
-queda es que la sincronización termine de conectar. La sesión del 22-08-2026 destapó y arregló
-dos fallos que ninguna prueba local podía ver (la única prueba real de `api/` es el despliegue,
-como ya avisaba `CLAUDE.md`):
+La sesión del 23-08-2026 dejó la sincronización **verificada de punta a punta contra
+producción** (ciclo completo por curl: `PUT` con ficha, fusión, `GET` de vuelta, tombstone).
+Lo que se arregló, todo por el CLI de Vercel (`vercel` ya está vinculado al proyecto):
 
-- el import de `../src/core/merge` sin extensión `.js` tiraba la función entera (Vercel
-  transpila sin reescribir especificadores y Node ESM no resuelve sin extensión), y
-- **Vercel se queda la cabecera `Authorization`**: llegaba vacía a la función, así que el
-  código correcto también daba 401. La sincronización viaja ahora en `x-sync-token`.
-
-Estado de las variables (verificado con `/api/diag` contra producción):
-`SYNC_TOKEN` **bien puesta** —definida, 32 caracteres, Production—. `BLOB_READ_WRITE_TOKEN`
-**sigue faltando**: la conexión del store creó `..._STORE_ID` y `..._WEBHOOK_PUBLIC_KEY` pero
-no el token, porque el flujo nuevo de Vercel lo trae en una casilla opcional («Add a
-read-write token env var») que quedó sin marcar y el diálogo no deja re-conectar un proyecto
-ya conectado.
+- **`BLOB_READ_WRITE_TOKEN` faltaba** (la conexión original del store no la creó): se resolvió
+  creando un store nuevo con `vercel blob create-store lecturame-blob --access public --yes`,
+  que conecta el proyecto y crea la variable de una vez.
+- **El store viejo era Private** y el código escribe con `access: 'public'`: el nuevo es
+  público, así que el conflicto latente desapareció con él.
+- **`SYNC_TOKEN` se rotó**: la original era *sensitive* (imposible de leer de vuelta, `vercel
+  env pull` devuelve `[Encrypted]`) y no había forma de saber si el código que se pegaba en la
+  aplicación era el bueno. El código vigente lo tiene el usuario de esta sesión; si se pierde,
+  rotar de nuevo (`vercel env rm SYNC_TOKEN production -y`, `printf '<nuevo>' | vercel env add
+  SYNC_TOKEN production`, `vercel redeploy lecturamepdf.vercel.app`).
+- **`api/diag.ts` borrado** una vez cumplida su misión (falta desplegar ese borrado).
 
 Los pasos que quedan, en orden:
 
-1. **Crear `BLOB_READ_WRITE_TOKEN`** en el proyecto `lecturamepdf` (Settings → Environments →
-   Production). El valor (`vercel_blob_rw_…`) está en Storage → `lecturamepdf-blob` →
-   Quickstart → pestaña `.env.local`. Si ahí no aparece, desconectar el proyecto del store y
-   volver a conectarlo con la casilla marcada y el campo de prefijo **vacío**.
-2. **Redeploy** después (las variables solo entran en un despliegue nuevo).
-3. **Comprobar `/api/diag`**: con la cabecera `x-sync-token: <código>` debe responder
-   `blobTokenDefinido: true` y `coincide: true`.
-4. **Borrar `api/diag.ts`**, que es temporal y no debe quedarse en producción.
-5. **Probar de verdad**: en el ordenador, pegar el código en la portada y subir un PDF;
+1. **Desplegar el borrado de `api/diag.ts`** (`vercel --prod` desde el repositorio; el
+   proyecto no está conectado a git, los despliegues son por CLI).
+2. **Probar de verdad**: en el ordenador, pegar el código en la portada y subir un PDF;
    en el móvil, misma URL y mismo código, y el documento debe aparecer, bajarse y sonar;
    avanzar en el móvil y comprobar que el progreso vuelve al ordenador al recargar.
-6. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
+3. **La voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la primera
    vez que se elija una voz «(IA, con red)».
+4. **Limpieza opcional en Vercel**: borrar el store viejo y vacío
+   (`vercel blob delete-store store_nJWOGNqUfoSBiaqw`) y sus dos variables huérfanas
+   (`vercel env rm BLOB_READ_WRITE_TOKEN_STORE_ID`, `vercel env rm
+   BLOB_READ_WRITE_TOKEN_WEBHOOK_PUBLIC_KEY`), que apuntan a él y nada las usa.
 
-Dos cabos sueltos de la misma sesión:
+Un cabo suelto que sigue pendiente:
 
 - **La comprobación «documento sin original guardado» de `e2e/verify.cjs` tiene una carrera**:
   mide nada más abrir el panel y a veces pilla el «Abriendo el original…» transitorio en vez
   del estado final (visto: falla ~1 de cada 4 rondas, y el detalle enseña la nota transitoria).
   El arreglo es esperar a que la nota diga «Vuelve a subirlo» antes de medir, como manda la
   regla de esperas de `CLAUDE.md`. Quedó escrito pero sin aplicar al cerrar la sesión.
-- **El store de Blob quedó como Private** y el código guarda con `access: 'public'` a
-  propósito (la biblioteca se relee con un `fetch` normal y los PDFs se sirven por URL). Si
-  tras arreglar el token la escritura falla quejándose del acceso, es esto: o el store pasa a
-  público o se cambia la lectura. Primero verlo fallar.
 
 ## Próxima sesión
 
