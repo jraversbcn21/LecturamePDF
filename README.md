@@ -53,7 +53,8 @@ así que ahí el botón es el único camino. Si ya habías empezado algo, sale a
 **seguir con el último documento**, que es lo que se quiere hacer casi siempre al volver.
 
 Debajo, la estantería: una ficha por documento, con un anillo que enseña cuánto llevas escuchado
-sin tener que leer el porcentaje, el idioma detectado y un aspa para quitarlo. Están ordenadas por
+sin tener que leer el porcentaje, el idioma detectado y un aspa para quitarlo —pide confirmación,
+que si sincronizas el borrado viaja también a tu nube y a tus otros dispositivos—. Están ordenadas por
 el último rato que les dedicaste, no por cuándo las subiste.
 
 La presentación crece con el ancho de la ventana, no con el zoom del navegador: en un monitor

@@ -117,6 +117,27 @@ async function mobile(browser) {
   check('el original va a una pestaña nueva, no al iframe que Chromium móvil no pinta', !!download && download.url().startsWith('blob:'), download ? download.url() : 'sin descarga');
   check('y el panel del iframe no se abre', (await page.locator('#pdf-pane').count()) === 0);
 
+  // Borrar pedía un solo toque en un aspa pegada al botón de abrir, y el borrado viaja a la
+  // nube sin deshacer: ahora confirma. Sin listener Playwright descartaría el diálogo solo;
+  // se escucha para leer la pregunta y elegir la respuesta en cada caso.
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('.docs .ghost');
+  let question = null;
+  page.once('dialog', (dialog) => {
+    question = dialog.message();
+    return dialog.dismiss();
+  });
+  await page.tap('.docs .ghost');
+  await page.waitForTimeout(300); // que un borrado en vuelo tuviera tiempo de notarse
+  check('borrar pide confirmación, y cancelar no borra', question !== null && (await page.locator('.doc').count()) === 1, String(question));
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.tap('.docs .ghost');
+  const gone = await page
+    .waitForFunction(() => document.querySelectorAll('.doc').length === 0, { timeout: 5000 })
+    .then(() => true)
+    .catch(() => false);
+  check('y aceptar sí lo quita de la estantería', gone);
+
   await context.close();
 }
 

@@ -122,7 +122,16 @@ export function Library({ entries, busy, error, synced, onFile, onOpen, onDelete
                       </span>
                     </span>
                   </button>
-                  <button className="ghost" onClick={() => onDelete(entry.id)} aria-label={`Eliminar ${entry.name}`}>
+                  {/* Confirmación nativa: en táctil el aspa queda a un dedo del botón de abrir, y el
+                      borrado viaja (tombstone) a la nube y al resto de dispositivos, sin deshacer. */}
+                  <button
+                    className="ghost"
+                    onClick={() => {
+                      if (window.confirm(`¿Quitar «${entry.name}»${synced ? ' de este y de tus otros dispositivos' : ''}?`))
+                        onDelete(entry.id);
+                    }}
+                    aria-label={`Eliminar ${entry.name}`}
+                  >
                     ✕
                   </button>
                 </li>

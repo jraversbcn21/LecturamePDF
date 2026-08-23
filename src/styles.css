@@ -341,6 +341,18 @@ button:disabled {
   line-height: 1;
 }
 
+/* En táctil el aspa era un objetivo minúsculo; más área de toque, y la ficha le hace
+   sitio para que el nombre no pase por debajo. Fallar el toque ya no borra: confirma. */
+@media (hover: none) {
+  .docs .ghost {
+    padding: 0.7rem 0.8rem;
+  }
+
+  .doc {
+    padding-right: 3rem;
+  }
+}
+
 @media (max-width: 48rem) {
   .hero {
     grid-template-columns: 1fr;
