@@ -385,6 +385,13 @@ button:disabled {
   /* En móvil, 100vh queda por debajo de la barra del navegador y tapa los controles. */
   height: 100dvh;
   overflow: hidden;
+  /* Clavada al viewport: a iOS el overflow hidden no le impide arrastrar la página entera
+     con el rebote elástico, y la cabecera se salía por arriba al hacer scroll en el texto. */
+  position: fixed;
+  inset: 0;
+  /* El dedo solo panea en vertical: sin esto un gesto en diagonal (o un doble toque con
+     zoom) descoloca el marco y el texto queda fuera de la vista. */
+  touch-action: pan-y;
 }
 
 .body {
@@ -400,6 +407,12 @@ button:disabled {
   max-width: 45rem;
   margin: 0 auto;
   overflow-y: auto;
+  /* overflow-y auto computa overflow-x auto: con un token sin espacios (una URL) más ancho
+     que la columna, el texto se volvía panneable en horizontal en iOS. Se corta el eje y
+     el token parte de línea; llegar al tope tampoco arrastra la página (overscroll). */
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  overscroll-behavior: contain;
   padding: 2rem 1.5rem 4rem;
   font-size: 1.2rem;
   line-height: 1.85;

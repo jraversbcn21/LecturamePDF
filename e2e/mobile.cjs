@@ -98,6 +98,25 @@ async function mobile(browser) {
     'la pantalla de lectura no se sale del alto visible (dvh)',
     await page.evaluate(() => document.querySelector('.screen.reading').getBoundingClientRect().height <= innerHeight + 1),
   );
+  // En iOS un gesto en diagonal descolocaba el marco: el texto se corría en horizontal (una URL
+  // sin espacios lo ensanchaba) y el rebote elástico arrastraba la página con cabecera y todo.
+  check(
+    'el dedo solo puede panear el lector en vertical',
+    await page.evaluate(() => getComputedStyle(document.querySelector('.screen.reading')).touchAction === 'pan-y'),
+  );
+  check(
+    'la columna de texto ni esconde contenido ni se mueve en horizontal',
+    await page.evaluate(() => {
+      const reader = document.querySelector('.reader');
+      // Un párrafo con un token imposible de partir: sin overflow-wrap ensancharía la columna.
+      const probe = document.createElement('p');
+      probe.textContent = 'x'.repeat(600);
+      reader.appendChild(probe);
+      const contained = reader.scrollWidth <= reader.clientWidth + 1;
+      probe.remove();
+      return contained && getComputedStyle(reader).overflowX === 'hidden';
+    }),
+  );
 
   const muteOpacity = await page.locator('.mute-toggle').first().evaluate((el) => getComputedStyle(el).opacity);
   check('el botón de silenciar se ve sin necesidad de hover', muteOpacity === '1', `opacity ${muteOpacity}`);
