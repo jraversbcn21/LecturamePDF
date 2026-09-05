@@ -394,6 +394,30 @@ button:disabled {
   touch-action: pan-y;
 }
 
+/* Lectura inmersiva (táctil): con la voz sonando y sin tocar, cabecera y reproductor se van.
+   Es un reflow (el texto gana su sitio), suavizado con la transición de max-height. */
+.screen.reading .bar,
+.screen.reading .controls {
+  max-height: 8rem;
+  overflow: hidden;
+  transition: max-height 0.25s ease, transform 0.25s ease, padding 0.25s ease;
+}
+
+.screen.reading.immersive .bar,
+.screen.reading.immersive .controls {
+  max-height: 0;
+  padding-block: 0;
+  border-width: 0;
+}
+
+.screen.reading.immersive .bar {
+  transform: translateY(-100%);
+}
+
+.screen.reading.immersive .controls {
+  transform: translateY(100%);
+}
+
 .body {
   position: relative; /* Referencia de la barra lateral cuando se superpone. */
   flex: 1;

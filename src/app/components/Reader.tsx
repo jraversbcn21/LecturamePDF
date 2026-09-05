@@ -82,6 +82,38 @@ function useKeyboard(
   }, [dispatch, rate, onClose, onSearch, onBookmark]);
 }
 
+/** Sin tocar la pantalla durante este tiempo, con la voz sonando, las barras se esconden. */
+const IMMERSIVE_DELAY = 4000;
+
+/**
+ * Lectura inmersiva, solo en táctil: mientras suena y nadie toca, cabecera y reproductor se
+ * esconden. Devuelve si están ocultas y `wake`, que las muestra y rearma el temporizador.
+ */
+function useImmersive(active: boolean): [boolean, () => void] {
+  const [hidden, setHidden] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+
+  const wake = useCallback(() => {
+    setHidden(false);
+    window.clearTimeout(timer.current);
+    if (active) timer.current = window.setTimeout(() => setHidden(true), IMMERSIVE_DELAY);
+  }, [active]);
+
+  useEffect(() => {
+    wake();
+    // Cualquier tecla cuenta como interacción; al volver a la pestaña, las barras están.
+    window.addEventListener('keydown', wake);
+    document.addEventListener('visibilitychange', wake);
+    return () => {
+      window.clearTimeout(timer.current);
+      window.removeEventListener('keydown', wake);
+      document.removeEventListener('visibilitychange', wake);
+    };
+  }, [wake]);
+
+  return [hidden, wake];
+}
+
 export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections, onClose }: Props) {
   const [heard, setHeard] = useState(() => new Set(heardSections));
   const outline = useMemo(() => outlineOf(doc.blocks), [doc.blocks]);
@@ -119,6 +151,10 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
   const [sidebar, setSidebar] = useState(() => window.matchMedia(WIDE).matches);
   const [pdf, setPdf] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // Solo en táctil: en escritorio hay sitio de sobra y las barras no molestan.
+  const touch = useMemo(() => window.matchMedia('(hover: none)').matches, []);
+  const [immersive, wake] = useImmersive(touch && state.status === 'playing' && !sidebar);
 
   // Los dos paneles se reparten el mismo hueco a los lados del texto, así que no caben a la vez.
   const showSidebar = useCallback((open: boolean) => {
@@ -162,7 +198,25 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
   useKeyboard(dispatch, state.rate, onClose, focusSearch, toggleCurrent);
 
   return (
-    <div className="screen reading">
+    <div
+      className={immersive ? 'screen reading immersive' : 'screen reading'}
+      // Con las barras ocultas, el primer toque solo las trae: se corta en captura para que no
+      // llegue al onJump de la frase (si no, cada intento de pausar movería la lectura).
+      // pointerdown llega ANTES que click: si revelara ya aquí, el click vería las barras
+      // visibles y saltaría. Por eso pointerdown solo rearma cuando ya están a la vista.
+      onClickCapture={(event) => {
+        if (!immersive) return;
+        event.stopPropagation();
+        wake();
+      }}
+      onPointerDown={() => {
+        if (!immersive) wake();
+      }}
+      // El dedo desplazando el texto también las trae. touchmove y no scroll: ReaderView hace
+      // scroll programático para centrar cada frase que suena, y eso rearmaría el temporizador
+      // sin que nadie haya tocado nada (no se escondían nunca).
+      onTouchMove={wake}
+    >
       <header className="bar">
         <button onClick={onClose}>← Biblioteca</button>
         <button
