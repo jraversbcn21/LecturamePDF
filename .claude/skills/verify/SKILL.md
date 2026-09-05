@@ -42,9 +42,10 @@ no está en el 5173, apunta el e2e con `LECTURAME_URL`:
 $env:NODE_PATH = (npm root -g); $env:LECTURAME_URL = 'http://localhost:5174/'; npm run e2e
 ```
 
-Son **dos suites encadenadas** y cada una da su propio recuento: `verify.cjs` (escritorio) y
-`mobile.cjs` (emulación táctil y cliente de sincronización). Si la primera falla, la segunda ni
-se lanza, así que no des por buena la parte móvil sin ver su línea final.
+Son **tres suites encadenadas** y cada una da su propio recuento: `verify.cjs` (escritorio),
+`mobile.cjs` (emulación táctil y cliente de sincronización) y `pwa.cjs` (sin conexión, contra el
+preview). Si una falla, la siguiente ni se lanza, así que no des por buena una parte sin ver su
+línea final.
 
 Si un fallo parece intermitente, repítelo tres o cuatro veces antes de darlo por bueno o por
 malo: varias carreras de esta suite solo aparecían en una de cada cuatro pasadas.
@@ -53,11 +54,28 @@ Antes de tocar el código por un fallo aquí, descarta que el problema esté en 
 lo más habitual es medir el estado mientras la voz sigue avanzando. Ver la sección
 «Comprobaciones en navegador» de CLAUDE.md.
 
-## 4. Build
+## 4. Build y comprobación sin conexión
 
 ```powershell
 npx vite build
 ```
+
+La tercera suite e2e (`pwa.cjs`) no corre contra `vite dev` —ahí no hay service worker— sino
+contra el `dist` recién construido. Tras el build, levanta el preview en segundo plano y lánzala;
+si el 4173 está ocupado, pásale el puerto real con `LECTURAME_PREVIEW_URL`:
+
+```powershell
+npx vite preview --port 4173   # run_in_background: true
+$env:NODE_PATH = (npm root -g); node e2e/pwa.cjs
+```
+
+Igual que el 5173, el 4173 puede estar ocupado por otro proyecto del usuario: comprueba que el
+título servido es `LecturamePDF` antes de fiarte, y si no lo es, usa otro puerto y
+`LECTURAME_PREVIEW_URL`.
+
+`npm run e2e` la encadena tras las otras dos, así que necesita **los dos servidores**: el de
+desarrollo para `verify.cjs` y `mobile.cjs`, y el preview para `pwa.cjs`. Si solo hay uno, la
+suite que falta sale con código 2 y un mensaje que dice cuál arrancar.
 
 ## Informe
 

@@ -10,7 +10,7 @@
     "test": "vitest run",
     "lint": "eslint .",
     "verify": "npm run lint && npm test && tsc --noEmit && vite build",
-    "e2e": "node e2e/verify.cjs && node e2e/mobile.cjs"
+    "e2e": "node e2e/verify.cjs && node e2e/mobile.cjs && node e2e/pwa.cjs"
   },
   "dependencies": {
     "@vercel/blob": "^1.1.1",
