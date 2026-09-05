@@ -86,9 +86,11 @@ Mismo esqueleto que `mobile.cjs` (`check`, `results`, exit 2 si no responde el s
 `LECTURAME_PREVIEW_URL`, por defecto `http://localhost:4173/`, que es `vite preview` sirviendo el
 `dist` recién construido. Seis comprobaciones:
 
-1. Abrir la app y esperar a `navigator.serviceWorker.ready` (el precache ocurre en `install`, así
-   que al resolverse ya está lleno).
-2. El preview sirve LecturamePDF (título de la página): el 4173 puede ser de otro proyecto.
+1. El preview sirve LecturamePDF (título de la página): el 4173 puede ser de otro proyecto. Si
+   falla, la suite corta aquí — nada de lo siguiente significa algo contra una app ajena.
+2. Abrir la app y esperar a `navigator.serviceWorker.ready`, acotado a 10 s (el precache ocurre
+   en `install`, así que al resolverse ya está lleno; un registro que nunca ocurre falla en vez
+   de colgar la suite).
 3. El worker `.mjs` de pdf.js está entre las claves de la Cache Storage (`caches.keys()` →
    `cache.keys()`). Se pregunta a la caché directamente porque, visto al implementarlo, en
    Chromium headless la petición del script del Worker **se salta la emulación offline** de
@@ -125,7 +127,7 @@ Mismo esqueleto que `mobile.cjs` (`check`, `results`, exit 2 si no responde el s
 
 - **Precache sirviendo versiones viejas tras un despliegue.** Workbox versiona cada fichero por
   hash y borra las cachés anteriores al activarse; el `sw.js` lo sirve Vercel con `max-age=0`, así
-  que el navegador siempre comprueba si hay worker nuevo. La comprobación (1) falla si el registro
+  que el navegador siempre comprueba si hay worker nuevo. La comprobación (2) falla si el registro
   deja de funcionar; la (3) si el precache pierde el worker de pdf.js.
 - **Chromium headless con `setOffline`.** Playwright corta la red a nivel de navegador y deja al
   service worker responder desde caché; es el comportamiento documentado y en el que se apoyan

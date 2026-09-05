@@ -37,10 +37,16 @@ async function offline(browser) {
   // tienen que ver con la PWA.
   const title = await page.title();
   check('el preview sirve LecturamePDF', title.includes('LecturamePDF'), title);
+  if (!title.includes('LecturamePDF')) { await context.close(); return; }
 
-  // El precache se llena en `install`, así que cuando `ready` resuelve ya está todo dentro.
+  // El precache se llena en `install`, así que cuando `ready` resuelve ya está todo dentro. La
+  // carrera contra un timeout de 10 s evita que un registro que nunca ocurre cuelgue la suite en
+  // vez de fallarla: un cuelgue no es una señal.
   const state = await page
-    .evaluate(() => navigator.serviceWorker.ready.then((r) => r.active?.state ?? 'sin worker activo'))
+    .evaluate(() => Promise.race([
+      navigator.serviceWorker.ready.then((r) => r.active?.state ?? 'sin worker activo'),
+      new Promise((resolve) => setTimeout(() => resolve('sin registrar tras 10 s'), 10000)),
+    ]))
     .catch((error) => `error: ${error.message}`);
   check('el service worker se registra y queda activo', state === 'activated' || state === 'activating', state);
 
