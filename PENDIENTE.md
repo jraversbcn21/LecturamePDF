@@ -34,8 +34,10 @@ huérfanas se llamaban `BLOB_READ_WRITE_TOKEN_*` —el store viejo se conectó c
 así que se borraron **por nombre exacto antes** de eliminar el store, no fuera a llevarse por
 delante el `BLOB_READ_WRITE_TOKEN` bueno.
 
-Queda solo **la voz de IA en el móvil**, si se quiere allí: pegar la clave de OpenRouter la
-primera vez que se elija una voz «(IA, con red)».
+La **voz de IA en el móvil** también está probada (05-09-2026, iPhone real, Safari): basta pegar
+la clave de OpenRouter la primera vez que se elija una voz «(IA, con red)». La clave vive en el
+`localStorage` de cada navegador, como el código de sincronización, así que se pega en cada
+dispositivo; no viaja con la biblioteca.
 
 ## El móvil quedó pulido el 23-08-2026
 
@@ -58,11 +60,6 @@ Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
 
-- **Si en iPhone la voz de IA no arranca** (la local sí, que ya lleva su desbloqueo), la causa
-  será que iOS bloquea el `play()` de un `Audio` nuevo fuera del gesto: el arreglo es reutilizar
-  un único elemento de audio desbloqueado en el primer toque, cambiándole el `src` por frase. No
-  se hizo de antemano porque rompe la forma actual de los tests («un Audio por frase») y en el
-  WebKit moderno puede no hacer falta: primero verlo fallar en el dispositivo real.
 - **Vigilar el gasto de Blob** las primeras semanas (Vercel lo enseña en la pestaña Storage). El
   plan gratuito da 1 GB y ~10 GB de transferencia al mes, y pasarse **corta el acceso 30 días**
   en vez de cobrar. Con PDFs de apuntes no debería acercarse; si se acerca, lo barato es borrar
