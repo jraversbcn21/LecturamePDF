@@ -12,9 +12,10 @@ grafo del proyecto, en @graphify-out/GRAPH_REPORT.md.
 
 ## Restricción de versiones
 
-El Node de esta máquina es la 18. Las dependencias están fijadas a **Vite 5, pdfjs-dist 4 y
-Vitest 2 porque son las últimas que lo soportan**. No subas a Vite 6+, pdfjs 5+ o Vitest 3+ sin
-comprobar antes la versión de Node: dejan de arrancar.
+El Node de esta máquina es la 18. Las dependencias están fijadas a **Vite 5, pdfjs-dist 4,
+Vitest 2 y vite-plugin-pwa 0.21 porque son las últimas que lo soportan** (la 1.x del plugin
+arrastra `workbox-build` 7.4, que pide Node 20). No subas a Vite 6+, pdfjs 5+, Vitest 3+ o
+vite-plugin-pwa 1+ sin comprobar antes la versión de Node: dejan de arrancar.
 
 ## Decisiones que no conviene deshacer
 
@@ -104,6 +105,16 @@ comprobar antes la versión de Node: dejan de arrancar.
   contenido; leer mal una fórmula solo suena raro un momento. Por eso `looksLikeFormula` exige tres
   señales a la vez y la tabla se reconoce por columnas alineadas y no por el tamaño del hueco, que
   también lo produce una sangría. Ante la duda, prosa.
+- **La PWA se actualiza en el siguiente arranque, y el precache lleva tres líneas que no son
+  opcionales** (`vite.config.ts`). `registerType: 'prompt'` sin manejar `onNeedRefresh` hace que
+  el worker nuevo espere a que se cierren todas las pestañas: se eligió a propósito frente a la
+  recarga automática, que cortaría la voz a mitad de frase, y frente a un aviso, que es interfaz
+  y estado de más. `mjs` va en `globPatterns` porque el worker de pdf.js sale con esa extensión
+  y el patrón por defecto no lo incluye: sin él la app arranca sin red pero no extrae nada.
+  `/api/` va en `navigateFallbackDenylist` para que una navegación a la API sin red falle en vez
+  de recibir el `index.html`. Y `devOptions` queda apagado: bajo `vite dev` no hay service
+  worker, así que las dos suites e2e de siempre no lo ven; lo comprueba la tercera, `pwa.cjs`,
+  contra `vite preview`.
 
 ## Extracción de PDF
 
@@ -153,9 +164,19 @@ Si una comprobación abre IndexedDB, **no le fijes el número de versión**: `in
 abre la que haya. Fijarla caduca en cuanto sube el esquema, y además cuelga la comprobación en vez
 de fallar.
 
-`npm run e2e` encadena dos ficheros: `verify.cjs`, la suite de escritorio, y `mobile.cjs`,
-emulación táctil más el cliente de sincronización. Dos cosas del entorno que engañan al escribir
-en el segundo: **Chromium headless no trae visor de PDF**, así que navegar una pestaña a un
+`npm run e2e` encadena tres ficheros: `verify.cjs`, la suite de escritorio; `mobile.cjs`,
+emulación táctil más el cliente de sincronización; y `pwa.cjs`, que corta la red y necesita
+**`vite preview` en el 4173** (o `LECTURAME_PREVIEW_URL`) sirviendo un `dist` recién construido,
+porque bajo `vite dev` no hay service worker. Igual que el 5173, el 4173 puede estar ocupado por
+otro proyecto del usuario: comprueba que el título servido es `LecturamePDF` antes de fiarte.
+
+Dos cosas de `pwa.cjs` que engañan: el `<input type="file">` está oculto por diseño, así que se
+espera con `state: 'attached'`, no a verlo; y en Chromium headless la petición del script del
+Worker **se salta la emulación offline** de Playwright, así que «extraer sin red» pasa aunque el
+`.mjs` no esté precacheado —por eso el precache se comprueba mirando las claves de la Cache
+Storage, no por la extracción—.
+
+Dos cosas del entorno que engañan al escribir en `mobile.cjs`: **Chromium headless no trae visor de PDF**, así que navegar una pestaña a un
 `blob:` de PDF no la navega, la convierte en descarga —el evento `download` es la señal de que
 la pestaña recibió el documento—; y **las funciones de `api/` no corren bajo `vite dev`**, así
 que la API se responde desde Playwright con `page.route`: eso comprueba el cliente, nunca las

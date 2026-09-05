@@ -78,18 +78,13 @@ recogidos aquí.
   línea de contenido; retomar solo si silenciar índices a mano se hace pesado.
 - **Caché de audio de la voz de IA**, si el coste o la espera empiezan a molestar (detalle abajo,
   en «Interfaz»).
-- **PWA con service worker, para que arranque sin conexión** (pedido el 23-08-2026, pospuesto a
-  propósito). Los datos ya son offline —PDFs, texto extraído, progreso y marcadores viven en
-  IndexedDB, y la voz local no toca la red—, pero **la aplicación en sí no carga sin conexión**:
-  no hay service worker y Vercel sirve todo con `Cache-Control: max-age=0, must-revalidate`
-  (comprobado contra producción), así que el navegador está obligado a revalidar y en un avión
-  no abre ni la portada. Solo sobrevive una pestaña ya abierta, y iOS las rehace cuando quiere.
-  El arreglo: `vite-plugin-pwa` precacheando el bundle (~2 MB con el worker de pdf.js), que de
-  regalo permite instalarla en la pantalla de inicio del iPhone. Dos cosas a vigilar al hacerlo:
-  que el precache no sirva versiones viejas tras un despliegue (estrategia de actualización del
-  service worker), y que la versión del plugin aguante Vite 5/Node 18, que es la restricción de
-  esta máquina. Fuera de alcance del service worker: la voz de IA (es red) y las voces «Natural»
-  de Edge en escritorio, que son de nube; sin conexión, voz local.
+- **Probar la PWA en el iPhone real** (hecha el 05-09-2026, verificada en Chromium headless con
+  la red cortada; en el dispositivo aún no): instalarla desde Safari (Compartir → Añadir a
+  pantalla de inicio), abrirla en modo avión y que cargue la estantería y lea un documento; y
+  desde la app instalada, «Ver el PDF original», que en táctil se abre con `window.open`
+  (`Reader.tsx`), debe saltar a Safari y al volver la lectura sigue donde estaba. Si en modo
+  instalado la cabecera queda bajo la barra de estado, añadir `viewport-fit=cover` y
+  `env(safe-area-inset-top)`; no se hizo de antemano porque iOS ya inseta la vista en standalone.
 
 ## Descartado
 

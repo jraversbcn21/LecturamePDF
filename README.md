@@ -182,6 +182,21 @@ La **voz de IA funciona igual en el móvil**: la clave de OpenRouter se pega una
 dispositivo (viaja del navegador a OpenRouter, nunca al servidor) y la cuota es por cuenta, no
 por aparato.
 
+## Sin conexión y en la pantalla de inicio
+
+Una vez abierta con red la primera vez, la aplicación queda guardada en el navegador y arranca
+también sin conexión: la estantería, el lector, la voz local, el progreso, los marcadores y los
+PDFs que ya subiste están en el propio dispositivo. Al desplegarse una versión nueva, se instala
+en silencio y entra la siguiente vez que abras la aplicación con todas sus pestañas cerradas;
+nunca interrumpe una lectura.
+
+En el iPhone puede instalarse como una aplicación más: en Safari, **Compartir → Añadir a
+pantalla de inicio**. Se abre a pantalla completa, sin la barra del navegador.
+
+Lo que necesita red por definición sigue necesitándola: la voz de IA, las voces «Natural» de
+Edge en escritorio (son de nube; sin conexión, voz local) y la sincronización entre dispositivos,
+que retoma sola al volver la red.
+
 ## Cómo funciona
 
 `PDF → bloques → frases → voz → resaltado`
