@@ -667,11 +667,13 @@ const storedPosition = () =>
   await oldPage.locator('.doc').first().click();
   await oldPage.waitForSelector('article.reader');
   await oldPage.click('button[aria-label*="PDF original"]');
-  await oldPage.waitForSelector('.pdf-pane');
+  // El panel enseña «Abriendo el original…» mientras consulta la base; se mide el estado final.
+  await oldPage.waitForSelector('.pdf-note:has-text("Vuelve a subirlo")', { timeout: 10000 }).catch(() => {});
   check(
     'y de un documento sin original guardado lo explica, en vez de romperse',
     (await oldPage.locator('.pdf-note').innerText()).includes('Vuelve a subirlo') &&
       (await oldPage.locator('.pdf-frame').count()) === 0,
+    await oldPage.locator('.pdf-note').innerText(),
   );
   await oldContext.close();
 

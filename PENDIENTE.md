@@ -47,15 +47,9 @@ parejos a todo el ancho con el nombre largo en elipsis, el lector solo se mueve 
 (el marco se descolocaba en iOS, detalle en `CLAUDE.md`), y volver del PDF original retoma la
 lectura en vez de caer a la portada (la pestaña recuerda el documento en `sessionStorage`).
 El e2e móvil pasó de 14 a 21 comprobaciones por el camino; nada de esto puede volver a romperse
-en silencio.
-
-Un cabo suelto que sigue pendiente:
-
-- **La comprobación «documento sin original guardado» de `e2e/verify.cjs` tiene una carrera**:
-  mide nada más abrir el panel y a veces pilla el «Abriendo el original…» transitorio en vez
-  del estado final (visto: falla ~1 de cada 4 rondas, y el detalle enseña la nota transitoria).
-  El arreglo es esperar a que la nota diga «Vuelve a subirlo» antes de medir, como manda la
-  regla de esperas de `CLAUDE.md`. Quedó escrito pero sin aplicar al cerrar la sesión.
+en silencio. La carrera que quedaba en `verify.cjs` («documento sin original guardado» medía
+antes de que el panel terminara de consultar la base) se cerró el 05-09-2026 esperando al texto
+final antes de medir.
 
 ## Próxima sesión
 
