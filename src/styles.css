@@ -395,17 +395,19 @@ button:disabled {
 }
 
 /* Lectura inmersiva (táctil): con la voz sonando y sin tocar, cabecera y reproductor se van.
-   Es un reflow (el texto gana su sitio), suavizado con la transición de max-height. */
+   Es un reflow (el texto gana su sitio), suavizado con la transición de max-height. El tope
+   visible es holgado a propósito y sin overflow hidden: en un iPhone los controles se pliegan
+   en tres filas (~200 px) y un tope de 8rem recortaba el selector de voz por abajo. */
 .screen.reading .bar,
 .screen.reading .controls {
-  max-height: 8rem;
-  overflow: hidden;
+  max-height: 24rem;
   transition: max-height 0.25s ease, transform 0.25s ease, padding 0.25s ease;
 }
 
 .screen.reading.immersive .bar,
 .screen.reading.immersive .controls {
   max-height: 0;
+  overflow: hidden;
   padding-block: 0;
   border-width: 0;
 }

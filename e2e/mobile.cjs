@@ -98,6 +98,18 @@ async function mobile(browser) {
     'la pantalla de lectura no se sale del alto visible (dvh)',
     await page.evaluate(() => document.querySelector('.screen.reading').getBoundingClientRect().height <= innerHeight + 1),
   );
+  // En un iPhone los controles se pliegan en tres filas; un tope de altura les recortaba el
+  // selector de voz por abajo, justo donde Safari pone su barra, y parecía cosa del navegador.
+  const controlsFit = () =>
+    page.evaluate(() => {
+      const controls = document.querySelector('.controls');
+      const box = controls.getBoundingClientRect();
+      return controls.scrollHeight <= controls.clientHeight + 1 && box.bottom <= innerHeight + 1
+        ? ''
+        : `scroll ${controls.scrollHeight} > client ${controls.clientHeight} o bottom ${Math.round(box.bottom)} > ${innerHeight}`;
+    });
+  const fit = await controlsFit();
+  check('los controles enseñan todas sus filas dentro de la pantalla', fit === '', fit);
   // En iOS un gesto en diagonal descolocaba el marco: el texto se corría en horizontal (una URL
   // sin espacios lo ensanchaba) y el rebote elástico arrastraba la página con cabecera y todo.
   check(
@@ -161,6 +173,9 @@ async function mobile(browser) {
     await page.touchscreen.tap(target.x, target.y);
     await page.waitForSelector('.screen.reading:not(.immersive)', { timeout: 3000 }).catch(() => {});
     check('el primer toque trae las barras de vuelta', (await page.locator('.screen.immersive').count()) === 0);
+    await page.waitForTimeout(300); // que termine la transición de vuelta
+    const fitAfter = await controlsFit();
+    check('y vuelven enteros, sin recortar la última fila', fitAfter === '', fitAfter);
     const activeText = await page.locator('.sentence.active').textContent();
     check('y no salta la lectura a la frase tocada', activeText !== target.text, `activa: ${activeText?.slice(0, 40)}`);
   } else {
