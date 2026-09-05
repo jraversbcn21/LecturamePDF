@@ -129,6 +129,51 @@ async function mobile(browser) {
   await page.waitForFunction(() => window.__spoken.some((text) => text !== ''));
   const real = await page.evaluate(() => window.__spoken.find((text) => text !== ''));
   check('y detrás llega la frase de verdad', !!real, real);
+
+  // Lectura inmersiva: con la voz sonando y sin tocar, las barras se van solas.
+  const immersive = await page
+    .waitForSelector('.screen.immersive', { timeout: 8000 })
+    .then(() => true)
+    .catch(() => false);
+  check('sin tocar la pantalla, cabecera y reproductor se esconden', immersive);
+  await page.waitForTimeout(300); // que termine la transición antes de medir posiciones
+  check(
+    'y el reproductor queda fuera de la vista',
+    await page.evaluate(() => document.querySelector('.controls').getBoundingClientRect().top >= innerHeight - 1),
+  );
+
+  // El primer toque solo trae las barras. Se toca una frase VISIBLE de otro bloque (por
+  // coordenadas: si Playwright tuviera que hacer scroll para llegar, el scroll ya revelaría
+  // las barras y el toque sí saltaría).
+  const target = await page.evaluate(() => {
+    const active = document.querySelector('.sentence.active');
+    const own = active?.parentElement;
+    for (const s of document.querySelectorAll('.sentence')) {
+      if (s.parentElement === own) continue;
+      const r = s.getBoundingClientRect();
+      if (r.top > 40 && r.bottom < innerHeight - 40 && r.width > 0) {
+        return { x: r.left + Math.min(20, r.width / 2), y: r.top + r.height / 2, text: s.textContent };
+      }
+    }
+    return null;
+  });
+  if (target) {
+    await page.touchscreen.tap(target.x, target.y);
+    await page.waitForSelector('.screen.reading:not(.immersive)', { timeout: 3000 }).catch(() => {});
+    check('el primer toque trae las barras de vuelta', (await page.locator('.screen.immersive').count()) === 0);
+    const activeText = await page.locator('.sentence.active').textContent();
+    check('y no salta la lectura a la frase tocada', activeText !== target.text, `activa: ${activeText?.slice(0, 40)}`);
+  } else {
+    check('hay una frase visible de otro bloque para tocar', false, 'no se encontró');
+  }
+
+  // Con la barra lateral abierta no se esconden: ahí se está usando la pantalla. Se comprueba
+  // una AUSENCIA estable tras el retardo, la única espera fija admisible.
+  await page.tap('button[aria-controls="sidebar"]');
+  await page.waitForTimeout(5000);
+  check('con la barra lateral abierta las barras se quedan', (await page.locator('.screen.immersive').count()) === 0);
+  await page.tap('button[aria-controls="sidebar"]');
+
   await page.tap('.controls .primary'); // pausa: que no siga avanzando bajo los pies
 
   const [tab] = await Promise.all([context.waitForEvent('page'), page.tap('button[title="Ver el PDF original"]')]);
