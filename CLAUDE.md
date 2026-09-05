@@ -212,3 +212,14 @@ proyecto y no por costumbre. Dos trampas al rehacerlo: **deja fuera `.claude/ski
 que son diez ficheros de documentación que no hablan de este proyecto, y **`update .` no sirve**
 —rehace el AST, pero renombra las comunidades con nombres de fichero y vuelve a tragarse esa
 documentación; deja un respaldo en `graphify-out/<fecha>/` del que se restaura—.
+
+Tres más, aprendidas al rehacerlo el 05-09-2026: el intérprete de esta máquina vive en
+`C:\Program Files\...`, y la sustitución `$(cat graphify-out/.graphify_python)` de la skill se
+parte en el espacio —llama a `python` a secas, que es el mismo—; los PNG del icono son el mismo
+dibujo que `public/icon.svg`, así que se quitan de la detección para no pagar visión tres veces;
+y cuando se le dan a los subagentes anclajes del AST para que no creen nodos fantasma, hay que
+mirarlos antes en `.graphify_ast.json`: `vite.config.ts` es `vite_config` y `main.tsx` es
+`src_main` (una llamada suelta a nivel de módulo no genera nodo propio). Las entradas que salen
+de la caché de una pasada anterior pueden apuntar a nombres de nodo que la pasada nueva ya no
+usa; el chequeo de salud las cuenta como aristas colgantes y se pierden en silencio —si el
+número molesta, se borran esas entradas de `graphify-out/cache` y se reextraen—.
