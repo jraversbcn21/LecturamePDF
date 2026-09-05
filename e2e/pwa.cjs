@@ -12,7 +12,12 @@
 const path = require('path');
 const { chromium } = require('playwright');
 
-const URL = process.env.LECTURAME_PREVIEW_URL || 'http://localhost:4173/';
+// Alias al constructor global: la constante URL de abajo le tapa el nombre en este scope, así
+// que un `new URL(...)` posterior (incluida su propia inicialización) apuntaría a sí misma.
+const NodeURL = globalThis.URL;
+// `new NodeURL('http://x:1').href` da 'http://x:1/': normalizar aquí evita que una
+// LECTURAME_PREVIEW_URL sin barra final rompa la resolución relativa de más abajo.
+const URL = new NodeURL(process.env.LECTURAME_PREVIEW_URL || 'http://localhost:4173/').href;
 const PDF = path.join(__dirname, '..', 'src', 'core', 'pdf', '__fixtures__', 'sample.pdf');
 
 const results = [];
@@ -26,6 +31,12 @@ async function offline(browser) {
   const page = await context.newPage();
   page.on('pageerror', (error) => console.log(`pageerror: ${error.message}`));
   await page.goto(URL);
+
+  // El 4173 (o el puerto que se pase) puede estar ocupado por otro proyecto del usuario: sin
+  // esta comprobación, el resto de checks fallarían contra una app ajena por motivos que nada
+  // tienen que ver con la PWA.
+  const title = await page.title();
+  check('el preview sirve LecturamePDF', title.includes('LecturamePDF'), title);
 
   // El precache se llena en `install`, así que cuando `ready` resuelve ya está todo dentro.
   const state = await page
@@ -43,18 +54,24 @@ async function offline(browser) {
     }
     return 'no está en ninguna caché';
   });
-  check('el worker de pdf.js está en el precache', /\.mjs/.test(worker), worker);
+  check('el worker de pdf.js está en el precache', /pdf\.worker.*\.mjs/.test(worker), worker);
 
   await context.setOffline(true);
   await page.reload();
-  const portada = await page.waitForSelector('input[type=file]', { state: 'attached', timeout: 10000 }).then(() => true).catch(() => false);
-  check('sin red, la portada carga desde el precache', portada);
+  const portada = await page
+    .waitForSelector('input[type=file]', { state: 'attached', timeout: 10000 })
+    .then(() => '', (e) => e.message);
+  check('sin red, la portada carga desde el precache', portada === '', portada);
 
   await page.setInputFiles('input[type=file]', PDF);
-  const reader = await page.waitForSelector('article.reader', { timeout: 30000 }).then(() => true).catch(() => false);
-  check('sin red, un PDF se extrae y entra al lector', reader);
+  const reader = await page
+    .waitForSelector('article.reader', { timeout: 30000 })
+    .then(() => '', (e) => e.message);
+  check('sin red, un PDF se extrae y entra al lector', reader === '', reader);
 
-  const api = await page.goto(`${URL}api/library`).then((r) => `respondió ${r?.status()} ${r?.headers()['content-type'] ?? ''}`, () => 'falló');
+  const api = await page
+    .goto(new NodeURL('api/library', URL).href)
+    .then((r) => `respondió ${r?.status()} ${r?.headers()['content-type'] ?? ''}`, () => 'falló');
   check('sin red, navegar a /api/ falla en vez de recibir el index.html del fallback', api === 'falló', api);
 
   await context.close();

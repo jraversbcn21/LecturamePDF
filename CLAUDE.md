@@ -176,11 +176,11 @@ Worker **se salta la emulación offline** de Playwright, así que «extraer sin 
 `.mjs` no esté precacheado —por eso el precache se comprueba mirando las claves de la Cache
 Storage, no por la extracción—.
 
-Dos cosas del entorno que engañan al escribir en `mobile.cjs`: **Chromium headless no trae visor de PDF**, así que navegar una pestaña a un
-`blob:` de PDF no la navega, la convierte en descarga —el evento `download` es la señal de que
-la pestaña recibió el documento—; y **las funciones de `api/` no corren bajo `vite dev`**, así
-que la API se responde desde Playwright con `page.route`: eso comprueba el cliente, nunca las
-funciones, cuya única prueba real es el despliegue.
+Dos cosas del entorno que engañan al escribir en `mobile.cjs`: **Chromium headless no trae visor
+de PDF**, así que navegar una pestaña a un `blob:` de PDF no la navega, la convierte en descarga
+—el evento `download` es la señal de que la pestaña recibió el documento—; y **las funciones de
+`api/` no corren bajo `vite dev`**, así que la API se responde desde Playwright con `page.route`:
+eso comprueba el cliente, nunca las funciones, cuya única prueba real es el despliegue.
 
 ## Convenciones del repositorio
 
