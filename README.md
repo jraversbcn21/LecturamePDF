@@ -26,17 +26,21 @@ npm test        # tests unitarios de la lógica pura
 npm run lint    # ESLint
 npm run verify  # lint + tests + typecheck + build, de una vez
 npm run build   # bundle estático en dist/
-npm run e2e     # verificación en navegador (e2e/verify.cjs y e2e/mobile.cjs)
+npm run e2e     # verificación en navegador: e2e/verify.cjs, e2e/mobile.cjs y e2e/pwa.cjs
 ```
 
-`npm run e2e` necesita el servidor de desarrollo en marcha —si no lo está, el script lo dice y
-para— y Playwright global (`npm i -g playwright && playwright install chromium`). Como Chromium
-headless no trae voces, el script sustituye el motor de síntesis por uno falso: comprueba qué se
-pronuncia en cada momento, los atajos, la persistencia, la extracción de tablas y fórmulas, y que
-una biblioteca guardada por una versión anterior sobreviva a la subida de esquema. La calidad del
-audio, en cambio, solo se juzga de oído. La segunda mitad (`e2e/mobile.cjs`) repite lo esencial
-en emulación táctil de móvil y comprueba el cliente de sincronización contra una API simulada;
-las funciones de `api/` no corren bajo `vite dev`, así que su prueba real es el despliegue.
+`npm run e2e` encadena tres suites y necesita Playwright global (`npm i -g playwright &&
+playwright install chromium`) y dos servidores; si falta alguno, la suite que lo necesita lo dice
+y para. Las dos primeras corren contra el servidor de desarrollo. Como Chromium headless no trae
+voces, sustituyen el motor de síntesis por uno falso: `e2e/verify.cjs` comprueba qué se pronuncia
+en cada momento, los atajos, la persistencia, la extracción de tablas y fórmulas, y que una
+biblioteca guardada por una versión anterior sobreviva a la subida de esquema —la calidad del
+audio, en cambio, solo se juzga de oído—; `e2e/mobile.cjs` repite lo esencial en emulación
+táctil de móvil y comprueba el cliente de sincronización contra una API simulada, porque las
+funciones de `api/` no corren bajo `vite dev` y su prueba real es el despliegue. La tercera,
+`e2e/pwa.cjs`, corre contra `vite preview` sirviendo un `dist` recién construido (`npm run build
+&& npx vite preview`), que es donde existe el service worker: corta la red y comprueba que la
+aplicación arranca y extrae un PDF sin conexión.
 
 **En el ordenador, ábrelo en Microsoft Edge.** Es el navegador que trae las voces neurales de
 Microsoft (las que se llaman «Natural»), que son las que suenan bien en sesiones largas. En
