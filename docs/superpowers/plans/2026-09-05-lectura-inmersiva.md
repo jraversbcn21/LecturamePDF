@@ -115,11 +115,14 @@ Y el `div` raíz (línea 165) pasa a:
       onPointerDown={() => {
         if (!immersive) wake();
       }}
-      onScrollCapture={wake}
+      // El dedo desplazando el texto también las trae. touchmove y no scroll: ReaderView hace
+      // scroll programático para centrar cada frase que suena, y eso rearmaría el temporizador
+      // sin que nadie haya tocado nada (no se escondían nunca).
+      onTouchMove={wake}
     >
 ```
 
-`onScrollCapture` en el contenedor recoge el scroll de `.reader` (el evento no burbujea, pero sí captura), sin tocar `ReaderView`.
+**No** uses `onScrollCapture`: la primera versión lo hacía y las barras no se escondían nunca, porque el `scrollIntoView` con que `ReaderView` centra cada frase dispara `scroll` igual que el dedo. `touchmove` solo lo dispara el dedo.
 
 - [ ] **Step 3: CSS**
 

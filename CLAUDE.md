@@ -115,6 +115,18 @@ vite-plugin-pwa 1+ sin comprobar antes la versión de Node: dejan de arrancar.
   de recibir el `index.html`. Y `devOptions` queda apagado: bajo `vite dev` no hay service
   worker, así que las dos suites e2e de siempre no lo ven; lo comprueba la tercera, `pwa.cjs`,
   contra `vite preview`.
+- **Con las barras escondidas, el primer toque solo las trae; no salta la lectura**
+  (`useImmersive` en `Reader.tsx`). En táctil, con la voz sonando y 4 s sin tocar, cabecera y
+  reproductor se esconden. Un toque sobre una frase salta a ella, y ese mismo gesto es el que
+  uno hace para pausar o ver por dónde va: si además saltara, cada pausa movería la lectura.
+  Por eso el `onClickCapture` del marco corta la propagación cuando están ocultas. Y no puede
+  ser `pointerdown` quien revele —llega antes que `click`, y el `click` ya vería las barras
+  visibles y saltaría—: `pointerdown` solo rearma el temporizador cuando ya se ven. El dedo
+  desplazando el texto también las trae, pero se escucha **`touchmove`, no `scroll`**:
+  `ReaderView` centra cada frase que suena con `scrollIntoView`, y ese scroll programático
+  rearmaba el temporizador sin que nadie tocara nada; con `scroll` no se escondían nunca.
+  Solo en táctil (`hover: none`), que en escritorio sobra sitio; y no mientras la barra
+  lateral esté abierta, que ahí se está usando la pantalla.
 
 ## Extracción de PDF
 

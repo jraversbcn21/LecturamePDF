@@ -98,7 +98,9 @@ La voz se elige sola por idioma, prefiriendo las neurales, pero puedes cambiarla
 de los controles: la lista pone delante las del idioma del documento y detrás el resto, por si
 quieres leer con otra. La elegida a mano se recuerda con el documento; si algún día no está en
 el navegador, se vuelve a elegir automáticamente. Cada documento recuerda también su velocidad,
-así que no hay que volver a ajustarla en cada sesión.
+así que no hay que volver a ajustarla en cada sesión. En el móvil, si pasan unos segundos sin
+tocar la pantalla mientras suena, la cabecera y los controles se esconden y el texto ocupa toda
+la pantalla; un toque en cualquier sitio los trae de vuelta sin mover la lectura.
 
 ### Voz de IA (opcional)
 

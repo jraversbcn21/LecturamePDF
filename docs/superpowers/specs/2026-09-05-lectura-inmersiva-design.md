@@ -33,9 +33,13 @@ queda en la franja del medio.
   `wake()` rearma, y un `useEffect` que sale del modo cuando `playing` o `enabled` dejan de
   ser ciertos. El `div.screen.reading` gana la clase `immersive` cuando `hidden`, y estos
   manejadores: `onClickCapture` (si `hidden`: `wake()` + `stopPropagation()`; si no, nada),
-  `onPointerDown` y `onKeyDown` → `wake()`. El `.reader` ya recibe `onScroll`: se le añade
-  `wake()`. `enabled` = táctil y barra lateral cerrada. Un `visibilitychange` en el hook
-  llama a `wake()` al volver.
+  `onPointerDown` → `wake()` solo si no están ocultas (`pointerdown` llega antes que `click`;
+  si revelara, el `click` vería las barras visibles y saltaría), `onTouchMove` → `wake()`.
+  **`touchmove`, no `scroll`**: `ReaderView` centra cada frase que suena con `scrollIntoView`,
+  y ese scroll programático dispara `scroll` igual que el dedo; escuchando `scroll` el
+  temporizador se rearmaba en cada frase y las barras no se escondían nunca (visto en la
+  emulación al implementarlo). `enabled` = táctil y barra lateral cerrada. El hook escucha
+  `keydown` y `visibilitychange` en `window`/`document` y llama a `wake()`.
 - `src/styles.css`: `.bar` y `.controls` con `max-height: 8rem; overflow: hidden;
   transition: max-height 0.25s, transform 0.25s, padding 0.25s`. En `.screen.reading.immersive`
   ambas pasan a `max-height: 0; padding-block: 0; border-width: 0` y `transform`
