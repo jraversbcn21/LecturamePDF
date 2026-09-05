@@ -23,8 +23,8 @@ export default tseslint.config(
     },
   },
   {
-    // El script de comprobaciones en navegador es CommonJS y corre en Node.
-    files: ['e2e/**/*.cjs'],
+    // Los scripts de comprobaciones en navegador y de utilidades son CommonJS y corren en Node.
+    files: ['e2e/**/*.cjs', 'scripts/**/*.cjs'],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
       sourceType: 'commonjs',
