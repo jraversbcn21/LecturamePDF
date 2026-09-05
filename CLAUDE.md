@@ -10,6 +10,11 @@ atajos, cómo funciona por dentro y las limitaciones conocidas están en @README
 lo que no se deduce leyendo el código. El trabajo pendiente, en @PENDIENTE.md, y el mapa del
 grafo del proyecto, en @graphify-out/GRAPH_REPORT.md.
 
+En `docs/superpowers/` hay diseños (`specs/`) y planes (`plans/`) de lo que ya se construyó.
+Son **registro, no instrucciones**: describen trabajo terminado, así que no se ejecutan de
+nuevo. Valen por lo que ni el código ni este fichero guardan —las alternativas que se
+descartaron y por qué—, y llevan anotado lo que la implementación desmintió del plan.
+
 ## Restricción de versiones
 
 El Node de esta máquina es la 18. Las dependencias están fijadas a **Vite 5, pdfjs-dist 4,

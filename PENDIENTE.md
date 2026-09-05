@@ -61,6 +61,20 @@ lectura sigue donde estaba. No hizo falta `viewport-fit=cover`: iOS inseta la vi
 y la cabecera no queda bajo la barra de estado. Lo que la sostiene está en `CLAUDE.md` (decisión
 de la PWA) y lo vigila `e2e/pwa.cjs`.
 
+## La lectura inmersiva, probada en el iPhone el 05-09-2026
+
+En táctil, con la voz sonando y la barra lateral cerrada, cuatro segundos sin tocar la pantalla
+esconden la cabecera y el reproductor: el texto queda a pantalla completa. Vuelven con un toque
+—que **no** salta la lectura—, con el dedo desplazando el texto o con cualquier tecla. El porqué
+de cada pieza está en `CLAUDE.md`; el e2e móvil pasó de 21 a 28 comprobaciones y lo vigila.
+
+De ahí salió un fallo que solo se veía en el dispositivo: el tope de altura que animaba la
+desaparición recortaba la última fila de los controles —«Velocidad» y «Voz»— justo donde Safari
+pone su barra, así que parecía cosa del navegador y era nuestra. Arreglado (`066ec15`) y
+vigilado: ahora se comprueba que los controles no recortan contenido y que su borde inferior
+cabe en la pantalla, al abrir el lector y al volver del modo inmersivo. **La lección, para la
+próxima animación de altura: en un iPhone los controles ocupan tres filas (~200 px), no dos.**
+
 ## Próxima sesión
 
 Nada de lo que sigue bloquea el uso normal: son casos concretos en documentos que ya funcionan.
@@ -86,6 +100,11 @@ recogidos aquí.
   línea de contenido; retomar solo si silenciar índices a mano se hace pesado.
 - **Caché de audio de la voz de IA**, si el coste o la espera empiezan a molestar (detalle abajo,
   en «Interfaz»).
+- **El grafo se rehizo el 05-09-2026, pero antes de la lectura inmersiva**, así que
+  `graphify-out/GRAPH_REPORT.md` (445 nodos) no la conoce. No se rehizo otra vez a propósito:
+  cuesta ~200.000 tokens y la forma del proyecto apenas cambió con ella —un hook, un bloque de
+  CSS y dos documentos, sin ficheros ni dependencias nuevas—. Rehacerlo con la siguiente tanda
+  de cambios, no por esto solo.
 
 ## Descartado
 
