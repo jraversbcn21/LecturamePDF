@@ -53,6 +53,14 @@ en silencio. La carrera que quedaba en `verify.cjs` («documento sin original gu
 antes de que el panel terminara de consultar la base) se cerró el 05-09-2026 esperando al texto
 final antes de medir.
 
+## La PWA, probada en el iPhone el 05-09-2026
+
+Instalada desde Safari (Compartir → Añadir a pantalla de inicio) y abierta en modo avión: carga
+la estantería y lee con la voz local; «Ver el PDF original» salta a Safari y, al volver, la
+lectura sigue donde estaba. No hizo falta `viewport-fit=cover`: iOS inseta la vista en standalone
+y la cabecera no queda bajo la barra de estado. Lo que la sostiene está en `CLAUDE.md` (decisión
+de la PWA) y lo vigila `e2e/pwa.cjs`.
+
 ## Próxima sesión
 
 Nada de lo que sigue bloquea el uso normal: son casos concretos en documentos que ya funcionan.
@@ -78,13 +86,6 @@ recogidos aquí.
   línea de contenido; retomar solo si silenciar índices a mano se hace pesado.
 - **Caché de audio de la voz de IA**, si el coste o la espera empiezan a molestar (detalle abajo,
   en «Interfaz»).
-- **Probar la PWA en el iPhone real** (hecha el 05-09-2026, verificada en Chromium headless con
-  la red cortada; en el dispositivo aún no): instalarla desde Safari (Compartir → Añadir a
-  pantalla de inicio), abrirla en modo avión y que cargue la estantería y lea un documento; y
-  desde la app instalada, «Ver el PDF original», que en táctil se abre con `window.open`
-  (`Reader.tsx`), debe saltar a Safari y al volver la lectura sigue donde estaba. Si en modo
-  instalado la cabecera queda bajo la barra de estado, añadir `viewport-fit=cover` y
-  `env(safe-area-inset-top)`; no se hizo de antemano porque iOS ya inseta la vista en standalone.
 
 ## Descartado
 
