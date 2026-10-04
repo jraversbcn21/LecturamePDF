@@ -112,7 +112,7 @@ una por primera vez, los controles piden tu clave de API de OpenRouter, que se g
 
 Tres cosas cambian con ella: hace falta **conexión** mientras esté elegida (el resto de la
 aplicación sigue funcionando sin red), no hay resaltado de **palabra** en curso (el de frase sí),
-y si la red o la cuota fallan la lectura **se pausa y avisa** en vez de saltarse la frase: al
+y si la red o la cuota fallan (tras tres intentos) la lectura **se pausa y avisa** en vez de saltarse la frase: al
 pulsar ▶ se reintenta desde la misma frase. Estas voces nunca se eligen solas: solo suenan si
 las eliges tú.
 

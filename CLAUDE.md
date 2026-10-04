@@ -17,7 +17,8 @@ descartaron y por qué—, y llevan anotado lo que la implementación desmintió
 
 ## Restricción de versiones
 
-El Node de esta máquina es la 18. Las dependencias están fijadas a **Vite 5, pdfjs-dist 4,
+La máquina tiene varios Node con nvm (18, 22.13, 22.23) y el activo hoy es el 22.13, pero el proyecto
+se fijó contra la 18 y no se ha probado a subir nada. Las dependencias están fijadas a **Vite 5, pdfjs-dist 4,
 Vitest 2 y vite-plugin-pwa 0.21 porque son las últimas que lo soportan** (la 1.x del plugin
 arrastra `workbox-build` 7.4, que pide Node 20). No subas a Vite 6+, pdfjs 5+, Vitest 3+ o
 vite-plugin-pwa 1+ sin comprobar antes la versión de Node: dejan de arrancar.
@@ -65,7 +66,9 @@ vite-plugin-pwa 1+ sin comprobar antes la versión de Node: dejan de arrancar.
   (gasta red y saldo; solo suena elegida a mano); en error de red **se pausa y se avisa, no se
   avanza** —el mismo riesgo asimétrico de las tablas: saltarse una frase en silencio pierde
   contenido sin que el oyente se entere, mientras que en la rama local el `onerror` sí avanza
-  porque ahí el riesgo es quedarse atascado—; y la cancelación va por un contador `generation`
+  porque ahí el riesgo es quedarse atascado—; antes de llegar a pausar, `fetchAudio` **reintenta 3
+  veces** los fallos pasajeros (red, 429, 5xx; los 4xx de clave o saldo no), porque un solo hipo de
+  OpenRouter pausaba la lectura a cada rato; y la cancelación va por un contador `generation`
   que también sube `pause()` cuando el fetch está en vuelo, para que un blob tardío no suene
   sobre lo que el usuario ya dejó atrás.
 - **La sincronización fusiona por `updatedAt` y borra con tombstones** (`src/core/merge.ts`,
@@ -165,7 +168,9 @@ Edge (usa siempre una carpeta de perfil nueva, si no falla en silencio):
 ## Comprobaciones en navegador
 
 Playwright es **global**, no dependencia del proyecto (el resto de requisitos, en @README.md). Sin
-el `NODE_PATH` no encuentra el módulo:
+el `NODE_PATH` no encuentra el módulo. Es global **por versión de Node** (con nvm cada una tiene su
+`node_modules`): en el 22.13 está fijado a la **1.61.1**, porque la última pide un Chromium que
+la red de esta máquina no deja descargar y la 1.61.1 usa los que ya hay en disco:
 
 ```powershell
 $env:NODE_PATH = (npm root -g); npm run e2e
