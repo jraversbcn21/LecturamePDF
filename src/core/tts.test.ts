@@ -159,14 +159,13 @@ describe('voz remota', () => {
   });
 
   it('en error de red avisa y NO avanza: saltarse una frase en silencio pierde contenido', async () => {
-    const { mock, reject } = deferredFetch();
-    vi.stubGlobal('fetch', mock);
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('sin red')));
     const onEnd = vi.fn();
     const onError = vi.fn();
     speakRemote('Frase tres.', { onEnd, onError });
 
-    reject('sin red');
-    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith('sin red'));
+    // Tres intentos con espera antes de rendirse (~1,8 s).
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith('La voz de IA no responde (sin red).'), { timeout: 4000 });
     expect(onEnd).not.toHaveBeenCalled();
   });
 
