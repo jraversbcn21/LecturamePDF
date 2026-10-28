@@ -4,7 +4,9 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 /**
  * Los PDFs en Vercel Blob, uno por documento: `files/<sha-256>.pdf`. El contenido de un id es
  * inmutable (el id ES el hash del PDF), así que aquí la caché del CDN no puede servir nada viejo.
- * La URL resultante es pública pero inadivinable: 256 bits de hash más el id aleatorio del store.
+ * La URL resultante es pública y se deduce del contenido: quien ya tenga el mismo PDF y conozca
+ * el host del store puede comprobar que está aquí (y bajarse lo que ya tiene). El host solo se
+ * entrega a clientes autorizados; para un PDF privado, la ruta es inadivinable.
  */
 /**
  * La cabecera es propia, no `Authorization`: Vercel se queda esa por el camino y la

@@ -78,8 +78,8 @@ próxima animación de altura: en un iPhone los controles ocupan tres filas (~20
 ## La voz de IA se paraba a cada rato (04-10-2026)
 
 Causa: cualquier fallo pasajero de OpenRouter pausaba la lectura. Arreglado con tres intentos
-antes de pausar (`aabca34`, subido). **No se ha confirmado en el móvil** que la inestabilidad
-desaparezca: si vuelve a pararse, anotar el código del aviso. «(429)» es límite de ritmo o cuota,
+antes de pausar (`aabca34`, subido), y confirmado en el móvil el 28-10-2026: con buena conexión
+ya no se para. Si vuelve a pararse, anotar el código del aviso. «(429)» es límite de ritmo o cuota,
 «(402)» saldo, «(401)» clave. La cuenta tiene $4,91 de saldo y el modelo es `hexgrad/kokoro-82m`
 (solo hay tres voces en español: Dora, Alex y Santa).
 
@@ -92,8 +92,6 @@ Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
 
-- **Comprobar en el móvil que la voz de IA ya no se para** tras los reintentos; si se para, ver
-  el código del aviso (arriba) antes de tocar nada.
 - **Vigilar el gasto de Blob** las primeras semanas (Vercel lo enseña en la pestaña Storage). El
   plan gratuito da 1 GB y ~10 GB de transferencia al mes, y pasarse **corta el acceso 30 días**
   en vez de cobrar. Con PDFs de apuntes no debería acercarse; si se acerca, lo barato es borrar
