@@ -83,6 +83,12 @@ ya no se para. Si vuelve a pararse, anotar el código del aviso. «(429)» es l�
 «(402)» saldo, «(401)» clave. La cuenta tiene $4,91 de saldo y el modelo es `hexgrad/kokoro-82m`
 (solo hay tres voces en español: Dora, Alex y Santa).
 
+La clave lleva desde el 28-10-2026 un **tope de gasto de $0,30** en OpenRouter (Settings → Keys →
+Credit limit), puesto tras la auditoría: vive en el `localStorage` de cada navegador y no hay
+forma de esconderla del propio JavaScript que la usa, así que el tope acota lo que costaría
+perderla. Da para un libro de ~500.000 caracteres. **Al agotarse, la lectura se pausa con
+«(402)»: no es un fallo, es subir el límite en esa misma pantalla.**
+
 El mismo día se dejó Playwright 1.61.1 global en el Node 22.13 (ver `CLAUDE.md`).
 
 ## Próxima sesión
