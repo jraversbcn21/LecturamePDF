@@ -91,6 +91,20 @@ perderla. Da para un libro de ~500.000 caracteres. **Al agotarse, la lectura se 
 
 El mismo día se dejó Playwright 1.61.1 global en el Node 22.13 (ver `CLAUDE.md`).
 
+## Auditoría de seguridad (28-10-2026)
+
+Revisión acotada a `api/`, la sincronización y las dos claves del cliente: **nada explotable**.
+Lo que la sostiene, para no repetir la revisión sin motivo: la cabecera `x-sync-token` obliga
+a un preflight que la API no concede a otros orígenes, así que ninguna web ajena la llama
+desde tu navegador; `api/file.ts` valida el id y la ruta con expresión regular y solo firma
+PDFs; `library.json` lleva sufijo aleatorio y su URL nunca sale del servidor; no hay
+`innerHTML` en ningún sitio y pdfjs 4.8.69 ya trae el arreglo de CVE-2024-4367.
+
+La API **no limita intentos, y no hace falta**: el `SYNC_TOKEN` son 32 caracteres hex (128
+bits), comprobado en el navegador sin enseñarlo. Si algún día se rota a un código más corto o
+elegido a mano, esto deja de valer. La clave de OpenRouter, que se ve en la consola de quien
+la pegó, queda acotada por el tope de gasto (arriba).
+
 ## Próxima sesión
 
 Nada de lo que sigue bloquea el uso normal: son casos concretos en documentos que ya funcionan.
@@ -132,6 +146,12 @@ recogidos aquí.
   distinguen de lo que escribió el autor. Además, el índice, las listas y las tablas se detectan
   a partir de posiciones exactas, que un reconocimiento de imagen no da. **No reabrir esto sin un
   caso real**: un escaneo concreto que haya que estudiar.
+
+- **Sacar la clave de OpenRouter del navegador** con un proxy `api/tts.ts` y la clave en
+  Vercel. Cambia dónde vive el secreto, no lo elimina: el navegador seguiría guardando el
+  código de sincronización, y con él se gastaría voz a través del proxy. A cambio, un salto
+  más de red por frase y voz de IA atada a tener la sincronización. Con un usuario, el tope de
+  gasto de la clave da la misma protección sin código. Reabrir solo si hubiera más usuarios.
 
 ## Calidad de la extracción
 
