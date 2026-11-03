@@ -105,6 +105,15 @@ bits), comprobado en el navegador sin enseñarlo. Si algún día se rota a un c�
 elegido a mano, esto deja de valer. La clave de OpenRouter, que se ve en la consola de quien
 la pegó, queda acotada por el tope de gasto (arriba).
 
+El 03-11-2026, una segunda pasada sobre secretos, rutas y entornos (repositorio **público**):
+ni el código actual ni los 90 commits del historial guardan un valor secreto; `.env.local` y
+`.vercel/` nunca se versionaron; no hay variables `VITE_*`. Salieron dos arreglos de una línea
+(`992f17d`): el código de sincronización ya no viaja firmado en el token de subida de Blob
+(`tokenPayload: ''` en `api/file.ts`), y `tts.ts` dejó de llevar un byte nulo literal que hacía
+a git —y a los escáneres de secretos— tratarlo como binario. **Probado en real el mismo día:**
+un PDF nuevo subido en el escritorio se lee en el móvil. `npm audit` quedó sin correr (consulta
+un servicio externo); las dependencias están en el último parche de su rama.
+
 ## Próxima sesión
 
 Nada de lo que sigue bloquea el uso normal: son casos concretos en documentos que ya funcionan.
