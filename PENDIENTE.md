@@ -175,6 +175,14 @@ recogidos aquí.
 
 ## Interfaz
 
+- **`Reader.tsx` es el fichero más grande (315 líneas) y no se parte a propósito** (revisado el
+  03-11-2026). Es el que monta la pantalla de lectura y guarda el estado que comparten sus hijos:
+  la búsqueda (una sola para la lista y el texto), la exclusión entre barra lateral y PDF, las
+  secciones escuchadas. `useKeyboard` y `useImmersive` ya van aparte; moverlos de fichero no
+  aclararía nada. **Partirlo cuando entre otro panel** o más estado que se excluya entre sí: ahí
+  la coordinación lateral/PDF/inmersiva es lo primero que se enreda, y toca un hook de paneles.
+  Lo único fuera de sitio, menor: la apertura del PDF en pestaña (táctil) va escrita dentro del
+  botón 📄 y repite `matchMedia('(hover: none)')`, que ya está en `touch`; su sitio es `PdfPane`.
 - **`pause`/`resume` nativos**: si alguna voz local los ignora, habría que relanzar la frase.
   Anotado en `src/core/tts.ts`; no se ha visto ocurrir con las voces de Edge.
 - **La estrella del marcador sigue en oro** (`#d99000`, escrito a mano en `src/styles.css`), y con
