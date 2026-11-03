@@ -204,6 +204,17 @@ de PDF**, así que navegar una pestaña a un `blob:` de PDF no la navega, la con
 `api/` no corren bajo `vite dev`**, así que la API se responde desde Playwright con `page.route`:
 eso comprueba el cliente, nunca las funciones, cuya única prueba real es el despliegue.
 
+## Despliegue
+
+El proyecto de Vercel está conectado al repositorio: **cada `git push` a `main` despliega a
+producción por sí solo**, así que subir es publicar. No hace falta `vercel --prod` después (sería
+un segundo build idéntico); sí hace falta tras cambiar una variable de entorno, que no viaja con
+ningún commit. Vercel construye con **Node 24**, no con el 18 contra el que se fijaron las
+dependencias: ha funcionado, pero es lo primero a mirar si un build remoto falla y el local no.
+
+El CLI `vercel` no arranca con el Node 22.13 activo (el shim de nvm responde `CommandNotFound`);
+vive en el 18.20.6, y se llama por su ruta completa en `nvm\installs\v18.20.6\vercel.cmd`.
+
 ## Convenciones del repositorio
 
 Commits en español, con un cuerpo que explique **por qué** se hizo el cambio, no solo qué se
@@ -244,4 +255,7 @@ mirarlos antes en `.graphify_ast.json`: `vite.config.ts` es `vite_config` y `mai
 `src_main` (una llamada suelta a nivel de módulo no genera nodo propio). Las entradas que salen
 de la caché de una pasada anterior pueden apuntar a nombres de nodo que la pasada nueva ya no
 usa; el chequeo de salud las cuenta como aristas colgantes y se pierden en silencio —si el
-número molesta, se borran esas entradas de `graphify-out/cache` y se reextraen—.
+número molesta, se borran esas entradas de `graphify-out/cache` y se reextraen—. Más barato,
+como se hizo el 03-11-2026: sustituir en esos ficheros de caché cada id viejo por su
+equivalente nuevo (13 aristas, sin reextraer nada). Las colgantes que quedan después son
+imports de paquetes externos y de `styles.css`, que el AST no convierte en nodo: no son pérdida.
