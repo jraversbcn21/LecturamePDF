@@ -1,187 +1,141 @@
-# Graph Report - Lecturame  (2026-09-05)
+# Graph Report - Lecturame  (2026-11-03)
 
 ## Corpus Check
-- Corpus is ~48,071 words - fits in a single context window. You may not need a graph.
+- 62 files · ~53,005 words
+- Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 445 nodes · 897 edges · 30 communities (22 shown, 8 thin omitted)
-- Extraction: 93% EXTRACTED · 7% INFERRED · 0% AMBIGUOUS · INFERRED: 61 edges (avg confidence: 0.83)
-- Token cost: 206,566 input · 0 output
+- 453 nodes · 904 edges · 18 communities (14 shown, 4 thin omitted)
+- Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 92 edges (avg confidence: 0.82)
+- Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- Reproductor, lector y controles
-- Decisiones de fondo (CLAUDE.md)
-- Aplicacion, biblioteca y panel del PDF
-- Extraccion de PDF e idioma
-- Indice y buscador
-- Configuracion de TypeScript
-- API de Vercel y sincronizacion
-- Marcadores
-- Heuristicas de maquetacion y sus fixtures
+- Reproductor, voz y controles
+- Aplicacion, almacenamiento y sync
+- Extraccion de PDF y sus limites
+- Verificacion, PWA y versiones
+- Movil y lectura inmersiva
+- Marcadores e indice
+- API de Vercel y seguridad
+- Comprobaciones e2e
 - Cadena de lint y tipos
-- PWA: plan, spec y restriccion de versiones
-- Comprobaciones de escritorio
-- Comprobaciones moviles y de sync
-- Como se verifica el proyecto
-- Icono de la aplicacion
-- Suite e2e sin conexion
-- Dependencias de ejecucion
-- Scripts npm
-- Metadatos de package.json
-- PWA: decision, documentacion y prueba en iPhone
-- Icono y meta PWA en index.html
-- eslint-plugin-react-hooks
-- @types/react
-- @types/react-dom
-- typescript-eslint
-- vite-plugin-pwa (dependencia)
-- @vitejs/plugin-react
-- vitest
+- Configuracion de TypeScript
+- Metadatos y scripts npm
+- Fixtures de maquetacion
+- FakeAudio de los tests
 - Skill graphify
+- Colores de resaltado
+- Portada con clamp()
+- Voces neurales de Edge
 
 ## God Nodes (most connected - your core abstractions)
 1. `App()` - 17 edges
 2. `compilerOptions` - 15 edges
-3. `extractDoc()` - 13 edges
-4. `Reader()` - 12 edges
-5. `usePlayer()` - 12 edges
-6. `linesToBlocks()` - 11 edges
-7. `enqueue()` - 11 edges
+3. `extractDoc()` - 14 edges
+4. `Reader()` - 13 edges
+5. `linesToBlocks()` - 13 edges
+6. `usePlayer()` - 12 edges
+7. `enqueue()` - 12 edges
 8. `updateEntry()` - 11 edges
 9. `Block` - 11 edges
-10. `dropRunningHeads()` - 9 edges
+10. `PWA: arrancar sin conexión e instalarse en la pantalla de inicio` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Los campos nuevos de LibraryEntry se normalizan al leer` --rationale_for--> `complete()`  [EXTRACTED]
-  CLAUDE.md → src/core/storage.ts
-- `npm run e2e: verify.cjs y mobile.cjs, motor de síntesis falso` --conceptually_related_to--> `npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs`  [AMBIGUOUS]
-  README.md → .claude/skills/verify/SKILL.md
-- `Fuera de alcance a propósito` --conceptually_related_to--> `La PWA, probada en el iPhone el 05-09-2026`  [INFERRED]
-  docs/superpowers/specs/2026-09-05-pwa-design.md → PENDIENTE.md
-- `Task 3: Suite e2e offline (e2e/pwa.cjs)` --rationale_for--> `check()`  [EXTRACTED]
-  docs/superpowers/plans/2026-09-05-pwa.md → e2e/pwa.cjs
-- `npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs` --conceptually_related_to--> `Comprobaciones en navegador: no medir tras una espera fija`  [INFERRED]
-  .claude/skills/verify/SKILL.md → CLAUDE.md
+- `Sincronización: fusión por updatedAt y borrado con tombstones` --rationale_for--> `PUT()`  [INFERRED]
+  CLAUDE.md → api/library.ts
+- `Fusión del servidor leer-fusionar-escribir sin lock` --references--> `PUT()`  [INFERRED]
+  PENDIENTE.md → api/library.ts
+- `Sincronización: fusión por updatedAt y borrado con tombstones` --rationale_for--> `mergeEntries()`  [INFERRED]
+  CLAUDE.md → src/core/merge.ts
+- `Descartado: OCR para PDFs escaneados` --conceptually_related_to--> `extractDoc()`  [INFERRED]
+  PENDIENTE.md → src/core/pdf/extract.ts
+- `Un fragmento se compara con el mayor de los dos tamaños` --rationale_for--> `itemsToLines()`  [INFERRED]
+  CLAUDE.md → src/core/pdf/layout.ts
 
 ## Import Cycles
 - None detected.
 
 ## Hyperedges (group relationships)
+- **Las tres suites e2e encadenadas y quien las documenta** — _claude_skills_verify_skill_tres_suites_encadenadas, claude_regla_e2e_no_espera_fija [INFERRED 0.75]
 - **Señales con las que se decide dónde acaba un bloque** — src_core_pdf___fixtures___lists_sangria_como_senal, src_core_pdf___fixtures___lists_flush_maqueta_apretada, src_core_pdf___fixtures___lists_flush_marcador_sin_sangria, src_core_pdf___fixtures___sample_orden_de_lectura [INFERRED 0.85]
 - **Contenido del que se avisa en vez de recitarlo** — src_core_pdf___fixtures___tables_columnas_alineadas, src_core_pdf___fixtures___tables_formula_con_exponente, src_core_pdf___fixtures___tables_nota_al_pie, src_core_pdf___fixtures___tables_llamada_de_nota [INFERRED 0.85]
-- **Documentación cruzada de la PWA (decisión, uso, pendiente, plan, spec)** — claude_pwa_se_actualiza_en_el_siguiente_arranque, readme_sin_conexion_y_en_pantalla_de_inicio, pendiente_pwa_probada_en_iphone, docs_superpowers_plans_2026_09_05_pwa_task4_documentacion, docs_superpowers_specs_2026_09_05_pwa_design_document [INFERRED 0.85]
-- **Las tres suites e2e encadenadas y quien las documenta** — _claude_skills_verify_skill_tres_suites_encadenadas, readme_e2e_uso, claude_comprobaciones_en_navegador [INFERRED 0.75]
-- **Decisiones de tts.ts: una locución, desbloqueo táctil de iOS y no cachear audio** — claude_una_frase_una_speechsynthesisutterance, claude_voz_de_ia_regla_de_oro, claude_desbloqueo_de_audio_de_ios_solo_en_tactil, pendiente_pause_resume_nativos, pendiente_voz_de_ia_no_cachea_audio [INFERRED 0.85]
+- **Mecanismo de la lectura inmersiva** — src_app_components_reader_useimmersive, claude_primer_toque_solo_revela, claude_touchmove_no_scroll, docs_superpowers_specs_2026_09_05_lectura_inmersiva_design_solo_tactil_hover_none, docs_superpowers_plans_2026_09_05_lectura_inmersiva_immersive_delay, docs_superpowers_plans_2026_09_05_lectura_inmersiva_css_max_height_transicion [EXTRACTED 1.00]
+- **Lo que sostiene la auditoría de seguridad de la sincronización y la voz** — pendiente_auditoria_seguridad, pendiente_preflight_cors_x_sync_token, pendiente_sin_rate_limiting, pendiente_sync_token, pendiente_tope_gasto_openrouter, pendiente_proxy_tts_descartado, claude_cabecera_x_sync_token [INFERRED 0.85]
+- **Robustez de la voz de IA: reintentos, pausa en error y tope de gasto** — claude_voz_ia_una_frase_una_peticion, claude_reintentos_voz_ia, pendiente_voz_ia_se_paraba, pendiente_tope_gasto_openrouter, src_core_tts_fetchaudio [INFERRED 0.85]
 
-## Communities (30 total, 8 thin omitted)
+## Communities (18 total, 4 thin omitted)
 
-### Community 0 - "Reproductor, lector y controles"
+### Community 0 - "Reproductor, voz y controles"
+Cohesion: 0.08
+Nodes (45): Una frase = una SpeechSynthesisUtterance, Voz de IA: una frase = una petición TTS = un Audio, Plan: Lectura inmersiva, La voz de IA no cachea el audio (caché de una entrada), Kokoro (hexgrad/kokoro-82m) vía OpenRouter, Atajos de teclado, Voz de IA (opcional), voces «(IA, con red)», PlayerControls() (+37 more)
+
+### Community 1 - "Aplicacion, almacenamiento y sync"
+Cohesion: 0.11
+Nodes (48): Cola de escrituras IndexedDB; lecturas esperan lo pendiente, Campos nuevos de LibraryEntry se normalizan al leer; base 'lecturame', Sincronización: fusión por updatedAt y borrado con tombstones, PDF original en iframe con el visor del navegador (solo #page), Empuje de despedida en pagehide con keepalive cabe en 64 KB, Documento identificado por SHA-256 de sus bytes, App(), Open (+40 more)
+
+### Community 2 - "Extraccion de PDF y sus limites"
+Cohesion: 0.09
+Nodes (42): Un fragmento se compara con el mayor de los dos tamaños, Tablas y fórmulas se anuncian, no se recitan (riesgo asimétrico; ante la duda, prosa), Umbrales verticales calibrados con el propio documento, Fórmulas dentro de un párrafo se leen símbolo a símbolo, Lista de un solo punto y una sola línea se pega al párrafo, Notas al pie sin numerar se leen como pie de figura, Descartado: OCR para PDFs escaneados, Páginas de índice con puntos de guía se leen enteras (+34 more)
+
+### Community 3 - "Verificacion, PWA y versiones"
+Cohesion: 0.06
+Nodes (43): pwa.cjs corre contra vite preview, no vite dev, Comprobar el título antes de fiarse de un puerto, Skill /verify, Verificación completa: tests, servidores, e2e, CLAUDE.md (guía del proyecto), PWA: registerType prompt, mjs en globPatterns, /api/ en navigateFallbackDenylist, Restricción de versiones: Vite 5, pdfjs 4, Vitest 2, vite-plugin-pwa 0.21 (Node 18), PWA Implementation Plan (+35 more)
+
+### Community 4 - "Movil y lectura inmersiva"
 Cohesion: 0.07
-Nodes (45): PlayerControls(), Props, Props, Mark, Props, ReaderView(), withMarks(), clamp() (+37 more)
+Nodes (33): Desbloqueo de audio de iOS solo en táctil, El lector solo se mueve en vertical (overflow-x, position fixed, touch-action pan-y), Con las barras escondidas, el primer toque solo las trae; no salta la lectura, Desplazamiento animado solo en saltos cortos, Sin recuadro de arrastrar en táctil (hover: none), Se escucha touchmove, no scroll, CSS: max-height + translateY en .screen.reading.immersive, IMMERSIVE_DELAY = 4000 ms (+25 more)
 
-### Community 1 - "Decisiones de fondo (CLAUDE.md)"
-Cohesion: 0.05
-Nodes (48): Los campos nuevos de LibraryEntry se normalizan al leer, El desbloqueo de audio de iOS solo se registra en táctil, El desplazamiento solo se anima en saltos cortos, Fixtures reales de src/core/pdf/__fixtures__ para probar layout.ts, Un fragmento se compara con el mayor de los dos, no con el suyo, El grafo de graphify se rehace entero, no por costumbre, Las escrituras a IndexedDB van por una cola, El lector solo se mueve arriba y abajo, tres propiedades CSS que van juntas (+40 more)
+### Community 5 - "Marcadores e indice"
+Cohesion: 0.13
+Nodes (27): Marcadores con notas, Bookmarks(), keyOf(), Props, Outline(), Props, Spot, useBookmarks() (+19 more)
 
-### Community 2 - "Aplicacion, biblioteca y panel del PDF"
-Cohesion: 0.12
-Nodes (45): El recuadro de arrastrar no existe en táctil, App(), Open, Library(), percentOf(), Props, PdfPane(), Props (+37 more)
+### Community 6 - "API de Vercel y seguridad"
+Cohesion: 0.10
+Nodes (29): authorized(), DELETE(), denied(), GET(), idOf(), POST(), authorized(), denied() (+21 more)
 
-### Community 3 - "Extraccion de PDF e idioma"
-Cohesion: 0.12
-Nodes (32): detectLanguage(), score(), STOPWORDS, announce(), extractDoc(), isAnnounced(), linesPerPage(), ScannedPdfError (+24 more)
+### Community 7 - "Comprobaciones e2e"
+Cohesion: 0.09
+Nodes (22): npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs, Playwright global 1.61.1 en Node 22.13 (NODE_PATH), Regla e2e: no medir tras espera fija; primer nuevo de window.__spoken, Comprobación e2e de la lectura inmersiva (mobile.cjs), Riesgos y cómo se cubren, check(), { chromium, devices }, crypto (+14 more)
 
-### Community 4 - "Indice y buscador"
-Cohesion: 0.14
-Nodes (18): Outline(), Props, Props, Search(), snippetOf(), summaryOf(), activeEntry(), headingLevel() (+10 more)
+### Community 8 - "Cadena de lint y tipos"
+Cohesion: 0.07
+Nodes (29): eslint, @eslint/js, eslint-plugin-react-hooks, eslint-plugin-react-refresh, globals, devDependencies, eslint, @eslint/js (+21 more)
 
-### Community 5 - "Configuracion de TypeScript"
+### Community 9 - "Configuracion de TypeScript"
 Cohesion: 0.08
 Nodes (24): api, DOM, DOM.Iterable, ES2022, node, src, vite/client, vite-plugin-pwa/client (+16 more)
 
-### Community 6 - "API de Vercel y sincronizacion"
-Cohesion: 0.17
-Nodes (16): authorized(), DELETE(), denied(), GET(), idOf(), authorized(), denied(), GET() (+8 more)
+### Community 10 - "Metadatos y scripts npm"
+Cohesion: 0.09
+Nodes (21): dependencies, pdfjs-dist, react, react-dom, @vercel/blob, name, private, scripts (+13 more)
 
-### Community 7 - "Marcadores"
-Cohesion: 0.21
-Nodes (17): Bookmarks(), keyOf(), Props, Spot, useBookmarks(), Bookmark, byPosition(), isBookmarked() (+9 more)
-
-### Community 8 - "Heuristicas de maquetacion y sus fixtures"
+### Community 11 - "Fixtures de maquetacion"
 Cohesion: 0.14
 Nodes (18): Cierre de la lista ante el párrafo que la sigue, Fixture lists.pdf: listas sangradas, Fixture lists-flush.pdf: listas al margen del cuerpo, Maqueta apretada sin hueco suficiente, Marcador de lista sin sangría (startsList), Ítem largo con líneas de continuación, La sangría como señal de lista, Detección de idioma sobre el texto reconstruido (+10 more)
 
-### Community 9 - "Cadena de lint y tipos"
-Cohesion: 0.13
-Nodes (15): eslint, @eslint/js, eslint-plugin-react-refresh, globals, devDependencies, eslint, @eslint/js, eslint-plugin-react-refresh (+7 more)
-
-### Community 10 - "PWA: plan, spec y restriccion de versiones"
-Cohesion: 0.22
-Nodes (12): Convenciones del repositorio: commits en español explicando el porqué, Restricción de versiones: Node 18, Vite 5, pdfjs-dist 4, Vitest 2, vite-plugin-pwa 0.21, PWA Implementation Plan, Goal: LecturamePDF arranque sin conexión e instalable en el iPhone, Task 2: Plugin, manifest y registro del service worker, Actualización en el siguiente arranque, Descartados: service worker a mano e injectManifest, PWA: arrancar sin conexión e instalarse en la pantalla de inicio (+4 more)
-
-### Community 11 - "Comprobaciones de escritorio"
-Cohesion: 0.15
-Nodes (7): { chromium }, fs, path, PDF, results, SHOTS, TABLES_PDF
-
-### Community 12 - "Comprobaciones moviles y de sync"
-Cohesion: 0.25
-Nodes (10): check(), { chromium, devices }, crypto, fakeSpeech(), fs, mobile(), path, PDF (+2 more)
-
-### Community 13 - "Como se verifica el proyecto"
-Cohesion: 0.20
-Nodes (10): pwa.cjs corre contra vite preview, no vite dev, Comprobar el título antes de fiarse de un puerto, Skill /verify, npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs, Verificación completa: tests, servidores, e2e, npm run verify y npm run e2e en verde antes de terminar, Comprobaciones en navegador: no medir tras una espera fija, Task 5: Cierre (verify, deploy, prueba en iPhone) (+2 more)
-
-### Community 14 - "Icono de la aplicacion"
-Cohesion: 0.20
-Nodes (9): Fondo opaco a sangre completa, Icono de la aplicación LecturamePDF, Zona segura de icono maskable, { chromium }, fs, path, PUBLIC, SIZES (+1 more)
-
-### Community 15 - "Suite e2e sin conexion"
-Cohesion: 0.28
-Nodes (8): Task 3: Suite e2e offline (e2e/pwa.cjs), Comprobación e2e contra vite preview, check(), { chromium }, offline(), path, PDF, results
-
-### Community 16 - "Dependencias de ejecucion"
-Cohesion: 0.22
-Nodes (9): dependencies, pdfjs-dist, react, react-dom, @vercel/blob, pdfjs-dist, react, react-dom (+1 more)
-
-### Community 17 - "Scripts npm"
-Cohesion: 0.25
-Nodes (8): scripts, build, dev, e2e, lint, preview, test, verify
-
-### Community 18 - "Metadatos de package.json"
-Cohesion: 0.40
-Nodes (4): name, private, type, version
-
-### Community 19 - "PWA: decision, documentacion y prueba en iPhone"
-Cohesion: 1.00
-Nodes (4): La PWA se actualiza en el siguiente arranque, y el precache lleva tres líneas que no son opcionales, Task 4: Documentación de la PWA, La PWA, probada en el iPhone el 05-09-2026, Sin conexión y en la pantalla de inicio
-
-### Community 20 - "Icono y meta PWA en index.html"
+### Community 13 - "Skill graphify"
 Cohesion: 0.67
-Nodes (3): Task 1: Icono (SVG + script de rasterizado), Icono propio y sencillo, sin dependencias nuevas, Meta PWA en index.html: theme-color, icon, apple-touch-icon
-
-## Ambiguous Edges - Review These
-- `npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs` → `npm run e2e: verify.cjs y mobile.cjs, motor de síntesis falso`  [AMBIGUOUS]
-  README.md · relation: conceptually_related_to
+Nodes (3): Skill graphify (.claude/skills/graphify/SKILL.md), graphify: rehacer entero, sin .claude/skills/graphify y sin update ., El grafo del 05-09 no conoce la lectura inmersiva
 
 ## Knowledge Gaps
-- **106 isolated node(s):** `fs`, `path`, `crypto`, `{ chromium, devices }`, `PDF` (+101 more)
+- **119 isolated node(s):** `fs`, `path`, `crypto`, `{ chromium, devices }`, `PDF` (+114 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **8 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **4 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **What is the exact relationship between `npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs` and `npm run e2e: verify.cjs y mobile.cjs, motor de síntesis falso`?**
-  _Edge tagged AMBIGUOUS (relation: conceptually_related_to) - confidence is low._
-- **Why does `npm run e2e encadena tres suites: verify.cjs, mobile.cjs y pwa.cjs` connect `Como se verifica el proyecto` to `Comprobaciones de escritorio`, `Comprobaciones moviles y de sync`, `Suite e2e sin conexion`?**
-  _High betweenness centrality (0.088) - this node is a cross-community bridge._
-- **Why does `Comprobaciones en navegador: no medir tras una espera fija` connect `Como se verifica el proyecto` to `Decisiones de fondo (CLAUDE.md)`?**
-  _High betweenness centrality (0.068) - this node is a cross-community bridge._
-- **Why does `La sincronización fusiona por updatedAt y borra con tombstones` connect `API de Vercel y sincronizacion` to `Decisiones de fondo (CLAUDE.md)`, `Aplicacion, biblioteca y panel del PDF`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+- **Why does `Plan: Lectura inmersiva` connect `Reproductor, voz y controles` to `Verificacion, PWA y versiones`, `Movil y lectura inmersiva`, `Comprobaciones e2e`?**
+  _High betweenness centrality (0.216) - this node is a cross-community bridge._
+- **Why does `PWA Implementation Plan` connect `Verificacion, PWA y versiones` to `Reproductor, voz y controles`?**
+  _High betweenness centrality (0.199) - this node is a cross-community bridge._
+- **Why does `Restricción de versiones: Vite 5, pdfjs 4, Vitest 2, vite-plugin-pwa 0.21 (Node 18)` connect `Verificacion, PWA y versiones` to `Metadatos y scripts npm`?**
+  _High betweenness centrality (0.184) - this node is a cross-community bridge._
 - **What connects `fs`, `path`, `crypto` to the rest of the system?**
-  _106 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Reproductor, lector y controles` be split into smaller, more focused modules?**
-  _Cohesion score 0.06954997077732321 - nodes in this community are weakly interconnected._
-- **Should `Decisiones de fondo (CLAUDE.md)` be split into smaller, more focused modules?**
-  _Cohesion score 0.054901960784313725 - nodes in this community are weakly interconnected._
+  _119 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `Reproductor, voz y controles` be split into smaller, more focused modules?**
+  _Cohesion score 0.08106219426974144 - nodes in this community are weakly interconnected._
+- **Should `Aplicacion, almacenamiento y sync` be split into smaller, more focused modules?**
+  _Cohesion score 0.1081277213352685 - nodes in this community are weakly interconnected._
+- **Should `Extraccion de PDF y sus limites` be split into smaller, more focused modules?**
+  _Cohesion score 0.08925979680696662 - nodes in this community are weakly interconnected._

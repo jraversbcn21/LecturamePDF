@@ -130,11 +130,6 @@ recogidos aquí.
   línea de contenido; retomar solo si silenciar índices a mano se hace pesado.
 - **Caché de audio de la voz de IA**, si el coste o la espera empiezan a molestar (detalle abajo,
   en «Interfaz»).
-- **El grafo se rehizo el 05-09-2026, pero antes de la lectura inmersiva**, así que
-  `graphify-out/GRAPH_REPORT.md` (445 nodos) no la conoce. No se rehizo otra vez a propósito:
-  cuesta ~200.000 tokens y la forma del proyecto apenas cambió con ella —un hook, un bloque de
-  CSS y dos documentos, sin ficheros ni dependencias nuevas—. Rehacerlo con la siguiente tanda
-  de cambios, no por esto solo.
 
 ## Descartado
 
