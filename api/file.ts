@@ -37,7 +37,9 @@ export async function POST(request: Request): Promise<Response> {
       onBeforeGenerateToken: async (pathname, clientPayload) => {
         if (!process.env.SYNC_TOKEN || clientPayload !== process.env.SYNC_TOKEN) throw new Error('No autorizado');
         if (!/^files\/[0-9a-f]{64}\.pdf$/.test(pathname)) throw new Error('Ruta no permitida');
-        return { allowedContentTypes: ['application/pdf'], addRandomSuffix: false, allowOverwrite: true };
+        // Sin tokenPayload, la librería mete ahí el clientPayload —el código— y lo firma dentro
+        // del token y del aviso de fin de subida. '' y no null: null cuenta como «no viene».
+        return { allowedContentTypes: ['application/pdf'], addRandomSuffix: false, allowOverwrite: true, tokenPayload: '' };
       },
       // Nada que apuntar al acabar: la ruta es determinista y la biblioteca viaja por /api/library.
       onUploadCompleted: async () => {},
