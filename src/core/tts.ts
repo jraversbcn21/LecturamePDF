@@ -104,8 +104,16 @@ async function fetchAudio(text: string, voiceId: string): Promise<Blob> {
       status = 0;
     }
   }
-  throw new Error(status ? `La voz de IA no responde (${status}).` : 'La voz de IA no responde (sin red).');
+  if (status) throw new Error(`La voz de IA no responde (${status}).`);
+  throw new Error(navigator.onLine === false ? 'La voz de IA no responde (sin red).' : BLOCKED);
 }
+
+/**
+ * fetch sin respuesta y el navegador diciendo que hay red: lo típico es un filtro que corta el
+ * dominio. Un cortafuegos de empresa devuelve su página de bloqueo, que el navegador descarta
+ * como error CORS y llega aquí igual que un corte de red. «(sin red)» despistaba: la red estaba.
+ */
+const BLOCKED = 'La voz de IA no responde: puede que esta red la bloquee. Prueba una voz del navegador.';
 
 /**
  * Las últimas frases pedidas, de la más vieja a la más reciente (un Map recuerda el orden de

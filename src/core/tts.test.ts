@@ -159,6 +159,7 @@ describe('voz remota', () => {
   });
 
   it('en error de red avisa y NO avanza: saltarse una frase en silencio pierde contenido', async () => {
+    vi.stubGlobal('navigator', { onLine: false });
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('sin red')));
     const onEnd = vi.fn();
     const onError = vi.fn();
@@ -167,6 +168,17 @@ describe('voz remota', () => {
     // Tres intentos con espera antes de rendirse (~1,8 s).
     await vi.waitFor(() => expect(onError).toHaveBeenCalledWith('La voz de IA no responde (sin red).'), { timeout: 4000 });
     expect(onEnd).not.toHaveBeenCalled();
+  });
+
+  // Un cortafuegos de empresa corta el dominio y el fetch falla igual que sin red (error CORS),
+  // pero el navegador sí tiene red: decir «sin red» despistaba.
+  it('si falla con red disponible, avisa de que la red puede bloquearla', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
+    const onError = vi.fn();
+    speakRemote('Frase once.', { onError });
+
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith(expect.stringContaining('puede que esta red la bloquee')), { timeout: 4000 });
   });
 
   it('sin clave guardada avisa sin llegar a pedir nada', async () => {

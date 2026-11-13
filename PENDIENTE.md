@@ -83,6 +83,13 @@ ya no se para. Si vuelve a pararse, anotar el código del aviso. «(429)» es l�
 «(402)» saldo, «(401)» clave. La cuenta tiene $4,91 de saldo y el modelo es `hexgrad/kokoro-82m`
 (solo hay tres voces en español: Dora, Alex y Santa).
 
+**En el ordenador del trabajo la voz de IA no funciona, y no es un fallo** (13-11-2026): el
+cortafuegos corporativo (Prisma, categoría `ITX_Block_IA`) corta `openrouter.ai` y devuelve su
+página de bloqueo, que el navegador descarta como «CORS error». Groq o la API de Anthropic
+caerían casi seguro en la misma categoría, y pasarlo por un proxy propio sería saltarse la
+política de la empresa: ahí se lee con las voces de Google. Desde ese día el aviso lo dice
+(«puede que esta red la bloquee») en vez de un «(sin red)» que despistaba, porque red había.
+
 La clave lleva desde el 28-10-2026 un **tope de gasto de $0,30** en OpenRouter (Settings → Keys →
 Credit limit), puesto tras la auditoría: vive en el `localStorage` de cada navegador y no hay
 forma de esconderla del propio JavaScript que la usa, así que el tope acota lo que costaría
