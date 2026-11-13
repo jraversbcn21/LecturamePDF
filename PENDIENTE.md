@@ -128,6 +128,11 @@ Cada uno dice **por qué** se dejó fuera, que es lo que hace falta para decidir
 retomarlo. Los atajos deliberados que hay en el código llevan un comentario `ponytail:` y están
 recogidos aquí.
 
+- **Probar en el iPhone las mejoras de rendimiento del 13-11-2026** (`14254e3`): solo están
+  medidas en el build y en la emulación. Lo que debería notarse: lectura y resaltado más
+  fluidos en un PDF largo (cada bloque se repinta solo cuando le toca), cambiar la velocidad o
+  volver una frase atrás con la voz de IA sin esperar a la red (caché de cuatro frases), y la
+  estantería abriendo antes (el arranque bajó de 170 a 65 kB comprimidos, pdf.js va aparte).
 - **Vigilar el gasto de Blob** las primeras semanas (Vercel lo enseña en la pestaña Storage). El
   plan gratuito da 1 GB y ~10 GB de transferencia al mes, y pasarse **corta el acceso 30 días**
   en vez de cobrar. Con PDFs de apuntes no debería acercarse; si se acerca, lo barato es borrar
@@ -157,6 +162,12 @@ recogidos aquí.
   distinguen de lo que escribió el autor. Además, el índice, las listas y las tablas se detectan
   a partir de posiciones exactas, que un reconocimiento de imagen no da. **No reabrir esto sin un
   caso real**: un escaneo concreto que haya que estudiar.
+
+- **Cambiar OpenRouter por Groq o por Claude Haiku** (evaluado el 13-11-2026). Groq solo tiene
+  Orpheus, en inglés y árabe saudí: sin voces en español, a $22 por millón de caracteres (35
+  veces Kokoro) y con un tope de 200 caracteres por petición, que obligaría a partir frases y
+  rompería «una frase = una petición». Claude Haiku 5.5 devuelve solo texto, no audio: no es
+  un proveedor de voz. Reabrir si Groq saca un modelo en español a precio parecido.
 
 - **Sacar la clave de OpenRouter del navegador** con un proxy `api/tts.ts` y la clave en
   Vercel. Cambia dónde vive el secreto, no lo elimina: el navegador seguiría guardando el
