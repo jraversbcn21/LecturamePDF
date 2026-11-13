@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import type { Doc } from '../../core/types';
+import { memo, useEffect, useRef, type MutableRefObject, type ReactNode } from 'react';
+import type { Block, Doc } from '../../core/types';
 import type { SearchHit } from '../../core/search';
 import type { WordRange } from '../usePlayer';
 
@@ -47,6 +47,79 @@ function withMarks(sentence: string, marks: Mark[]): ReactNode {
   return <>{pieces}</>;
 }
 
+type BlockProps = {
+  block: Block;
+  index: number;
+  isMuted: boolean;
+  /** Frase que suena dentro de este bloque, o -1 si la voz está en otro. */
+  activeSentence: number;
+  /** Solo llega al bloque activo: los demás reciben null y no cambian al avanzar la palabra. */
+  word: WordRange | null;
+  bookmarked: Set<string>;
+  found: Map<string, SearchHit>;
+  activeRef: MutableRefObject<HTMLSpanElement | null>;
+  onJump: (blockIndex: number, sentenceIndex: number) => void;
+  onToggleMute: (blockIndex: number) => void;
+};
+
+/**
+ * Memorizado: con cada frase, y con cada palabra en las voces que la marcan, solo cambian las
+ * props del bloque que suena (y del que deja de sonar). Sin esto se repintaba el documento
+ * entero varias veces por segundo, miles de nodos en un PDF largo.
+ */
+const ReaderBlock = memo(function ReaderBlock({
+  block,
+  index: bIndex,
+  isMuted,
+  activeSentence,
+  word,
+  bookmarked,
+  found,
+  activeRef,
+  onJump,
+  onToggleMute,
+}: BlockProps) {
+  const Tag = block.type === 'heading' ? 'h2' : 'p';
+  return (
+    <Tag className={`${block.type}${isMuted ? ' muted' : ''}`}>
+      <button
+        className="mute-toggle"
+        aria-pressed={isMuted}
+        aria-label={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
+        title={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
+        onClick={(event) => {
+          event.currentTarget.blur(); // que los atajos de teclado sigan respondiendo
+          onToggleMute(bIndex);
+        }}
+      >
+        {/* El icono es el estado, como en cualquier reproductor: 🔇 = silenciado. El título dice la acción. */}
+        {isMuted ? '🔇' : '🔊'}
+      </button>
+      {block.sentences.map((sentence, sIndex) => {
+        const isActive = sIndex === activeSentence;
+        const isBookmarked = bookmarked.has(`${bIndex}:${sIndex}`);
+        const hit = found.get(`${bIndex}:${sIndex}`);
+        const marks: Mark[] = [];
+        if (hit) marks.push({ start: hit.start, end: hit.end, className: 'hit' });
+        if (isActive && word) marks.push({ start: word.start, end: word.end, className: 'word' });
+        return (
+          <span
+            key={sIndex}
+            ref={isActive ? activeRef : null}
+            className={`sentence${isActive ? ' active' : ''}${isBookmarked ? ' bookmarked' : ''}`}
+            onClick={() => onJump(bIndex, sIndex)}
+            title={isBookmarked ? 'Marcada para repasar' : 'Leer desde aquí'}
+          >
+            {marks.length > 0 ? withMarks(sentence, marks) : sentence}{' '}
+          </span>
+        );
+      })}
+      {/* De tablas y fórmulas la voz solo da el aviso; el contenido se queda a la vista. */}
+      {(block.type === 'table' || block.type === 'formula') && <span className="not-spoken">{block.text}</span>}
+    </Tag>
+  );
+});
+
 export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, found, muted, onJump, onToggleMute }: Props) {
   const activeRef = useRef<HTMLSpanElement | null>(null);
 
@@ -67,45 +140,21 @@ export function ReaderView({ doc, blockIndex, sentenceIndex, word, bookmarked, f
   return (
     <article className="reader">
       {doc.blocks.map((block, bIndex) => {
-        const Tag = block.type === 'heading' ? 'h2' : 'p';
-        const isMuted = muted.includes(bIndex);
+        const isActive = bIndex === blockIndex;
         return (
-          <Tag key={bIndex} className={`${block.type}${isMuted ? ' muted' : ''}`}>
-            <button
-              className="mute-toggle"
-              aria-pressed={isMuted}
-              aria-label={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
-              title={isMuted ? 'Volver a leer este bloque' : 'No leer este bloque'}
-              onClick={(event) => {
-                event.currentTarget.blur(); // que los atajos de teclado sigan respondiendo
-                onToggleMute(bIndex);
-              }}
-            >
-              {/* El icono es el estado, como en cualquier reproductor: 🔇 = silenciado. El título dice la acción. */}
-              {isMuted ? '🔇' : '🔊'}
-            </button>
-            {block.sentences.map((sentence, sIndex) => {
-              const isActive = bIndex === blockIndex && sIndex === sentenceIndex;
-              const isBookmarked = bookmarked.has(`${bIndex}:${sIndex}`);
-              const hit = found.get(`${bIndex}:${sIndex}`);
-              const marks: Mark[] = [];
-              if (hit) marks.push({ start: hit.start, end: hit.end, className: 'hit' });
-              if (isActive && word) marks.push({ start: word.start, end: word.end, className: 'word' });
-              return (
-                <span
-                  key={sIndex}
-                  ref={isActive ? activeRef : null}
-                  className={`sentence${isActive ? ' active' : ''}${isBookmarked ? ' bookmarked' : ''}`}
-                  onClick={() => onJump(bIndex, sIndex)}
-                  title={isBookmarked ? 'Marcada para repasar' : 'Leer desde aquí'}
-                >
-                  {marks.length > 0 ? withMarks(sentence, marks) : sentence}{' '}
-                </span>
-              );
-            })}
-            {/* De tablas y fórmulas la voz solo da el aviso; el contenido se queda a la vista. */}
-            {(block.type === 'table' || block.type === 'formula') && <span className="not-spoken">{block.text}</span>}
-          </Tag>
+          <ReaderBlock
+            key={bIndex}
+            block={block}
+            index={bIndex}
+            isMuted={muted.includes(bIndex)}
+            activeSentence={isActive ? sentenceIndex : -1}
+            word={isActive ? word : null}
+            bookmarked={bookmarked}
+            found={found}
+            activeRef={activeRef}
+            onJump={onJump}
+            onToggleMute={onToggleMute}
+          />
         );
       })}
     </article>

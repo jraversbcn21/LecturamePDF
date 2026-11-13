@@ -107,18 +107,30 @@ async function fetchAudio(text: string, voiceId: string): Promise<Blob> {
   throw new Error(status ? `La voz de IA no responde (${status}).` : 'La voz de IA no responde (sin red).');
 }
 
-// ponytail: caché de una sola entrada, la frase siguiente; dos si algún día molesta
-// el refetch al cambiar la velocidad en mitad de frase.
-let cached: { key: string; blob: Promise<Blob> } | null = null;
+/**
+ * Las últimas frases pedidas, de la más vieja a la más reciente (un Map recuerda el orden de
+ * inserción). Con una sola entrada, el prefetch de la siguiente echaba a la que suena: cambiar
+ * la velocidad a mitad de frase o volver atrás una frase pagaba la petición otra vez, y con la
+ * cuota free de ~50 al día eso se nota. Cuatro cubren la anterior, la actual y la siguiente.
+ * ponytail: solo en memoria; releer un documento sigue yendo a la red (caché persistente,
+ * en PENDIENTE.md).
+ */
+const CACHE_SIZE = 4;
+const cache = new Map<string, Promise<Blob>>();
+const cacheKey = (text: string, voiceId: string): string => `${voiceId}\u0000${text}`;
 
 function cachedFetch(text: string, voiceId: string): Promise<Blob> {
-  const key = `${voiceId}\0${text}`;
-  if (cached?.key !== key) {
-    cached = { key, blob: fetchAudio(text, voiceId) };
+  const key = cacheKey(text, voiceId);
+  let blob = cache.get(key);
+  if (blob) cache.delete(key); // reinsertar la mueve al final: es la más reciente
+  else {
+    blob = fetchAudio(text, voiceId);
     // Un prefetch fallido no puede quedar como rechazo sin manejar; speak lo verá al consumirlo.
-    cached.blob.catch(() => {});
+    blob.catch(() => {});
   }
-  return cached.blob;
+  cache.set(key, blob);
+  if (cache.size > CACHE_SIZE) cache.delete(cache.keys().next().value as string);
+  return blob;
 }
 
 const remoteId = (voice: Voice): string => voice.name.slice('openrouter:'.length);
@@ -144,7 +156,7 @@ async function speakRemote(text: string, voiceId: string, rate: number, handlers
     };
     await audio.play();
   } catch (error) {
-    cached = null; // que el reintento vuelva a la red, no a la promesa rechazada
+    cache.delete(cacheKey(text, voiceId)); // que el reintento vuelva a la red, no a la promesa rechazada
     if (gen === generation) handlers.onError?.(error instanceof Error ? error.message : 'Fallo de red.');
   }
 }

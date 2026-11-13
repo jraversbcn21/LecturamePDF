@@ -191,6 +191,13 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
     if (!window.matchMedia(WIDE).matches) setSidebar(false);
   }, [dispatch]);
 
+  // Estable a propósito: llega a cada bloque memorizado de ReaderView, y una función nueva en
+  // cada render los repintaría todos con cada frase.
+  const jumpInText = useCallback(
+    (blockIndex: number, sentenceIndex: number) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex }),
+    [dispatch],
+  );
+
   const toggleCurrent = useCallback(
     () => toggle({ blockIndex: state.blockIndex, sentenceIndex: state.sentenceIndex }),
     [toggle, state.blockIndex, state.sentenceIndex],
@@ -286,7 +293,7 @@ export function Reader({ doc, start, bookmarks: initialBookmarks, heardSections,
           bookmarked={marked}
           found={found}
           muted={state.muted}
-          onJump={(blockIndex, sentenceIndex) => dispatch({ type: 'JUMP', blockIndex, sentenceIndex })}
+          onJump={jumpInText}
           onToggleMute={toggleMute}
         />
         {pdf && (

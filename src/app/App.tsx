@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Doc } from '../core/types';
 import type { Bookmark } from '../core/bookmarks';
-import { extractDoc } from '../core/pdf/extract';
 import { deleteDoc, getDoc, getEntry, listLibrary, saveDoc, saveFile, type LibraryEntry } from '../core/storage';
 import { autoSync, clearSyncCode, deletePdf, downloadPdf, getSyncCode, saveSyncCode, syncLibrary, uploadPdf } from '../core/sync';
 import { Library } from './components/Library';
@@ -22,6 +21,13 @@ type Open = {
  * visita nueva sigue empezando en la portada.
  */
 const OPEN_KEY = 'lecturame:open-doc';
+
+/**
+ * pdf.js es más de la mitad del código y solo se usa al extraer: subir un PDF o abrir uno que
+ * llegó de otro dispositivo. Cargado aparte, la estantería y la lectura arrancan sin él. La PWA
+ * lo precachea igual (es un .js más del build), así que extraer sin red sigue funcionando.
+ */
+const extractDoc = async (file: File): Promise<Doc> => (await import('../core/pdf/extract')).extractDoc(file);
 
 export function App() {
   const [entries, setEntries] = useState<LibraryEntry[]>([]);

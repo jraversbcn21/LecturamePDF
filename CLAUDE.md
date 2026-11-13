@@ -43,6 +43,15 @@ vite-plugin-pwa 1+ sin comprobar antes la versión de Node: dejan de arrancar.
   la cabecera y la estantería, que no lo necesitan; con `clamp()` crece solo la presentación. Por
   lo mismo, la ficha de la estantería tiene un mínimo generoso (`minmax(min(26rem, 100%), 1fr)`):
   con más columnas, el nombre del PDF —que es largo— acaba en puntos suspensivos.
+- **Cada bloque del texto es un componente memorizado** (`ReaderBlock` en
+  `src/app/components/ReaderView.tsx`). Con cada frase, y con cada palabra en las voces que la
+  marcan, solo cambian las props del bloque que suena; sin el `memo` se repintaba el documento
+  entero varias veces por segundo. Lo que lo sostiene es frágil: **toda prop que llega al bloque
+  tiene que ser estable** (`onJump` va con `useCallback` en `Reader.tsx`, la palabra solo llega
+  al bloque activo). Una función o un objeto nuevos en cada render lo anulan sin que nada falle.
+- **pdf.js se carga con `import()` al extraer, no al arrancar** (`App.tsx`). Es más de la mitad
+  del código y la estantería y la lectura no lo usan. Sigue en el precache como un `.js` más,
+  así que extraer sin red no cambia.
 - **El desplazamiento solo se anima en saltos cortos** (`src/app/components/ReaderView.tsx`). Con
   `behavior: 'smooth'` siempre, reabrir un documento largo tarda segundos recorriendo decenas de
   miles de píxeles.

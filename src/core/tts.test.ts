@@ -119,7 +119,7 @@ describe('voz remota', () => {
     vi.unstubAllGlobals();
   });
 
-  // La caché de una entrada de tts.ts sobrevive entre tests (estado de módulo, a propósito):
+  // La caché de tts.ts sobrevive entre tests (estado de módulo, a propósito):
   // cada test usa una frase distinta para no acertar en la caché del anterior.
   const speakRemote = (text: string, handlers: { onEnd?: () => void; onWord?: () => void; onError?: (m: string) => void } = {}, rate = 1) =>
     tts.speak(text, { voice: dora, rate }, { onEnd: () => {}, ...handlers });
@@ -226,5 +226,31 @@ describe('voz remota', () => {
     resolve();
     await vi.waitFor(() => expect(audios).toHaveLength(1));
     expect(mock).toHaveBeenCalledOnce();
+  });
+
+  it('pedir la siguiente no echa a la que suena: relanzarla (otra velocidad, volver atrás) no vuelve a la red', async () => {
+    const mock = vi.fn().mockImplementation(() => Promise.resolve({ ok: true, blob: () => Promise.resolve(new Blob(['audio'])) }));
+    vi.stubGlobal('fetch', mock);
+
+    speakRemote('Frase ocho.');
+    tts.prefetch('Frase nueve.', dora);
+    await vi.waitFor(() => expect(audios).toHaveLength(1));
+    expect(mock).toHaveBeenCalledTimes(2);
+
+    speakRemote('Frase ocho.', {}, 1.5);
+    await vi.waitFor(() => expect(audios).toHaveLength(2));
+    expect(mock).toHaveBeenCalledTimes(2);
+  });
+
+  it('un fallo sale de la caché: el reintento vuelve a pedir el audio', async () => {
+    const mock = vi.fn().mockResolvedValue({ ok: false, status: 401 });
+    vi.stubGlobal('fetch', mock);
+    const onError = vi.fn();
+    speakRemote('Frase diez.', { onError });
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith('La voz de IA no responde (401).'));
+    expect(mock).toHaveBeenCalledOnce();
+
+    speakRemote('Frase diez.', { onError });
+    await vi.waitFor(() => expect(mock).toHaveBeenCalledTimes(2));
   });
 });
